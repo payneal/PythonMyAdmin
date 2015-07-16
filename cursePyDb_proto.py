@@ -60,12 +60,6 @@ def cursedPyDbApp(scr):
     init_style()
     init_panels()
 
-    #pp = pprint.PrettyPrinter(indent=4)
-    #debugstr1 = "styleobjects len: " + str(len(styleObjects)) + " "
-    #debugstr1 +=  " cursePanels len " + str(len(cursePanels)) + " "
-    #debugstr1 += "panelcounter " + str(panelCounter) + " "
-    #stdscr.addstr(0, 0, debugstr1)
-    #stdscr.addstr(1, 0, str(cursePanels[0].id))
     last_select_index = 0
     selected_index = 0
     cursePanels[selected_index].select_panel()
@@ -76,7 +70,6 @@ def cursedPyDbApp(scr):
     curses.doupdate()
     
     while True :
-        #c = cursePanels[0].win.getch()
         c = cursePanels[selected_index].win.getch()
         if c == ord('q'):
             break
@@ -86,10 +79,7 @@ def cursedPyDbApp(scr):
             selected_index = 1
         elif c == ord('3'):
             selected_index = 2
-        else:       
-            #for i in range(0, len(cursePanels)):
-            #    cursePanels[i].updatePanel()
-            #curses.doupdate()  
+        else:        
             continue
         if selected_index != last_select_index :
             if last_select_index != -1:
@@ -101,30 +91,7 @@ def cursedPyDbApp(scr):
         for j in range(0, len(cursePanels)):
             cursePanels[j].updatePanel()
         curses.doupdate()  
-        #cursePanels[selected_index].select_panel()
-        #cursePanels[selected_index].noutrefresh()
 
-        # while True :
-        #c = cursePanels[0].win.getch()
-        #if c == ord('q'):
-        #    break
-        #elif c == ord('w'):
-        #    selected_index = selected_index - 1
-        #    if selected_index < 0 :
-        #        selected_index = panelCounter - 1
-        #elif c == ord('s'):
-        #    selected_index = selected_index + 1
-        #    if selected_index >= panelCounter :
-        #        selected_index = 0
-        #else:
-        #    cursePanels[0].win.noutrefresh()
-        #    curses.doupdate()  
-        #    continue   
-        #cursePanels[selected_index].select_panel()
-        #cursePanels[selected_index].noutrefresh()
-        #      
-            
-    #curses.napms(5000)  
 
 # . . . . . . . . . . . . . . .  M A I N . E N D . . . . . . . . . . . . . . . 
 
@@ -146,7 +113,8 @@ def cursedPyDbApp(scr):
 ##          CursePanel.ppanel           parent panel of this panel
 ##          CursePanel.y                y screen coord offset from NW corner
 ##          CursePanel.x                x screen coord offset from NW corner                       
-##          CursePanel.titlexy          yx scr                                 
+##          CursePanel.height                  
+##          CursePanel.width           
 ##          CursePanel.focus            is panel focused             
 ##          CursePanel.vis              is panel visible                              
 ##          CursePanel.stylestr         key for styles[] for a style obj   
@@ -322,7 +290,7 @@ def init_style():
                 "bg_ch" : sp,
                 "bg_at" : 0,
                 "bg_cl" : colors["BLU"],
-                "br_chs": list(brChrSet["all_space"]),
+                "br_chs": list(brChrSet["all_x"]),
                 "br_at" : curses.A_REVERSE,
                 "br_cl" : colors["BLU"],
                 "wfocus_bg" : { 
