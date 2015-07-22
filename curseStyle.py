@@ -58,15 +58,19 @@ def init_color_pairs():
     curses.init_pair(13, curses.COLOR_BLACK, curses.COLOR_YELLOW) # yllw  / black
     curses.init_pair(14, curses.COLOR_WHITE, curses.COLOR_BLACK) # yllw  / black
 
+    curses.init_pair(15, curses.COLOR_CYAN, curses.COLOR_BLUE)   # cyan  / black
+
     colors = {  "DFT": curses.color_pair(0),
                 "BLK": curses.color_pair(1),   "BLU": curses.color_pair(2),
                 "CYN": curses.color_pair(3),   "GRN": curses.color_pair(4),
                 "MGA": curses.color_pair(5),   "RED": curses.color_pair(6),
-                "YLW": curses.color_pair(7),   "WHT": curses.color_pair(14),
+                "YLW": curses.color_pair(7),   
                                                "RBLU": curses.color_pair(8), 
                 "RCYN": curses.color_pair(9),  "RGRN": curses.color_pair(10), 
                 "RMGA": curses.color_pair(11), "RRED": curses.color_pair(12),
-                "RYLW": curses.color_pair(13)}
+                "RYLW": curses.color_pair(13),
+                                               "WHT": curses.color_pair(14),
+                "CYNBLU": curses.color_pair(15)}
 
 def init_style():
     global borderSets
@@ -89,6 +93,13 @@ def init_style():
     vln = ord("|")
     sp = ord(" ")
     pls = ord("+")
+    NWcrner = u"\u250C"
+    SWcrner = u"\u2514"
+    SEcrner = u"\u2518"
+    NEcrner = u"\u2510"
+    vuline = u"\u2502"
+    huline = u"\u2500"
+
    
     borderSets = {
         "all_hash" : [ hsh for i in range (0, 8) ],
@@ -97,9 +108,12 @@ def init_style():
         "side_hash_top_dash" : [ hsh, hsh, dsh, dsh, hsh, hsh, hsh, hsh ],
         "w_s_hash_n_dash_e_vline" : [ hsh, vln, dsh, hsh, hsh, dsh, hsh, vln],
         "w_e_vline_nw_ne_sw_se_pls_n_s_dsh": [vln,vln,dsh,dsh,pls,pls,pls,pls],
+        "unicode_box": [vuline, vuline, huline, huline, 
+                        NWcrner, NEcrner, SWcrner, SEcrner],
         "no_border" : [-1]}
 
     panelStyles = {}
+
     panelStyles["default"] = CursePanelStyle({
         "bg_chr" : sp,
         "bg_atr" : 0,
@@ -154,12 +168,12 @@ def init_style():
         "fttl_clr" : colors["YLW"]
     })
 
-    panelStyles["style2"] = CursePanelStyle({
+    panelStyles["middlepanes"] = CursePanelStyle({
         "bg_chr" : sp,
         "bg_atr" : 0,
         "bg_clr" : colors["BLU"],
 
-        "br_chrs": list(borderSets["w_e_vline_nw_ne_sw_se_pls_n_s_dsh"]),
+        "br_chrs": list(borderSets["all_hash"]),
         "br_atr" : curses.A_BOLD,
         "br_clr" : colors["BLU"],
 
@@ -173,7 +187,7 @@ def init_style():
         "fbg_atr" : 0,
         "fbg_clr" : colors["CYN"],
 
-        "fbr_chrs": list(borderSets["w_e_vline_nw_ne_sw_se_pls_n_s_dsh"]),
+        "fbr_chrs": list(borderSets["all_hash"]),
         "fbr_atr" : curses.A_BOLD,
         "fbr_clr" : colors["CYN"],
 
@@ -198,7 +212,7 @@ def init_style():
 
         "fbg_chr" : sp,
         "fbg_atr" : 0,
-        "fbg_clr" : colors["RGRN"],
+        "fbg_clr" : colors["RYLW"],
 
         "fbr_chrs": list(borderSets["no_border"]),
         "fbr_atr" : 0,
@@ -206,6 +220,33 @@ def init_style():
 
         "fttl_atr" : 0,
         "fttl_clr" : colors["RGRN"]
+    })
+
+    panelStyles["infobox1"] = CursePanelStyle({
+        "bg_chr" : sp,
+        "bg_atr" : 0,
+        "bg_clr" : colors["CYN"],
+
+        "br_chrs": list(borderSets["all_hash"]),
+        "br_atr" : curses.A_BOLD,
+        "br_clr" : colors["BLU"],
+
+        "ttl_atr" : 0,
+        "ttl_clr" : colors["WHT"],
+
+        "txt_atr" : 0,
+        "txt_clr" : colors["CYN"],
+
+        "fbg_chr" : sp,
+        "fbg_atr" : 0,
+        "fbg_clr" : colors["CYN"],
+
+        "fbr_chrs": list(borderSets["all_hash"]),
+        "fbr_atr" : curses.A_BOLD,
+        "fbr_clr" : colors["CYN"],
+
+        "fttl_atr" : curses.A_BOLD,
+        "fttl_clr" : colors["YLW"]
     })
 
     panelStyles["infobox2"] = CursePanelStyle({
@@ -218,7 +259,34 @@ def init_style():
         "br_clr" : colors["BLK"],
 
         "ttl_atr" : curses.A_BOLD,
-        "ttl_clr" : colors["CYN"],
+        "ttl_clr" : colors["WHT"],
+
+        "txt_atr" : curses.A_BOLD,
+        "txt_clr" : colors["CYNBLU"],
+
+        "fbg_chr" : sp,
+        "fbg_atr" : 0,
+        "fbg_clr" : colors["RBLU"],
+
+        "fbr_chrs": list(borderSets["no_border"]),
+        "fbr_atr" : 0,
+        "fbr_clr" : colors["BLK"],
+
+        "fttl_atr" : curses.A_BOLD,
+        "fttl_clr" : colors["CYN"]
+    })
+
+    panelStyles["input_strip"] = CursePanelStyle({
+        "bg_chr" : sp,
+        "bg_atr" : 0,
+        "bg_clr" : colors["RMGA"],
+
+        "br_chrs": list(borderSets["no_border"]),
+        "br_atr" : 0,
+        "br_clr" : colors["BLK"],
+
+        "ttl_atr" : curses.A_BOLD,
+        "ttl_clr" : colors["RMGA"],
 
         "txt_atr" : 0,
         "txt_clr" : colors["WHT"],

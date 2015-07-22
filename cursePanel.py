@@ -12,15 +12,11 @@ class CursePanel(object):
         else:
             self.id = kwargs["id"]                           
             self.name = kwargs["name"]          
-
-            self.ppanel = kwargs["ppanel"] 
-
+             
             self.height = kwargs["h"]
             self.width = kwargs["w"]
             self.y = kwargs["y"]
             self.x = kwargs["x"]
-            self.ypad = kwargs["ypad"]
-            self.xpad = kwargs["xpad"]
 
             self.win = curses.newwin(self.height, self.width, self.y, self.x)           
             self.panel = curses.panel.new_panel(self.win)  
@@ -28,25 +24,26 @@ class CursePanel(object):
             self.titleyx = kwargs["titleyx"]
             self.title = kwargs["title"]
             
-            if kwargs["textbox"] != None:
-                kwargs["textbox"]["parent"] = self
-                self.textbox = curseTextbox.CurseTextbox(kwargs["textbox"])
-            else:
-                self.textbox = None
+            #### TEXTBOX PARENT SET HERE
+            #if kwargs["textbox"] != None:
+            #    kwargs["textbox"]["parent"] = self
+            #    self.textbox = curseTextbox.CurseTextbox(kwargs["textbox"])
+            #else:
+            #    self.textbox = None
+            self.textbox = kwargs["textbox"]
 
-            self.infotext1 = kwargs["infotext1"]
-            self.infotext1tar = kwargs["infotext1tar"]
-              
-            self.isfocused = False
-            self.isvisible = kwargs["visible"]      
-                                      
             self.style = kwargs["style"]
-            self.dftstyle = kwargs["dftstyle"]
-        
-            self.onload()
+            self.dftstyle = kwargs["dftstyle"]            
+              
+            self.focusable = kwargs["focusable"]     
+            self.isfocused = False
+            
+            #self.isvisible = False
+                
+            #self.onload()
     
     #       update
-    def update(self, force_update=False, force_refresh=False):
+    def update(self, force_refresh=False):
         self.set_style(self.isfocused)
         self.draw_text()
         if force_refresh == True:
@@ -54,12 +51,15 @@ class CursePanel(object):
         else:
             self.win.noutrefresh()            
 
+    #
+    def load(self, kwargs):
+        self.onload(**kwargs)
+
     #       onload
-    def onload(self):
-        self.set_style(self.isfocused)
-        self.draw_text()
-        if self.isvisible == False:                                     
-            self.panel.hide()
+    def onload(self, **kwargs):
+        self.ppanel = kwargs["ppanel"]
+        self.infotext = kwargs["infotext"]
+        self.infotexttar = kwargs["infotexttar"]
 
     #       focus
     def focus(self):
@@ -79,23 +79,27 @@ class CursePanel(object):
     #       ondefocus
     def ondefocus(self):
         self.deselect_panel()
-        self.clear_text()
+        if self.infotexttar != None:
+            self.infotexttar.reset_text()
+            self.infotexttar.update(True)
+        
                                                           
     #################################################
     #       showinfotxt        
     def showinfotxt(self):
-        if self.infotext1tar != None:
-            if len(self.infotext1) != 0:
-                self.infotext1tar.reset_text(self.infotext1)
-                self.infotext1tar.draw_text()
+        if self.infotexttar != None:
+            if len(self.infotext) != 0:
+                self.infotexttar.reset_text(self.infotext)
+                self.infotexttar.draw_text()
 
     #       getinput
-    def getkeyinput(self, key):
-        if key == ord("o"):
-            self.textbox.turnpage("prev")
-        if key == ord("p"):
-            self.textbox.turnpage("next")
-        self.update(False, True)
+    def check_input(self, inputc):
+        if self.infotexttar != None:
+            if inputc == str(ord("w")):
+                self.infotexttar.textbox.turnpage("prev")
+            if inputc == str(ord("s")):
+                self.infotexttar.textbox.turnpage("next")
+            self.infotexttar.update(True)
 
     #       select_panel
     def select_panel(self):
