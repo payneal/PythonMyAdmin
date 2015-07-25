@@ -6,29 +6,40 @@ class CurseScreen(object):
         self.id = kwargs["id"]
         self.name = kwargs["name"]
         self.panels = kwargs["panels"]
-        self.inkeys = kwargs["inkeys"]
-        self.findex = kwargs["findex"]
+        self.inputkeys = kwargs["inputkeys"]
+        self.findex = kwargs["findex"]  # findex is index of focused panel
       
+        self.prevscr = None
+        self.stdscr = kwargs["stdscr"]
+        self.win = curses.newwin(22, 80, 0, 0)
         self.isactive = False
         
     def update(self, inputc):
-        if self.isactive == True:
-            status = self.checkInput(inputc)
-            self.updatePanels()
-            return status#self.checkInput(inputc)     
+        self.win.attron(curses.color_pair(1))
+        for l in range (0, 22):
+            self.stdscr.hline(l, 0, 32, 80)
+        self.win.attroff(curses.color_pair(1))
 
-    def updatePanels(self):
+        if self.isactive == True:
+            status = self.checkInput(inputc) # <-------------------- get status
+            self.updatePanels()
+            return status # <------------------------------------ RETURN status
+
+    def updatePanels(self, force_refresh=False):
         for p in range(0, len(self.panels)):
-            self.panels[p].update()
+            self.panels[p].update(force_refresh)
         
     def checkInput(self, inputc):       
         status = None                    
-        if inputc in self.inkeys:
-            status = self.keymap(self.inkeys[str(inputc)])
-            if status == "exit":
-                return status
+        if inputc in self.inputkeys:
+            status = self.keymap(self.inputkeys[str(inputc)]) # <-stat from scr
+            if status != None:
+                if status == "ext":
+                    return status # <------------ RETURN status from screen cmd
+                elif status[0:3] == "scr":
+                    return status # <------------ RETURN status from screen cmd
         if self.findex >= 0:
-            self.panels[self.findex].check_input(inputc)
+            return self.panels[self.findex].check_input(inputc) # <-stat fm itm
 
     def keymap(self, action):
         if action == "prev":
@@ -37,6 +48,9 @@ class CurseScreen(object):
             self.nextPanel()
         elif action == "quit":
             return self.quit()
+        elif action == "prevscr":
+            self.hideScreen(self.prevscr)
+            return "scr="+self.prevscr.name
 
     def prevPanel(self):
         prev_index = self.findex
@@ -62,7 +76,6 @@ class CurseScreen(object):
             self.panels[prev_index].defocus()
         self.panels[self.findex].focus()
 
-
     def nextPanel(self):
         prev_index = self.findex
         # findex = -2 : no focusable indices on screen
@@ -86,16 +99,27 @@ class CurseScreen(object):
 
     def hideScreen(self, next_screen=None):
         self.isactive = False
+        
         for p in range(0, len(self.panels)):
-            self.panels[p].win.erase() # .clear()?
-        if next_screen != None:
-            next_screen.showScreen()
+            self.panels[p].clear_panel()
+            #self.panels[p].panel.hide() # .clear()? -> win.erase()
+        #self.stdscr.clear()
+        #self.stdscr.refresh()
+        #curses.doupdate()
+        self.win.attron(curses.color_pair(1))
+        for l in range (0, 22):
+            self.win.hline(l, 0, 32, 80)
+        self.win.attroff(curses.color_pair(1))
 
-    def showScreen(self):
+        if next_screen != None:
+            next_screen.showScreen(self)
+
+    def showScreen(self, prev_scr=None):
         self.isactive = True
+        self.prevscr = prev_scr
+        for p in range(0, len(self.panels)):
+            self.panels[p].panel.show() 
         self.updatePanels()
-        #for p in range(0, len(self.panels)):
-        #    self.panels[p].update()#refresh() # was refresh
 
     def quit(self):
-        return "exit"
+        return "ext"

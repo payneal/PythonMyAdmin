@@ -1,19 +1,16 @@
-﻿import math
-import textwrap
+﻿import copy
 import curses
-import cursePanel
+import math
+import textwrap
 
 class CurseTextbox(object):
     """description of class"""
     def __init__(self, **kwargs):
         self.height = kwargs["h"]
         self.width = kwargs["w"]
-        self.y = kwargs["y"]
-        self.x = kwargs["x"]                
+        self.y = kwargs["y"]        #   Y RELATIVE TO PARENT WINDOW
+        self.x = kwargs["x"]        #   X RELATIVE TO PARENT WINDOW
 
-        #self.parindex = kwargs["parindex"]
-        #self.parent = kwargs["parent"]
-        #self.basetext = kwargs["basetext"]
         self.linetext = []
 
         self.totalheight = 0
@@ -25,7 +22,11 @@ class CurseTextbox(object):
 
         self.style = kwargs["style"]
 
-        #self.onload( kwargs["panels"] )
+    #
+    def update(self, refresh=False):
+        self.drawtext()
+        if refresh == True:
+            self.parent.win.refresh()
 
     def load(self, parent, basetext=""):
         self.onload(parent, basetext)
@@ -33,22 +34,31 @@ class CurseTextbox(object):
     #       onload
     def onload(self, parent, basetext):
         self.parent = parent
-        #self.basetext = basetext
-        self.resettext(basetext)#self.basetext)
+        self.defaulttext = copy.copy(basetext)
+        self.resettext(basetext)
 
     def resettext(self, text):
         self.index = 0
         self.currentpg = 0
         self.cleartext()
         self.basetext = text
-        if self.basetext != "":
-            self.texttolines(self.basetext)
-            self.setpages()
-            self.turnpage("prev")
+        if text == "":
+            self.basetext = self.defaulttext
+        #if self.basetext != "":
+        self.texttolines(self.basetext)
+        self.setpages()
+        self.turnpage("prev")
 
     #       
-    def texttolines(self, text):             
-        self.linetext = textwrap.wrap(text, int(self.width))
+    def texttolines(self, text):  
+        wr = textwrap.TextWrapper(
+            width=int(self.width),
+            replace_whitespace=False,
+            drop_whitespace=False,
+            break_on_hyphens=False)  
+        self.linetext = wr.wrap(text)        
+        #self.linetext = textwrap.wrap(text, int(self.width), 
+        #   drop_whitespace=False) 
 
     #
     def setpages(self):
@@ -78,10 +88,10 @@ class CurseTextbox(object):
 
     #
     def drawtext(self):
-        self.cleartext()
         txt_atrclr = self.style.txt_atr | self.style.txt_clr
-        bg_chtype = self.parent.win.getbkgd()
         self.parent.win.attron(txt_atrclr)
+        self.cleartext()       
+
         for l in range(0, self.height):
             # clear lines past last line if we're on last page
             if l + self.index >= len(self.linetext):
@@ -93,10 +103,12 @@ class CurseTextbox(object):
         if self.morecontent == True:
             self.parent.win.addstr(
                 self.y + self.height, self.x, "(MORE...)", txt_atrclr)
+
         self.parent.win.attroff(txt_atrclr)      
         
     def cleartext(self):
         bg_chtype = self.parent.win.getbkgd()
-        self.parent.win.refresh()
+        #self.parent.win.refresh()
         for l in range(0, self.height):
-            self.parent.win.hline(self.y + l, self.x, bg_chtype, self.width)
+            self.parent.win.hline(self.y + l, self.x, 32, self.width)
+            #self.parent.win.hline(self.y + l, self.x, bg_chtype, self.width)
