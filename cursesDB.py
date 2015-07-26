@@ -1,6 +1,6 @@
 ﻿import copy
+#import curses.panel
 import curses
-import curses.panel
 import curses.ascii
 
 import locale
@@ -10,9 +10,11 @@ from cursePanel import CursePanel
 import curseStyle
 from curseTextbox import CurseTextbox
 from curseScreen import CurseScreen
+import asciiart
 
 scr1_Panels = []
 scr2_Panels = []
+scr3_Panels = []
 
 curseScreens = {}
 inputKeys = {}
@@ -45,126 +47,102 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
            "molestiae consequatur, vel illum qui dolorem eum fugiat quo "\
            "voluptas nulla pariatur?"
 
-titlestr = "teststr"
-titlestr2 = "   ▄████▄   █    ██  ██▀███    ██████ ▓█████   ██████  "\
-           "  ▒██▀ ▀█   ██  ▓██▒▓██ ▒ ██▒▒██    ▒ ▓█   ▀ ▒██    ▒  "\
-           "  ▒▓█    ▄ ▓██  ▒██░▓██ ░▄█ ▒░ ▓██▄   ▒███   ░ ▓██▄    "\
-           "  ▒▓▓▄ ▄██▒▓▓█  ░██░▒██▀▀█▄    ▒   ██▒▒▓█  ▄   ▒   ██▒ "\
-           "  ▒ ▓███▀ ░▒▒█████▓ ░██▓ ▒██▒▒██████▒▒░▒████▒▒██████▒▒ "\
-           "  ░ ░▒ ▒  ░░▒▓▒ ▒ ▒ ░ ▒▓ ░▒▓░▒ ▒▓▒ ▒ ░░░ ▒░ ░▒ ▒▓▒ ▒ ░ "\
-           "  ░  ▒   ░░▒░ ░ ░   ░▒ ░ ▒░░ ░▒  ░ ░ ░ ░  ░░ ░▒  ░ ░   "\
-           "  ░         ░░░ ░ ░   ░░   ░ ░  ░  ░     ░   ░  ░  ░   "\
-           "  ░ ░         ░        ░           ░     ░  ░          "\
-           "  ░                                                    "\
-
-titlestr3 = "                ,___. `################## ____                "\
-            "           ,__P##                            `#8L_            "\
-            "       _/#                                        )88_        "\
-            "     _#                                            )88L.      "\
-            "   )8                                              ,_888(     "\
-            "  J(                    JL                         `##88(     "\
-            " 8(                      )8       ___            ,_____ )8    "\
-            " 8(                     _J8 ,__J88888888.      _8888888888__  "\
-            " #L.                   _88#78888888888888.     )888888888( 88 "\
-            " )(                ,__88( )888888888888P#    ,J8J8888888( 88  "\
-            "     _        ##########      `#######      _888888888   )8#  "\
-            "    )8     ,88L_J_ ,____.   _J8888888      88888888P##  )8    "\
-            "        ,_ `#)88888 )88888P######           `###88P78P        "\
-            "         `## `#####_/#8888L.                    ###`#_        "\
-            "                        `#8L.                     __8P        "\
-            "                          #88#`8___  .  ,     ,  8888         "\
-            "                    ,.            `  # `7##P# `  #78          "\
-            "                      `##_.                      )88          "\
-            "                               # ,_.             )8#          "\
-            "                                    ### ,______               "\
-
-titlestr4 = "   ▄████████ ███    █▄     ▄████████    ▄████████    ▄████████ ████████▄   "\
-            "  ███    ███ ███    ███   ███    ███   ███    ███   ███    ███ ███   ▀███  "\
-            "  ███    █▀  ███    ███   ███    ███   ███    █▀    ███    █▀  ███    ███  "\
-            "  ███        ███    ███  ▄███▄▄▄▄██▀   ███         ▄███▄▄▄     ███    ███  "\
-            "  ███        ███    ███ ▀▀███▀▀▀▀▀   ▀███████████ ▀▀███▀▀▀     ███    ███  "\
-            "  ███    █▄  ███    ███ ▀███████████          ███   ███    █▄  ███    ███  "\
-            "  ███    ███ ███    ███   ███    ███    ▄█    ███   ███    ███ ███   ▄███  "\
-            "  ████████▀  ████████▀    ███    ███  ▄████████▀    ██████████ ████████▀   "\
-            "                          ███    ███                                       "\
-
-titlestr5 = " @@@@@@@ @@@  @@@ @@@@@@    @@@@  @@@@@@@    @@@@@@@  @@@@@@   "\
-            "@@@@@@@@ @@@  @@@ @@@@@@@@ @@@@@@ @@@@@@@    @@@@@@@@ @@@@@@@@ "\
-            "@@@      @@@  @@@ @@@  @@@ @@     @@@        @@@  @@@ @@@  @@@ "\
-            "@@@      @@@  @@@ @@@  @@@ @@@    @@@        @@@  @@@ @@@  @@  "\
-            "@@@      @@@  @@@ @@@@@@@  @@@@   @@@@@@     @@@  @@@ @@@@@@@  "\
-            "###      ###  ### ######    ####  ######     ###  ### ######## "\
-            "###      ###  ### ### ###     ### ###        ###  ### ###  ### "\
-            ":.:      :.:  :.: :.:  :.:    :.: :.:        :.:  :.: :.:  :.: "\
-            "........ ........ ...   ... ..... .......    .......  .......  "\
-            "......   ......   ...   ..  ...   ......     .....    .....    "\
+instructstr = "(Shift + Tab) / (Tab) = <-/+ selected panel>... "\
+"arrow keys(up/down) = <-/+ panel content item selection> ... "\
+"arrow keys(left/right)... <-/+ textbox page> ... "\
+# (Shift + Tab) / (Tab) = < -/+ selected panel >... arrow keys(up/down) = < -/+ panel content item selection > ... arrow keys(left/right)... < -/+ textbox page > ...
+# 164
 
 # . . . . . . . . . . . . . . . . . M A I N . . . . . . . . . . . . . . . . . . 
 def cursedPyDbApp(scr):
-    #global cursePanels
-    global curseScreens
-    global screenKey
-    #global panelCounter 
-    global screenIndex
+    global curseScreens       # dictionary of curseScreens
+    global screenKey          # key to active screen in screen dictionary
 
-    global stdscr
-    global inputWin
+    global stdscr             # set panel vars dependant on other panel/screen
+                              #     curses library initialization
+    global inputWin           # inputWin gets user keyboard input and forwards
+                              #     to active screen
 
-    stdscr = scr
-    stdscr.refresh()
+    stdscr = scr               
+    stdscr.refresh()            
 
     curses.curs_set(0)
 
-    curseStyle.init_color_pairs()
-    curseStyle.init_style()
-    init_keys()
-    init_panels()
-    init_screens()
-    load_panels()             # var set that depended on instantiation of objs
-    init_panel_textboxes()    # var set that depended on instantiation of objs
-    load_screens()
+    curseStyle.init_color_pairs()   # setup curses.color_pair() values
+    curseStyle.init_style()         # setup curseStyles for use with UI objects
 
-    inputWin = curses.newwin(1,1,22,80)
+    init_keys()               # setup input key -> cmd dictionary, screen level
+    init_panels()             # instantiate & init panels, textboxes, items
+    init_screens()            # instantiate and initialize screen
 
-    #loop = True
-    endchar = False
+    load_panels()             # load panel,item vars that ref other panel/item
+    load_textboxes()          # assign textbox parents and basetext
+    load_screens()            # assign panels to screens
+
+    inputWin = curses.newwin(1,1,22,80) # input win is tucked away in LR corner
+    inputWin.keypad(1) 
+
     screenKey = "scr1"
     curseScreens[screenKey].showScreen()
     curses.doupdate()
 
     # MAIN PROGRAM LOOP
     while True:
-        inputc = inputWin.getch()
-        status = curseScreens[screenKey].update(str(inputc))
+        #1      get user input
+        input_i = inputWin.getch() 
+        #2      give input to screen, get status codes from panels/items
+        status = curseScreens[screenKey].update(input_i)
+        #3      update physical screen with virtual screen
         curses.doupdate()
+
+        #4      check for returned status codes
         if status != None:
+
+            #4A     status code
             stat_code = status[0:3]
+            #4B     status code value
             stat_val  = status[4:]
+
+            # command:      exit program
             if stat_code == "ext":
                 break
+            # command:      change screen to stat_val (origin: item)
             elif stat_code == "key":
                 screenKey = stat_val
                 curses.ungetch(ord("u"))
-                curses.doupdate()
+                #curses.doupdate()
+            # command:      change screen to stat_val (origin: curse screen)
             elif stat_code == "scr":
-                #curseScreens[screenKey].hideScreen(curseScreens[stat_val])
                 screenKey = stat_val
                 curses.ungetch(ord("u"))
-                curses.doupdate()
+                #curses.doupdate()
 
 
 # . . . . . . . . . . . . . . .  M A I N . E N D . . . . . . . . . . . . . . . 
 def init_keys():
     global inputKeys
-    inputKeys[str(ord("a"))] = "prev"
-    inputKeys[str(ord("d"))] = "next"
-    inputKeys[str(ord(" "))] = "select"
-    inputKeys[str(ord("x"))] = "quit"
-    inputKeys[str(ord("z"))] = "prevscr"
+    inputKeys[str(ord("a"))]            = "prev"
+    inputKeys[str(ord("d"))]            = "next"
+    inputKeys[str(ord(" "))]            = "select"
+    inputKeys[str(ord("\n"))]           = "return"
+    inputKeys[str(ord("x"))]            = "quit"
+    inputKeys[str(ord("z"))]            = "prevscr"
 
+    inputKeys[str(curses.KEY_BTAB)]     = "back"
+    inputKeys[str(ord("\t"))]           = "forward"
+    inputKeys[str(curses.KEY_LEFT)]     = "left"
+    inputKeys[str(curses.KEY_RIGHT)]    = "right"
+    inputKeys[str(curses.KEY_UP)]       = "up"
+    inputKeys[str(curses.KEY_DOWN)]     = "down"
+
+##############################################     1      #####################
+############################################# INIT PANELS  ####################
+##############################################            ##################### 
 def init_panels():
     global scr1_Panels
     global scr2_Panels
+    global scr3_Panels
+    global stdscr
     global titlestr
 
     ###########################################################################
@@ -199,13 +177,13 @@ def init_panels():
     scr1_Panels.append(CursePanel(**{
         "id"            : -1, 
         "name"          : "title panel",
-        "h"             : 22, #17
-        "w"             : 80, #63
-        "y"             : 1,  #3 
-        "x"             : 0, #10
+        "h"             : 22, 
+        "w"             : 80, 
+        "y"             : 1,  
+        "x"             : 0, 
         "textbox"       : CurseTextbox(**{
-            "y": 3,  #0 
-            "x": 10, #0 
+            "y": 3,  
+            "x": 9, 
             "h": 10, 
             "w": 63,
             "style": curseStyle.panelStyles["title_panel"]}),
@@ -219,11 +197,11 @@ def init_panels():
         "id"            : -1, 
         "name"          : "title_infobox",
         "h"             : 1, 
-        "w"             : 62,
-        "y"             : 20, 
-        "x"             : 10,
+        "w"             : 78,
+        "y"             : 21, 
+        "x"             : 1,
         "textbox"       : CurseTextbox(**{
-            "y": 0, "x": 0, "h": 1, "w": 62,
+            "y": 0, "x": 0, "h": 1, "w": 78,
             "style": curseStyle.panelStyles["infobox2"]}),
         "titleyx"       : (0,0),
         "title"         : "",
@@ -296,7 +274,7 @@ def init_panels():
         "id"            : -1, 
         "name"          : "middle2",
         "h"             : 12,
-        "w"             : 60,
+        "w"             : 69,
         "y"             : 6, 
         "x"             : 20,
         "textbox"       : None,
@@ -314,7 +292,7 @@ def init_panels():
         "y"             : 18, 
         "x"             : 0,
         "textbox"       : CurseTextbox(**{
-            "y": 0, "x": 1, "h": 3, "w": 57,
+            "y": 0, "x": 1, "h": 3, "w": 74,
             "style": curseStyle.panelStyles["infobox2"]}),
         "titleyx"       : (0,0),
         "title"         : "",
@@ -336,20 +314,236 @@ def init_panels():
         "dftstyle"      : curseStyle.panelStyles["default"],
         "focusable"     : False})) 
 
+    ###########################################################################
+    ##
+    ##    #### #### ####   #### #### #   #     ##
+    ##    #    #    #   #  #    #    ##  #    #  #
+    ##    #### #    ####   #### #### # # #      #
+    ##       # #    #   #  #    #    #  ##    #  #
+    ##    #### #### #    # #### #### #   #     ##
+    ##
+    ###########################################################################
+
+    ##      panel scr3-0 : user strip                       FOCUS
+    scr3_Panels.append(CursePanel(**{
+        "id"            : -1, 
+        "name"          : "user_strip",
+        "h"             : 1,
+        "w"             : 80,
+        "y"             : 0, 
+        "x"             : 0,
+        "titleyx"       : (0,0),
+        "title"         : "",
+        "textbox"       : None,
+        "style"         : curseStyle.panelStyles["user_strip"],
+        "dftstyle"      : curseStyle.panelStyles["default"],
+        "focusable"     : False})) 
+    ##      panel scr3-1 : UL art panel                     TXTBOX
+    scr3_Panels.append(CursePanel(**{
+        "id"            : -1, 
+        "name"          : "UL panel",
+        "h"             : 13, 
+        "w"             : 31, 
+        "y"             : 1,  
+        "x"             : 0, 
+        "textbox"       : CurseTextbox(**{
+            "y": 0,  #0 
+            "x": 0, #0 
+            "h": 13, 
+            "w": 30,
+            "style": curseStyle.panelStyles["dashscrbg"]}),
+        "titleyx"       : (1,0),
+        "title"         : "",
+        "style"         : curseStyle.panelStyles["dashscrbg"],
+        "dftstyle"      : curseStyle.panelStyles["default"],
+        "focusable"     : False}))
+    ##      panel scr3-2 : LL art panel                     TXTBOX
+    scr3_Panels.append(CursePanel(**{
+        "id"            : -1, 
+        "name"          : "LL panel",
+        "h"             : 13, 
+        "w"             : 31, 
+        "y"             : 12, 
+        "x"             : 0, 
+        "textbox"       : CurseTextbox(**{
+            "y": 0,  
+            "x": 0, 
+            "h": 12, 
+            "w": 31,
+            "style": curseStyle.panelStyles["dashscrbg"]}),
+        "titleyx"       : (1,0),
+        "title"         : "",
+        "style"         : curseStyle.panelStyles["dashscrbg"],
+        "dftstyle"      : curseStyle.panelStyles["default"],
+        "focusable"     : False}))
+    ##      panel scr3-3 : UR art panel                     TXTBOX
+    scr3_Panels.append(CursePanel(**{
+        "id"            : -1, 
+        "name"          : "UR panel",
+        "h"             : 13, 
+        "w"             : 31, 
+        "y"             : 1,   
+        "x"             : stdscr.getmaxyx()[1] - 29, 
+        "textbox"       : CurseTextbox(**{
+            "y": 0,  
+            "x": 0, 
+            "h": 12, 
+            "w": 31,
+            "style": curseStyle.panelStyles["dashscrbg"]}),
+        "titleyx"       : (1,0),
+        "title"         : "",
+        "style"         : curseStyle.panelStyles["dashscrbg"],
+        "dftstyle"      : curseStyle.panelStyles["default"],
+        "focusable"     : False}))
+    ##      panel scr3-4 : LR art panel                     TXTBOX
+    scr3_Panels.append(CursePanel(**{
+        "id"            : -1, 
+        "name"          : "LR panel",
+        "h"             : 13, 
+        "w"             : 31, 
+        "y"             : 12,   
+        "x"             : stdscr.getmaxyx()[1] - 29, 
+        "textbox"       : CurseTextbox(**{
+            "y": 0,   
+            "x": 0,  
+            "h": 12, 
+            "w": 31,
+            "style": curseStyle.panelStyles["dashscrbg"]}),
+        "titleyx"       : (1,0),
+        "title"         : "",
+        "style"         : curseStyle.panelStyles["dashscrbg"],
+        "dftstyle"      : curseStyle.panelStyles["default"],
+        "focusable"     : False}))
+    ##      panel scr3-5: infobox                           TXTBOX
+    scr3_Panels.append(CursePanel(**{
+        "id"            : -1, 
+        "name"          : "mid itemlist",
+        "h"             : 15, 
+        "w"             : 22, 
+        "y"             : 1,  
+        "x"             : 29,
+        "textbox"       : None,
+        "titleyx"       : (2,2),
+        "title"         : " ACCOUNT CREATION",
+        "style"         : curseStyle.panelStyles["middlepanes"],
+        "dftstyle"      : curseStyle.panelStyles["default"],
+        "focusable"     : True}))
+
+    ##      panel scr3-6: infobox                           TXTBOX
+    scr3_Panels.append(CursePanel(**{
+        "id"            : -1, 
+        "name"          : "infobox",
+        "h"             : 8,
+        "w"             : 22,
+        "y"             : 16, 
+        "x"             : 29,
+        "textbox"       : CurseTextbox(**{
+            "y": 1, "x": 1, "h": 7, "w": 20,
+            "style": curseStyle.panelStyles["infobox2"]}),
+        "titleyx"       : (0,0),
+        "title"         : "",
+        "style"         : curseStyle.panelStyles["infobox2"],
+        "dftstyle"      : curseStyle.panelStyles["default"],
+        "focusable"     : False}))
+
+##############################################      2     #####################
+############################################# INIT SCREENS ####################
+##############################################            ##################### 
+def init_screens():
+    global scr1_Panels
+    global scr2_Panels
+    global scr3_Panels
+    global stdscr
+    global curseScreens
+    global inputKeys
+
+    #################################################
+    ##
+    ##      #### #### ####   #### #### #   #    #       ###  ## # ###
+    ##      #    #    #   #  #    #    ##  #   ##        #   # ##  #
+    ##      #### #    ####   #### #### # # #    #       ###  #  #  #
+    ##         # #    #   #  #    #    #  ##    #
+    ##      #### #### #    # #### #### #   #   ###         
+    ##                                                 
+    ##                                                  
+    curseScreens["scr1"] = CurseScreen(
+        **{
+            "id"            : -1,
+            "name"          : "scr1",
+            "panels"        : [],#scr1_Panels,
+            "inputkeys"     : copy.deepcopy(inputKeys),
+            "findex"        : 1,
+            "canpanelchange": True,
+            "stdscr"        : stdscr,
+            "style"         : curseStyle.panelStyles["default"],
+            "usestyle"      : False
+        })
+
+    #################################################
+    ##
+    ##    #### #### ####   #### #### #   #     ##
+    ##    #    #    #   #  #    #    ##  #    #  #
+    ##    #### #    ####   #### #### # # #      #
+    ##       # #    #   #  #    #    #  ##     #
+    ##    #### #### #    # #### #### #   #    ####
+    ##
+    curseScreens["scr2"] = CurseScreen(
+        **{
+            "id"            : -1,
+            "name"          : "scr2",
+            "panels"        : [], #scr2_Panels,
+            "inputkeys"     : copy.deepcopy(inputKeys),
+            "findex"        : 0,
+            "canpanelchange": True,
+            "stdscr"        : stdscr,
+            "style"         : curseStyle.panelStyles["default"],
+            "usestyle"      : False
+        })
+
+    #################################################
+    ##
+    ##    #### #### ####   #### #### #   #     ##
+    ##    #    #    #   #  #    #    ##  #    #  #
+    ##    #### #    ####   #### #### # # #      #
+    ##       # #    #   #  #    #    #  ##    #  #
+    ##    #### #### #    # #### #### #   #     ##
+    ##
+    curseScreens["scr3"] = CurseScreen(
+        **{
+            "id"            : -1,
+            "name"          : "scr3",
+            "panels"        : [],#scr1_Panels,
+            "inputkeys"     : copy.deepcopy(inputKeys),
+            "findex"        : 5,
+            "canpanelchange": False,
+            "stdscr"        : stdscr,
+            "style"         : curseStyle.panelStyles["dashscrbg"],
+            "usestyle"      : True
+        })
+
+##############################################      3     #####################
+############################################# LOAD PANELS  ####################
+##############################################            ##################### 
+## For loading: 
+##      panel parents 
+##      infotext
+##      infotexttars
+##      items
 def load_panels():
     global curseScreens
     global scr1_Panels
     global scr2_Panels
+    global scr3_Panels
 
     ###########################################################################
     ##
-    ##      #### #### ####   #### #### #   #    #
-    ##      #    #    #   #  #    #    ##  #   ##
-    ##      #### #    ####   #### #### # # #    #
-    ##         # #    #   #  #    #    #  ##    #
-    ##      #### #### #    # #### #### #   #   ###
-    ##
-    ##      panel scr1-0 : user strip  
+    ##      #### #### ####   #### #### #   #    #    #   ##
+    ##      #    #    #   #  #    #    ##  #   ##    #   # #
+    ##      #### #    ####   #### #### # # #    #    ### ##
+    ##         # #    #   #  #    #    #  ##    #           ###  #  # #
+    ##      #### #### #    # #### #### #   #   ###          ###  # ## #
+    ##                                                      #    #  # ###
+    ##      panel scr1-0 : user strip                   
     ##      panel scr1-1 : title panel               
     ##      panel scr1-2 : infobox
     ##
@@ -372,7 +566,7 @@ def load_panels():
             "parent"        : scr1_Panels[1],
             "lindex"        : 0,
             "y"             : 15, #12
-            "x"             : 10,  #0
+            "x"             : 30,  #0
             "listheight"    : 4,  #4
             "listwidth"     : 20, #20
             "lbltext"       : "  log in",
@@ -391,14 +585,18 @@ def load_panels():
             "parent"        : scr1_Panels[1],
             "lindex"        : 1,
             "y"             : 16, #13 
-            "x"             : 10,  #0
+            "x"             : 30,  #0
             "listheight"    : 4,
             "listwidth"     : 20,
             "lbltext"       : "  create account",
             "infotext"      : "",
             "infotexttar"   : None,
             "focusable"     : True,
-            "onselect"      : None,
+            "onselect"      : { 
+                                "func"    : curseScreens["scr1"].hideScreen,
+                                "args"    : [curseScreens["scr3"]],
+                                "rstatus" : "key=scr3"
+                              },
             "style"         : curseStyle.panelStyles["title_menu"]
         }])
     ##      panel scr1-2 : title_infobox panel             TXTBOX      
@@ -410,12 +608,12 @@ def load_panels():
 
     ###########################################################################
     ##
-    ##    #### #### ####   #### #### #   #     ##
-    ##    #    #    #   #  #    #    ##  #    #  #
-    ##    #### #    ####   #### #### # # #      #
-    ##       # #    #   #  #    #    #  ##     #
-    ##    #### #### #    # #### #### #   #    ####
-    ##
+    ##      #### #### ####   #### #### #   #   ##    #   ##
+    ##      #    #    #   #  #    #    ##  #  #  #   #   # #
+    ##      #### #    ####   #### #### # # #    #    ### ##
+    ##         # #    #   #  #    #    #  ##   #            ###  #  # #
+    ##      #### #### #    # #### #### #   #  ####          ###  # ## #
+    ##                                                      #    #  # ###
     ##      panel scr2-0 : user strip  
     ##      panel scr2-1 : infobox panel 1                 
     ##      panel scr2-2 : left middle panel    
@@ -425,31 +623,31 @@ def load_panels():
     ##
     ###########################################################################
 
-    ##      panel scr2-0 : user strip  
+    ##      panel scr2-0 : user strip                       NONE
     scr2_Panels[0].load({
         "parent"            : None,
         "infotext"          : "",
         "infotexttar"       : None})
     scr2_Panels[0].load_items([])
-    ##      panel scr2-1: infobox panel 1                 
+    ##      panel scr2-1: infobox panel 1                   TEXTBOX PAGED
     scr2_Panels[1].load({
         "parent"            : None,
         "infotext"          : "",
         "infotexttar"       : None})
     scr2_Panels[1].load_items([])
-    ##      panel scr2-2: left middle panel    
+    ##      panel scr2-2: left middle panel                 TEXTTAR 
     scr2_Panels[2].load({
         "parent"            : None,
         "infotext"          : teststr1,
         "infotexttar"       : scr2_Panels[1]})
     scr2_Panels[2].load_items([])
-    ##      panel scr2-3: right middle panel          
+    ##      panel scr2-3: right middle panel                TEXTTAR ITEMS
     scr2_Panels[3].load({
         "parent"            : None,
         "infotext"          : teststr2,
         "infotexttar"       : scr2_Panels[1]})
-    scr2_Panels[3].load_items([
-        {   
+    scr2_Panels[3].load_items([{
+            # item list header   
             "parent"        : scr2_Panels[3],
             "lindex"        : -1,
             "y"             : 2, 
@@ -462,8 +660,7 @@ def load_panels():
             "focusable"     : False,
             "onselect"      : None,
             "style"         : scr2_Panels[3].style
-        },  # item list header
-        {   
+        },{ # item 1    
             "parent"        : scr2_Panels[3],
             "lindex"        : 0,
             "y"             : 3, 
@@ -476,8 +673,7 @@ def load_panels():
             "focusable"     : True,
             "onselect"      : None,
             "style"         : scr2_Panels[3].style
-        },  # item 1
-        {   
+        },{ # item 2  
             "parent"        : scr2_Panels[3],
             "lindex"        : 1,
             "y"             : 4, 
@@ -490,8 +686,7 @@ def load_panels():
             "focusable"     : True,
             "onselect"      : None,
             "style"         : scr2_Panels[3].style
-        },  # item 2
-        {   
+        },{ # item 3   
             "parent"        : scr2_Panels[3],
             "lindex"        : 2,
             "y"             : 5, 
@@ -503,102 +698,166 @@ def load_panels():
             "infotexttar"   : scr2_Panels[4],
             "focusable"     : True,
             "onselect"      : None,
-            "style"         : scr2_Panels[3].style
-        }]) # item 3
-    ##      panel scr2-4: infobox 2 panel        
+            "style"         : scr2_Panels[3].style}]) 
+    ##      panel scr2-4: infobox 2 panel                   TEXTBOX
     scr2_Panels[4].load({
         "parent"            : None,
         "infotext"          : "",
-        "infotexttar"       : None})
+        "infotexttar"       : None})                               
     scr2_Panels[4].load_items([])
-    ##      panel scr2-5: input strip  
+    ##      panel scr2-5: input strip                       NONE
     scr2_Panels[5].load({
         "parent"            : None,
         "infotext"          : "",
         "infotexttar"       : None})
     scr2_Panels[5].load_items([])
 
-def init_panel_textboxes():
+    ###########################################################################
+    ##
+    ##      #### #### ####   #### #### #   #    ##    #   ##
+    ##      #    #    #   #  #    #    ##  #   #  #   #   # #
+    ##      #### #    ####   #### #### # # #     #    ### ##
+    ##         # #    #   #  #    #    #  ##   #  #         ###  #  # #
+    ##      #### #### #    # #### #### #   #    ##          ###  # ## #
+    ##                                                      #    #  # ###
+    ###########################################################################
+
+    ##      panel scr3-0 : user strip                      FOCUS
+    scr3_Panels[0].load({
+        "parent"            : None,
+        "infotext"          : "",
+        "infotexttar"       : None})
+    scr3_Panels[0].load_items([])
+    ##      panel scr3-1 : 
+    scr3_Panels[1].load({
+        "parent"            : None,
+        "infotext"          : "",
+        "infotexttar"       : None})
+    scr3_Panels[1].load_items([])
+    ##      panel scr3-2 : 
+    scr3_Panels[2].load({
+        "parent"            : None,
+        "infotext"          : "",
+        "infotexttar"       : None})
+    scr3_Panels[2].load_items([])
+    ##      panel scr3-3 : 
+    scr3_Panels[3].load({
+        "parent"            : None,
+        "infotext"          : "",
+        "infotexttar"       : None})
+    scr3_Panels[3].load_items([])
+    ##      panel scr3-4 : 
+    scr3_Panels[4].load({
+        "parent"            : None,
+        "infotext"          : "",
+        "infotexttar"       : None})
+    scr3_Panels[4].load_items([])                          
+    ##      panel scr3-5 :                                  FOCUS ITEMS
+    scr3_Panels[5].load({
+        "parent"            : None,
+        "infotext"          : "",
+        "infotexttar"       : None})
+    scr3_Panels[5].load_items([{   
+        "parent"        : scr3_Panels[5],
+        "lindex"        : -1,
+        "y"             : 6, 
+        "x"             : 3,
+        "listheight"    : 4,
+        "listwidth"     : 10,
+        "lbltext"       : " ENTER USERNAME",
+        "infotext"      : 
+            "Input...",# a login name between 8 and 16 alphanumeric characters",
+        "infotexttar"   : scr3_Panels[6],
+        "focusable"     : True, #
+        "onselect"      : None, # write func to activate input trapper
+        "style"         : scr3_Panels[5].style
+        },{   
+        "parent"        : scr3_Panels[5],
+        "lindex"        : -1,
+        "y"             : 7, 
+        "x"             : 3,
+        "listheight"    : 4,
+        "listwidth"     : 10,
+        "lbltext"       : " ENTER PASSWORD",
+        "infotext"      :  "Input...",
+        "infotexttar"   : scr3_Panels[6],
+        "focusable"     : True, #
+        "onselect"      : None, # write func to activate input trapper
+        "style"         : scr3_Panels[5].style }])
+    ##      panel scr3-6 : 
+    scr3_Panels[6].load({
+        "parent"            : None,
+        "infotext"          : "",
+        "infotexttar"       : None})
+    scr3_Panels[6].load_items([])         
+
+
+##############################################      4     #####################
+############################################# LOAD TXTBOX   ####################
+##############################################            ##################### 
+def load_textboxes():
     global scr1_Panels
     global scr2_Panels
+    global scr3_Panels
+# (Shift + Tab) / (Tab) = < -/+ selected panel >... arrow keys(up/down) = < -/+ panel content item selection > ... arrow keys(left/right)... < -/+ textbox page > ...
 
     #################################################
     ##
-    ##      #### #### ####   #### #### #   #    #
-    ##      #    #    #   #  #    #    ##  #   ##
-    ##      #### #    ####   #### #### # # #    #
+    ##      #### #### ####   #### #### #   #    #        ### # # ### 
+    ##      #    #    #   #  #    #    ##  #   ##         #   #   #  
+    ##      #### #    ####   #### #### # # #    #         #  # #  #  
     ##         # #    #   #  #    #    #  ##    #
     ##      #### #### #    # #### #### #   #   ###
     ##
-    scr1_Panels[1].textbox.load(scr1_Panels[1], titlestr5)
+    scr1_Panels[1].textbox.load(scr1_Panels[1], asciiart.titlestr5)
     scr1_Panels[2].textbox.load(scr1_Panels[2], 
-        " Use q and e to navigate , space to select action, x to quit ")
+    "  Use keys.up and keys.down to navigate , space to select action, x to quit ")
 
     #################################################
     ##
-    ##    #### #### ####   #### #### #   #     ##
-    ##    #    #    #   #  #    #    ##  #    #  #
-    ##    #### #    ####   #### #### # # #      #
-    ##       # #    #   #  #    #    #  ##     #
-    ##    #### #### #    # #### #### #   #    ####
+    ##      #### #### ####   #### #### #   #     ##      ### # # ### 
+    ##      #    #    #   #  #    #    ##  #    #  #      #   #   #  
+    ##      #### #    ####   #### #### # # #      #       #  # #  # 
+    ##         # #    #   #  #    #    #  ##     #
+    ##      #### #### #    # #### #### #   #    ####
     ##
     scr2_Panels[1].textbox.load(scr2_Panels[1])
     scr2_Panels[4].textbox.load(scr2_Panels[4], 
-        "a , d: select prev\\next panel        z: return to title  "\
-        "w , s: view   prev\\next text page    x: quit             "\
-        "q , e: select prev\\next action                          ")
+    "[shift + tab , tab        : -\\+ screen panel ]  [z: previous screen] "\
+    "[keys.left   , keys.right : -\\+ textbox page ]  [x: quit           ] "\
+    "[keys.up     , keys.down  : -\\+ panel child  ]")\
 
+    #################################################
+    ##
+    ##      #### #### ####   #### #### #   #     ##      ### # # ### 
+    ##      #    #    #   #  #    #    ##  #    #  #      #   #   #  
+    ##      #### #    ####   #### #### # # #      #       #  # #  #  
+    ##         # #    #   #  #    #    #  ##    #  #
+    ##      #### #### #    # #### #### #   #     ##
+    ##
+    scr3_Panels[1].textbox.load(scr3_Panels[1], asciiart.artstr3)
+    scr3_Panels[2].textbox.load(scr3_Panels[2], asciiart.artstr3)
+    scr3_Panels[3].textbox.load(scr3_Panels[3], asciiart.artstr3)
+    scr3_Panels[4].textbox.load(scr3_Panels[4], asciiart.artstr3)
+    scr3_Panels[6].textbox.load(scr3_Panels[6], 
+        "press ENTER or SPACE bar "\
+        "to begin entry                   "\
+        "press ENTER to  submit entry")
+
+##############################################            #####################
+############################################# LOAD SCREENS ####################
+##############################################            ##################### 
 def load_screens():
     global curseScreens
     global scr1_Panels
     global scr2_Panels
+    global scr3_Panels
     #global inputKeys
     
     curseScreens["scr1"].panels = scr1_Panels
     curseScreens["scr2"].panels = scr2_Panels
-
-def init_screens():
-    global scr1_Panels
-    global scr2_Panels
-    global stdscr
-    global curseScreens
-    global inputKeys
-
-    #################################################
-    ##
-    ##      #### #### ####   #### #### #   #    #
-    ##      #    #    #   #  #    #    ##  #   ##
-    ##      #### #    ####   #### #### # # #    #
-    ##         # #    #   #  #    #    #  ##    #
-    ##      #### #### #    # #### #### #   #   ###
-    ##
-    curseScreens["scr1"] = CurseScreen(
-        **{
-            "id"            : -1,
-            "name"          : "scr1",
-            "panels"        : [],#scr1_Panels,
-            "inputkeys"     : copy.deepcopy(inputKeys),
-            "findex"        : 1,
-            "stdscr"        : stdscr
-        })
-
-    #################################################
-    ##
-    ##    #### #### ####   #### #### #   #     ##
-    ##    #    #    #   #  #    #    ##  #    #  #
-    ##    #### #    ####   #### #### # # #      #
-    ##       # #    #   #  #    #    #  ##     #
-    ##    #### #### #    # #### #### #   #    ####
-    ##
-    curseScreens["scr2"] = CurseScreen(
-        **{
-            "id"            : -1,
-            "name"          : "scr2",
-            "panels"        : [], #scr2_Panels,
-            "inputkeys"     : copy.deepcopy(inputKeys),
-            "findex"        : 0,
-            "stdscr"        : stdscr
-        })
+    curseScreens["scr3"].panels = scr3_Panels
+    curseScreens["scr3"].panels[5].focus()
 
 def clampval(minv, maxv, v):
     return max(minv, min(maxv, v))

@@ -9,19 +9,39 @@ class CurseScreen(object):
         self.inputkeys = kwargs["inputkeys"]
         self.findex = kwargs["findex"]  # findex is index of focused panel
       
+        self.canpanelchange = kwargs["canpanelchange"]
         self.prevscr = None
         self.stdscr = kwargs["stdscr"]
-        self.win = curses.newwin(22, 80, 0, 0)
+        self.yx = self.stdscr.getmaxyx()
+        self.win = curses.newwin(self.yx[0], self.yx[1], 0, 0)
+
+        self.usestyle = kwargs["usestyle"]
+        self.bg_ch = kwargs["style"].bg_chr
+        self.bg_atr = kwargs["style"].bg_atr
+        self.bg_clr = kwargs["style"].bg_clr
+
         self.isactive = False
         
-    def update(self, inputc):
-        self.win.attron(curses.color_pair(1))
-        for l in range (0, 22):
-            self.stdscr.hline(l, 0, 32, 80)
-        self.win.attroff(curses.color_pair(1))
+    def update(self, input_i):
+
+        # try to black out
+        if self.usestyle == True:
+            ch  = self.bg_ch
+            atr = self.bg_atr
+            clr = self.bg_clr
+        else:
+            ch  = 35
+            atr = 0
+            clr = curses.color_pair(1)
+
+        self.win.attron(clr | atr)
+        for l in range (0, self.yx[0]):
+            self.win.hline(l, 0, ch, self.yx[1])
+        self.win.attroff(clr | atr)
+        self.win.refresh()
 
         if self.isactive == True:
-            status = self.checkInput(inputc) # <-------------------- get status
+            status = self.checkInput(input_i) # <-------------------- GET status
             self.updatePanels()
             return status # <------------------------------------ RETURN status
 
@@ -29,22 +49,33 @@ class CurseScreen(object):
         for p in range(0, len(self.panels)):
             self.panels[p].update(force_refresh)
         
-    def checkInput(self, inputc):       
-        status = None                    
-        if inputc in self.inputkeys:
-            status = self.keymap(self.inputkeys[str(inputc)]) # <-stat from scr
+    def checkInput(self, input_i):       
+        status = None
+        if input_i == ord("u"):
+            return status
+
+        input_s = str(input_i)
+        # check input key against screen keymap                   
+        if input_s in self.inputkeys:
+            status = self.keymap(self.inputkeys[input_s]) # <- GET stat scr
             if status != None:
-                if status == "ext":
+                if   status      == "ext":
                     return status # <------------ RETURN status from screen cmd
                 elif status[0:3] == "scr":
                     return status # <------------ RETURN status from screen cmd
+        #else:
+        #    return status
+
+        # check input against panel input dictionaries
         if self.findex >= 0:
-            return self.panels[self.findex].check_input(inputc) # <-stat fm itm
+            return self.panels[self.findex].check_input(
+                self.inputkeys[input_s]) # <-stat fm itm
+            #return self.panels[self.findex].check_input(inputc) # <-stat fm itm
 
     def keymap(self, action):
-        if action == "prev":
+        if   action == "prev" or action == "back":
             self.prevPanel()
-        elif action == "next":
+        elif action == "next" or action == "forward":
             self.nextPanel()
         elif action == "quit":
             return self.quit()
@@ -53,6 +84,9 @@ class CurseScreen(object):
             return "scr="+self.prevscr.name
 
     def prevPanel(self):
+        if self.canpanelchange != True:
+            return
+
         prev_index = self.findex
 
         # findex = -2 : no focusable indices on screen
@@ -77,6 +111,8 @@ class CurseScreen(object):
         self.panels[self.findex].focus()
 
     def nextPanel(self):
+        if self.canpanelchange != True:
+            return
         prev_index = self.findex
         # findex = -2 : no focusable indices on screen
         # findex = -1 : focusable indices on screen, but no current focus
@@ -106,9 +142,17 @@ class CurseScreen(object):
         #self.stdscr.clear()
         #self.stdscr.refresh()
         #curses.doupdate()
+        self.win.move(0,0)
+        self.win.clrtobot()
+
+
+        # try to black out 
         self.win.attron(curses.color_pair(1))
         for l in range (0, 22):
             self.win.hline(l, 0, 32, 80)
+
+        
+
         self.win.attroff(curses.color_pair(1))
 
         if next_screen != None:
@@ -117,8 +161,8 @@ class CurseScreen(object):
     def showScreen(self, prev_scr=None):
         self.isactive = True
         self.prevscr = prev_scr
-        for p in range(0, len(self.panels)):
-            self.panels[p].panel.show() 
+        #for p in range(0, len(self.panels)):
+        #    self.panels[p].panel.show() 
         self.updatePanels()
 
     def quit(self):

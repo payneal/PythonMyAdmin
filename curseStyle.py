@@ -93,6 +93,7 @@ def init_style():
     vln = ord("|")
     sp = ord(" ")
     pls = ord("+")
+    cln = ord(":")
     NWcrner = u"\u250C"
     SWcrner = u"\u2514"
     SEcrner = u"\u2518"
@@ -423,6 +424,68 @@ def init_style():
         "ftxt_atr"      : None,
         "ftxt_clr"      : None,
         "ftxt_bg_clr"   : None
+    })
+    panelStyles["dashscrbg"] = CursePanelStyle({
+        "bg_chr"        : sp,
+        "bg_atr"        : 0,
+        "bg_clr"        : colors["BLU"],
+
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : 0,
+        "br_clr"        : colors["BLK"],
+
+        "ttl_atr"       : curses.A_BOLD,
+        "ttl_clr"       : colors["RMGA"],
+
+        "txt_atr"       : curses.A_BOLD,
+        "txt_clr"       : colors["BLU"],
+        "txt_bg_clr"    : None,
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : 0,
+        "fbg_clr"       : colors["RBLU"],
+
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : 0,
+        "fbr_clr"       : colors["BLK"],
+
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["CYN"],
+
+        "ftxt_atr"      : 0,
+        "ftxt_clr"      : 0,
+        "ftxt_bg_clr"   : colors["BLU"]
+    })
+    panelStyles["middlepanes"] = CursePanelStyle({
+        "bg_chr"        : sp,
+        "bg_atr"        : 0,
+        "bg_clr"        : colors["BLU"],
+
+        "br_chrs"       : list(borderSets["all_hash"]),
+        "br_atr"        : curses.A_BOLD,
+        "br_clr"        : colors["BLU"],
+
+        "ttl_atr"       : 0,
+        "ttl_clr"       : colors["WHT"],
+
+        "txt_atr"       : curses.A_BOLD,
+        "txt_clr"       : colors["CYN"],
+        "txt_bg_clr"        : colors["BLK"], 
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : 0,
+        "fbg_clr"       : colors["CYN"],
+
+        "fbr_chrs"      : list(borderSets["all_hash"]),
+        "fbr_atr"       : curses.A_BOLD,
+        "fbr_clr"       : colors["CYN"],
+
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["YLW"],
+
+        "ftxt_atr"      : curses.A_BOLD,
+        "ftxt_clr"      : colors["RYLW"],
+        "ftxt_bg_clr"   : colors["RYLW"], 
     })
 
 class CurseItemStyle(object):

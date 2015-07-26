@@ -19,8 +19,9 @@ class CursePanel(object):
         self.x = kwargs["x"]
 
         self.win = curses.newwin(self.height, self.width, self.y, self.x)           
-        self.panel = curses.panel.new_panel(self.win)  
-              
+        #self.panel = curses.panel.new_panel(self.win)  
+        #self.panel 
+             
         self.titleyx = kwargs["titleyx"]
         self.title = kwargs["title"]
             
@@ -73,25 +74,13 @@ class CursePanel(object):
             self.items.append(CurseItem(**item_list[i]))
         #self.findex = -2                                   # findex var created
 
-    def clear_panel(self):
-        #self.win.immedok(True)
-        #self.win.clearok(1)
-        self.panel.hide()
-        self.win.erase()
-        
-        #self.win.attron(curses.color_pair(1))
-        #for l in range (0, 22):
-        #    self.stdscr.hline(l, 0, 32, 80)
-        #if len(self.items) > 0:
-        #    for i in range (0, len(self.items)):
-        #        sel
-        #self.win.attroff(curses.color_pair(1))
+    def clear_panel(self):            
+        # try to black out
+        self.win.attron(curses.color_pair(1))
+        winsize = self.win.getmaxyx()
 
-        #if len(self.items) > 0:
-        #    pass#for i in range (0, len(self.items)):
-        #self.win.refresh()
-        #self.win.immedok(False)
-
+        self.win.move(0,0)
+        self.win.clrtobot()
 
     ###########################################################################
 
@@ -132,15 +121,17 @@ class CursePanel(object):
                 self.infotexttar.draw_textbox()
 
     #       getinput
-    def check_input(self, inputc):
+    def check_input(self, inputaction): #inputc):
 
         #
         #       textbox page prev/next: w/s
         #   
         if self.infotexttar != None:
-            if inputc == str(ord("w")):
+            #if inputc == str(ord("w")):
+            if inputaction == "left":
                 self.infotexttar.textbox.turnpage("prev")
-            elif inputc == str(ord("s")):
+            #elif inputc == str(ord("s")):
+            elif inputaction == "right":
                 self.infotexttar.textbox.turnpage("next")
             self.infotexttar.update(True)
 
@@ -148,16 +139,27 @@ class CursePanel(object):
         #       item list prev/next/select: q/e/space
         #
         items_len = len(self.items)
-        status = "none"
+        status = None
         if items_len > 0:
             prev_findex = self.findex
-            if inputc == str(ord("q")):      
+            
+            #if inputc == str(ord("q")):      
+            #    self.prevItem(prev_findex, items_len)
+            #elif inputc == str(ord("e")):
+            #    self.nextItem(prev_findex, items_len)
+            #elif inputc == str(ord(" ")):
+            if   inputaction == "up":      
                 self.prevItem(prev_findex, items_len)
-            elif inputc == str(ord("e")):
+            elif inputaction == "down":
                 self.nextItem(prev_findex, items_len)
-            elif inputc == str(ord(" ")):
+            elif inputaction == "select" or inputaction == "return":
                 if self.findex >= 0:
                     status = self.items[self.findex].select()
+
+            if status != None:
+                stat_code = status[0:3]
+                if stat_code == "key":
+                    return status
 
             if prev_findex != self.findex:
                 self.items[prev_findex].defocus()
@@ -304,9 +306,9 @@ class CursePanel(object):
 
     ###########################################################################
 
-    #       get_relxy
-    def get_relxy(self):                                                      
-        return (self.ppanel.y - self.y, self.ppanel.x - self.x)
+    ##       get_relxy
+    #def get_relxy(self):                                                      
+    #    return (self.ppanel.y - self.y, self.ppanel.x - self.x)
      
 # . . . . E N D . . . C L A S S . . . D E F I N I T I O N . . . . . . . . . . . 
 

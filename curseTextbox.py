@@ -54,8 +54,8 @@ class CurseTextbox(object):
         wr = textwrap.TextWrapper(
             width=int(self.width),
             replace_whitespace=False,
-            drop_whitespace=False,
-            break_on_hyphens=False)  
+            drop_whitespace=False)#,
+            #break_on_hyphens=False)  
         self.linetext = wr.wrap(text)        
         #self.linetext = textwrap.wrap(text, int(self.width), 
         #   drop_whitespace=False) 
