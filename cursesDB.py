@@ -116,7 +116,7 @@ def cursedPyDbApp(scr):
                     if fetch_status == "GOOD":
                         content = stat_val[19:]
                     else:
-                        content = "empty"
+                        content = "FAIL"
                     setaccount(fetch_status, field, content)
                   
             #                            14
@@ -130,7 +130,20 @@ def setaccount(fetch_status, field, content):
     global accountName
     global cursePanels
     accountName = content
-    #cursePanels[2][0].title= "IN ACCOUNT SET"
+    namelen = len(accountName)
+    ptitlelen = len(cursePanels[2][0].title)
+
+    if namelen > ptitlelen:
+        endr = namelen
+    else:
+        endr = ptitlelen
+
+    if ptitlelen > 0:
+        for r in range (0, endr):
+            cursePanels[2][0].win.delch(
+                cursePanels[2][0].titleyx[0],
+                cursePanels[2][0].titleyx[1]+r)
+
     cursePanels[2][0].title= accountName
     cursePanels[2][0].draw_title()
     cursePanels[2][0].win.refresh()

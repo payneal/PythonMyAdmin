@@ -98,6 +98,15 @@ class CurseItem(object):
         if echo== True:
             target.win.move(y,x)
 
+        # DEBUG %%%%%
+        self.parent.parent.panels[0].title=""
+        for r in range (0, max+1):       
+            self.parent.parent.panels[0].win.delch(
+                self.parent.parent.panels[0].titleyx[0],
+                self.parent.parent.panels[0].titleyx[1])
+        # DEBUG %%%%%
+
+
         target.focus()
         self.parent.parent.updatePanels()
         curses.doupdate()   
@@ -105,14 +114,15 @@ class CurseItem(object):
             input_i = self.parent.win.getch()
             
             if input_i == ord("\n"):                   # RETURN
-                if incount > min:
+                if incount >= min:
                     status = "GOOD"
                 else:
                     status = "SHRT"
                 incount = max
             elif input_i == 27:                        # ESCAPE
                 self.parent.win.nodelay(True)
-                n = self.parent.parent.inputwin.getch()
+                n = self.parent.win.getch()
+                #n = self.parent.parent.inputwin.getch()
                 self.parent.win.nodelay(False)
                 if n == -1:
                     status = "CNCL"
@@ -129,25 +139,31 @@ class CurseItem(object):
                 continue
             else:                                      # OTHER
                 status = self.validate(ok_format, input_i)
+                
+                # DEBUG %%%%%
                 self.parent.parent.panels[0].title = copy.copy(status)##
+                # DEBUG %%%%%
+                
                 if status == "GOOD":
                     outstr = outstr + chr(input_i)
                 else:
+                    status = "FAIL"
                     break
-                incount += 1
-                xpos += 1
+
                 if echo == True:               
                     if pw == True:
                         target.win.addch(y, xpos, ord("#"))
                     else:
                         target.win.addch(y, xpos, input_i)
+                incount += 1
+                xpos += 1
 
             if echo == True:
                 target.win.move(y, xpos)
             self.parent.parent.updatePanels()
             curses.doupdate()              
 
-        target.win.hline(y,x, prech, incount + 1)
+        target.win.hline(y,x, prech, max + 1)
         target.defocus()
         
         return status+":"+outstr
