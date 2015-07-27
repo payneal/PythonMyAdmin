@@ -149,21 +149,21 @@ class CursePanel(object):
             #    self.nextItem(prev_findex, items_len)
             #elif inputc == str(ord(" ")):
             if   inputaction == "up":      
-                self.prevItem(prev_findex, items_len)
+                status = self.prevItem(prev_findex, items_len)
             elif inputaction == "down":
-                self.nextItem(prev_findex, items_len)
+                status = self.nextItem(prev_findex, items_len)
             elif inputaction == "select" or inputaction == "return":
                 if self.findex >= 0:
                     status = self.items[self.findex].select()
 
-            if status != None:
-                stat_code = status[0:3]
-                if stat_code == "key":
-                    return status
-
-            if prev_findex != self.findex:
-                self.items[prev_findex].defocus()
-                self.items[self.findex].focus() 
+            #if status != None:
+            #    stat_code = status[0:3]
+            #    if stat_code == "scr":
+            #        return status
+            if status == "move":
+                if prev_findex != self.findex:
+                    self.items[prev_findex].defocus()
+                    self.items[self.findex].focus() 
             self.update_items()
         return status
 
@@ -184,6 +184,8 @@ class CursePanel(object):
             if self.items[self.findex].focusable == True:
                 break;
 
+        return "move"
+
     def prevItem(self, prev_findex, items_len):
         while True:
             if self.findex < 0:
@@ -198,6 +200,8 @@ class CursePanel(object):
             
             if self.items[self.findex].focusable == True:
                 break;
+
+        return "move"
 
     #       select_panel
     def select_panel(self):

@@ -2,6 +2,7 @@
 import curses
 import math
 import textwrap
+import string
 
 class CurseTextbox(object):
     """description of class"""
@@ -12,7 +13,7 @@ class CurseTextbox(object):
         self.x = kwargs["x"]        #   X RELATIVE TO PARENT WINDOW
 
         self.linetext = []
-
+        
         self.totalheight = 0
         self.pageheight = 0
         self.pages = 0
@@ -28,13 +29,14 @@ class CurseTextbox(object):
         if refresh == True:
             self.parent.win.refresh()
 
-    def load(self, parent, basetext=""):
-        self.onload(parent, basetext)
+    def load(self, parent, basetext="", centertxt=False):
+        self.onload(parent, basetext, centertxt)
 
     #       onload
-    def onload(self, parent, basetext):
+    def onload(self, parent, basetext, centertxt):
         self.parent = parent
         self.defaulttext = copy.copy(basetext)
+        self.centertext = centertxt
         self.resettext(basetext)
 
     def resettext(self, text):
@@ -51,15 +53,18 @@ class CurseTextbox(object):
 
     #       
     def texttolines(self, text):  
-        wr = textwrap.TextWrapper(
-            width=int(self.width),
-            replace_whitespace=False,
-            drop_whitespace=False)#,
-            #break_on_hyphens=False)  
-        self.linetext = wr.wrap(text)        
-        #self.linetext = textwrap.wrap(text, int(self.width), 
-        #   drop_whitespace=False) 
-
+     
+        if self.centertext == True:
+            self.linetext = textwrap.wrap(text, self.width)
+            for l in range (0, len(self.linetext)):
+                self.linetext[l] = textwrap.dedent(
+                    self.linetext[l]).center(self.width," ")
+        else:
+            wr = textwrap.TextWrapper(
+                width=self.width,
+                replace_whitespace=False,
+                drop_whitespace=False)
+            self.linetext = wr.wrap(text)    
     #
     def setpages(self):
         self.totalheight = len(self.linetext)
@@ -93,12 +98,19 @@ class CurseTextbox(object):
         self.cleartext()       
 
         for l in range(0, self.height):
-            # clear lines past last line if we're on last page
             if l + self.index >= len(self.linetext):
                 break
-            # draw line
+
             self.parent.win.addstr(self.y + l, self.x, 
                 self.linetext[self.index + l], txt_atrclr)
+
+            # draw line
+            #ln = copy.copy(self.linetext[self.index + l])
+            #if self.centertext == True:
+            #    ln.center(self.width)
+            #self.parent.win.addstr(self.y + l, self.x, 
+            #    ln, txt_atrclr)
+            #ln = None
                  
         if self.morecontent == True:
             self.parent.win.addstr(

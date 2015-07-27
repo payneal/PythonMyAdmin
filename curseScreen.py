@@ -55,24 +55,29 @@ class CurseScreen(object):
             return status
 
         input_s = str(input_i)
-        # check input key against screen keymap                   
         if input_s in self.inputkeys:
-            status = self.keymap(self.inputkeys[input_s]) # <- GET stat scr
+            actionstr = self.inputkeys[input_s]
+        else:
+            actionstr = "undefined"
+
+        if actionstr != "undefined":
+            status = self.screen_actions(actionstr) # <-- GET status from screen cmd
             if status != None:
-                if   status      == "ext":
-                    return status # <------------ RETURN status from screen cmd
-                elif status[0:3] == "scr":
-                    return status # <------------ RETURN status from screen cmd
-        #else:
-        #    return status
+                return status
+                #if   status      == "ext":
+                #    return status # <------------ RETURN status from screen cmd
+                #elif status[0:3] == "scr":
+                #    return status # <------------ RETURN status from screen cmd
 
-        # check input against panel input dictionaries
-        if self.findex >= 0:
-            return self.panels[self.findex].check_input(
-                self.inputkeys[input_s]) # <-stat fm itm
-            #return self.panels[self.findex].check_input(inputc) # <-stat fm itm
+            # check input against panel input dictionaries
+            if self.findex >= 0:
+                status = self.panels[self.findex].check_input(actionstr)
+                    #self.inputkeys[input_s]) # <-stat fm itm
+                #return self.panels[self.findex].check_input(inputc) # <-stat fm itm
+        return status
 
-    def keymap(self, action):
+
+    def screen_actions(self, action):
         if   action == "prev" or action == "back":
             self.prevPanel()
         elif action == "next" or action == "forward":

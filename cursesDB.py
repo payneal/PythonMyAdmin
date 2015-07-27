@@ -22,6 +22,8 @@ inputWin = None
 
 stdscr = None
 screenKey = None
+
+accountName = "BUGS"
   
 teststr1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "\
           "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut "\
@@ -115,10 +117,30 @@ def cursedPyDbApp(scr):
             elif stat_code == "scr":
                 screenKey = stat_val
                 curses.ungetch(ord("u"))
-                #curses.doupdate()
-
+            # command: get username
+            elif stat_code == "fnc":
+                if stat_val[0:8] == "SETACCNT":
+                    field = stat_val[9:13]
+                    fetch_status = stat_val[14:18] 
+                    if fetch_status == "GOOD":
+                        content = stat_val[19:]
+                    else:
+                        content = "empty"
+                    setaccount(fetch_status, field, content)
+                  
+            #                            14
+            #                          13 |   18
+            #         0       7 8 9  12 | | 17 |19
+            #         |       | | |   | | |  | | |
+            # "[fnc]=[func_code]:[field]:[stat]:[content]
 
 # . . . . . . . . . . . . . . .  M A I N . E N D . . . . . . . . . . . . . . . 
+def setaccount(fetch_status, field, field_content):
+    global accountName
+    accountName = field_content
+    scr3_Panels[0].title= accountName
+    
+
 def init_keys():
     global inputKeys
     inputKeys[str(ord("a"))]            = "prev"
@@ -147,8 +169,8 @@ def init_panels():
 
     ###########################################################################
     ##
-    ##      #### #### ####   #### #### #   #    #
-    ##      #    #    #   #  #    #    ##  #   ##
+    ##      #### #### ####   #### #### #   #    #          INIT PANELS
+    ##      #    #    #   #  #    #    ##  #   ##          
     ##      #### #    ####   #### #### # # #    #
     ##         # #    #   #  #    #    #  ##    #
     ##      #### #### #    # #### #### #   #   ###
@@ -211,7 +233,7 @@ def init_panels():
 
     ###########################################################################
     ##
-    ##    #### #### ####   #### #### #   #     ##
+    ##    #### #### ####   #### #### #   #     ##          INIT PANELS
     ##    #    #    #   #  #    #    ##  #    #  #
     ##    #### #    ####   #### #### # # #      #
     ##       # #    #   #  #    #    #  ##     #
@@ -316,7 +338,7 @@ def init_panels():
 
     ###########################################################################
     ##
-    ##    #### #### ####   #### #### #   #     ##
+    ##    #### #### ####   #### #### #   #     ##          INIT PANELS
     ##    #    #    #   #  #    #    ##  #    #  #
     ##    #### #    ####   #### #### # # #      #
     ##       # #    #   #  #    #    #  ##    #  #
@@ -463,7 +485,7 @@ def init_screens():
     ##      #    #    #   #  #    #    ##  #   ##        #   # ##  #
     ##      #### #    ####   #### #### # # #    #       ###  #  #  #
     ##         # #    #   #  #    #    #  ##    #
-    ##      #### #### #    # #### #### #   #   ###         
+    ##      #### #### #    # #### #### #   #   ###      INIT SCREENS
     ##                                                 
     ##                                                  
     curseScreens["scr1"] = CurseScreen(
@@ -485,7 +507,7 @@ def init_screens():
     ##    #    #    #   #  #    #    ##  #    #  #
     ##    #### #    ####   #### #### # # #      #
     ##       # #    #   #  #    #    #  ##     #
-    ##    #### #### #    # #### #### #   #    ####
+    ##    #### #### #    # #### #### #   #    ####      INIT SCREENS
     ##
     curseScreens["scr2"] = CurseScreen(
         **{
@@ -506,7 +528,7 @@ def init_screens():
     ##    #    #    #   #  #    #    ##  #    #  #
     ##    #### #    ####   #### #### # # #      #
     ##       # #    #   #  #    #    #  ##    #  #
-    ##    #### #### #    # #### #### #   #     ##
+    ##    #### #### #    # #### #### #   #     ##       INIT SCREENS
     ##
     curseScreens["scr3"] = CurseScreen(
         **{
@@ -574,9 +596,10 @@ def load_panels():
             "infotexttar"   : None,
             "focusable"     : True,
             "onselect"      : { 
-                                "func"    : curseScreens["scr1"].hideScreen,
-                                "args"    : [curseScreens["scr2"]],
-                                "rstatus" : "key=scr2"
+                                "func_type" : "other",
+                                "func"      : curseScreens["scr1"].hideScreen,
+                                "args"      : [curseScreens["scr2"]],
+                                "rinfo" : "key=scr2"
                               }, 
             "style"         : curseStyle.panelStyles["title_menu"]
         },
@@ -593,9 +616,10 @@ def load_panels():
             "infotexttar"   : None,
             "focusable"     : True,
             "onselect"      : { 
+                                "func_type": "other",
                                 "func"    : curseScreens["scr1"].hideScreen,
                                 "args"    : [curseScreens["scr3"]],
-                                "rstatus" : "key=scr3"
+                                "rinfo" : "scr=scr3"
                               },
             "style"         : curseStyle.panelStyles["title_menu"]
         }])
@@ -764,12 +788,17 @@ def load_panels():
         "x"             : 3,
         "listheight"    : 4,
         "listwidth"     : 10,
-        "lbltext"       : " ENTER USERNAME",
+        "lbltext"       : "USERNAME".center(18),
         "infotext"      : 
-            "Input...",# a login name between 8 and 16 alphanumeric characters",
+            "input a login name between 8 and 16 alphanumeric characters",
         "infotexttar"   : scr3_Panels[6],
         "focusable"     : True, #
-        "onselect"      : None, # write func to activate input trapper
+        "onselect"      : { 
+            "func_type": "self",
+            "func"     : "get_user_string",
+            "args"     : ["1100", 2, 8, True, 0, 0, False],
+            "rinfo"    : "fnc=SETACT:name:"
+                          },
         "style"         : scr3_Panels[5].style
         },{   
         "parent"        : scr3_Panels[5],
@@ -778,8 +807,9 @@ def load_panels():
         "x"             : 3,
         "listheight"    : 4,
         "listwidth"     : 10,
-        "lbltext"       : " ENTER PASSWORD",
-        "infotext"      :  "Input...",
+        "lbltext"       : "PASSWORD".center(18),
+        "infotext"      : 
+            "input a password between 8 and 16 alphanumeric characters",
         "infotexttar"   : scr3_Panels[6],
         "focusable"     : True, #
         "onselect"      : None, # write func to activate input trapper
@@ -840,9 +870,7 @@ def load_textboxes():
     scr3_Panels[3].textbox.load(scr3_Panels[3], asciiart.artstr3)
     scr3_Panels[4].textbox.load(scr3_Panels[4], asciiart.artstr3)
     scr3_Panels[6].textbox.load(scr3_Panels[6], 
-        "press ENTER or SPACE bar "\
-        "to begin entry                   "\
-        "press ENTER to  submit entry")
+        "select line and press ENTER to input name/password", True)
 
 ##############################################            #####################
 ############################################# LOAD SCREENS ####################
