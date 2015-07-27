@@ -58,14 +58,13 @@ class CurseItem(object):
 
     # onselect = { func: function(), kwargs: { argkey:argval...}
     def select(self):
-        status = ""
-        info = ""
+        status = status = self.onselect["rinfo"]
+
         if self.onselect["func_type"] == "other":
             self.onselect["func"](*self.onselect["args"])
-            status = self.onselect["rinfo"]
         elif self.onselect["func_type"] == "self":
             if self.onselect["func"] == "get_user_string":
-                info = "$" + self.get_usrstr(*self.onselect["args"])
+                info = self.get_usrstr(*self.onselect["args"])
                 status = status + info
         return status
 
@@ -84,79 +83,91 @@ class CurseItem(object):
             self.showinfotxt()
 
     # http://stackoverflow.com/questions/5977395/ncurses-and-esc-alt-keys
-    def get_usrstr(self, format, min=1, max=0, echo=False, 
-                   y=0, x=0, pw=False ):     
+    def get_usrstr(self, ok_format, target, min=1, max=0, 
+                   echo=False,y=0, x=0, pw=False):     
         incount = 0
         xpos = x
         status = "UNDF"
         outstr = ""
+        prepos = target.win.getyx()
+        prech = target.win.inch(y,x)
+
         if max == 0:
-            max = self.parent.win.getmaxyx()[1] - x
-        
-        prepos = self.parent.win.getyx()
+            max = target.win.getmaxyx()[1] - x
+
         if echo== True:
-            self.parent.win.move(y,x)
+            target.win.move(y,x)
 
-        while incount < max:
-
+        target.focus()
+        self.parent.parent.updatePanels()
+        curses.doupdate()   
+        while incount < max:               
             input_i = self.parent.win.getch()
             
             if input_i == ord("\n"):                   # RETURN
-                if incount > mn:
+                if incount > min:
                     status = "GOOD"
                 else:
                     status = "SHRT"
-                break
-            elif input_i == 27:                           # ESCAPE
+                incount = max
+            elif input_i == 27:                        # ESCAPE
                 self.parent.win.nodelay(True)
-                n = self.parent.win.getch()
-                self.parent.win.noodelay(False)
+                n = self.parent.parent.inputwin.getch()
+                self.parent.win.nodelay(False)
                 if n == -1:
                     status = "CNCL"
-                    break
-            elif input_i == curses.KEY_BACKSPACE:            # BACKSPACE                
+            elif input_i == curses.KEY_BACKSPACE:      # BACKSPACE                
                 if incount > 0:
                     xpos -= 1
-                    self.parent.win.delch(y, xpos)
+                    target.win.delch(y, xpos)
                     incount -= 1
-            elif input_i == curses.KEY_DC:                   # DELETE
-                self.parent.win.delch(y, xpos)
+                continue
+            elif input_i == curses.KEY_DC:             # DELETE
+                target.win.delch(y, xpos)
                 if incount > 0:
                     incount -= 1
+                continue
             else:                                      # OTHER
-                status = self.validate(format, input_i)
+                status = self.validate(ok_format, input_i)
+                self.parent.parent.panels[0].title = copy.copy(status)##
                 if status == "GOOD":
                     outstr = outstr + chr(input_i)
                 else:
-                    status = "FAIL"
                     break
-
                 incount += 1
                 xpos += 1
-                if echo == True:
-                    self.parent.win.move(y, xpos)
+                if echo == True:               
                     if pw == True:
-                        self.parent.win.addch(y, xpos, ord("#"))
+                        target.win.addch(y, xpos, ord("#"))
                     else:
-                        self.parent.win.addch(y, xpos, input_i)
+                        target.win.addch(y, xpos, input_i)
 
             if echo == True:
-                self.parent.win.move(y, xpos)
-              
+                target.win.move(y, xpos)
+            self.parent.parent.updatePanels()
+            curses.doupdate()              
+
+        target.win.hline(y,x, prech, incount + 1)
+        target.defocus()
+        
         return status+":"+outstr
            
     # format string: [alpha][digit][whitespace][punctuation][other]
     def validate(self, format, input_i):
-        if curses.ascii.isalpha(input_i) != int(format[0]):
-            return "ERR_ALPHA"
-        if curses.ascii.isdigit(input_i) != int(format[1]):
-            return "ERR_DIGIT"
-        if curses.ascii.isspace(input_i) != int(format[2]):
-            return "ERR_WSPACE"
-        if curses.ascii.ispunct(input_i) != int(format[3]):
-            return "ERR_PUNCT"
-        else:
-            return "OK"
+        
+        if format[0] == False:
+            if curses.ascii.isalpha(input_i) != False:
+                return "ERR_ALPHA"
+        if format[1] == False:
+            if curses.ascii.isdigit(input_i) != False:
+                return "ERR_ALPHA"
+        if format[2] == False:
+            if curses.ascii.isspace(input_i) != False:
+                return "ERR_ALPHA"
+        if format[3] == False:
+            if curses.ascii.ispunct(input_i) != False:
+                return "ERR_ALPHA"         
+        return "GOOD"
 
     ###########################################################################
 

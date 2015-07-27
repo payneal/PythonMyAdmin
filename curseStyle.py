@@ -186,12 +186,12 @@ def init_style():
         "br_atr"        : 0,
         "br_clr"        : colors["BLK"],
 
-        "ttl_atr"       : 0,
+        "ttl_atr"       : curses.A_BOLD,#
         "ttl_clr"       : colors["RGRN"],
 
-        "txt_atr"       : 0,
-        "txt_clr"       : colors["WHT"],
-        "txt_bg_clr"    : None,
+        "txt_atr"       : curses.A_BOLD,#
+        "txt_clr"       : colors["BLU"],
+        "txt_bg_clr"    : colors["BLU"],
 
         "fbg_chr"       : sp,
         "fbg_atr"       : 0,
@@ -421,9 +421,40 @@ def init_style():
         "fttl_atr"      : curses.A_BOLD,
         "fttl_clr"      : colors["CYN"],
 
-        "ftxt_atr"      : None,
-        "ftxt_clr"      : None,
-        "ftxt_bg_clr"   : None
+        "ftxt_atr"      : curses.A_BOLD,
+        "ftxt_clr"      : 0,
+        "ftxt_bg_clr"   : colors["RMGA"],
+    })
+    panelStyles["input_strip2"] = CursePanelStyle({
+        "bg_chr"        : dsh,
+        "bg_atr"        : 0,
+        "bg_clr"        : colors["BLU"],
+
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : 0,
+        "br_clr"        : colors["BLK"],
+
+        "ttl_atr"       : 0,
+        "ttl_clr"       : colors["BLK"],
+
+        "txt_atr"       : 0,
+        "txt_clr"       : colors["BLK"],
+        "txt_bg_clr"    : colors["BLK"],
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : 0,
+        "fbg_clr"       : colors["RRED"],
+
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : 0,
+        "fbr_clr"       : colors["BLK"],
+
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["CYN"],
+
+        "ftxt_atr"      : curses.A_BOLD,
+        "ftxt_clr"      : colors["RRED"],
+        "ftxt_bg_clr"   : colors["RRED"],
     })
     panelStyles["dashscrbg"] = CursePanelStyle({
         "bg_chr"        : sp,

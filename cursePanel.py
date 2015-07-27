@@ -11,7 +11,7 @@ class CursePanel(object):
         self.id = kwargs["id"]
         self.name = kwargs["name"]          
              
-        #self.parent = None                      # set in separate load function
+        self.parent = kwargs["parent"]                     
 
         self.height = kwargs["h"]
         self.width = kwargs["w"]
@@ -19,8 +19,6 @@ class CursePanel(object):
         self.x = kwargs["x"]
 
         self.win = curses.newwin(self.height, self.width, self.y, self.x)           
-        #self.panel = curses.panel.new_panel(self.win)  
-        #self.panel 
              
         self.titleyx = kwargs["titleyx"]
         self.title = kwargs["title"]
@@ -36,8 +34,8 @@ class CursePanel(object):
         self.focusable = kwargs["focusable"]     
         self.isfocused = False
 
-        #self.items = None                      # set in separate load function
-        self.findex = -2                        # set in separate load function
+        self.items = []                         
+        self.findex = -2                        
 
     ###########################################################################
 
@@ -63,16 +61,12 @@ class CursePanel(object):
         self.onload(**kwargs)
 
     def onload(self, **kwargs):
-        self.parent = kwargs["parent"]
         self.infotext = kwargs["infotext"]
         self.infotexttar = kwargs["infotexttar"]
 
     def load_items(self, item_list):
-        item_count = len(item_list)
-        self.items = []                                    # items list created
-        for i in range(0, item_count):
+        for i in range(0, len(item_list)):
             self.items.append(CurseItem(**item_list[i]))
-        #self.findex = -2                                   # findex var created
 
     def clear_panel(self):            
         # try to black out
@@ -121,52 +115,37 @@ class CursePanel(object):
                 self.infotexttar.draw_textbox()
 
     #       getinput
-    def check_input(self, inputaction): #inputc):
+    def check_input(self, actionstr):   
+        self.panel_actions(actionstr) # check for panel actions  < < < < < < < 
 
-        #
-        #       textbox page prev/next: w/s
-        #   
-        if self.infotexttar != None:
-            #if inputc == str(ord("w")):
-            if inputaction == "left":
-                self.infotexttar.textbox.turnpage("prev")
-            #elif inputc == str(ord("s")):
-            elif inputaction == "right":
-                self.infotexttar.textbox.turnpage("next")
-            self.infotexttar.update(True)
-
-        #
-        #       item list prev/next/select: q/e/space
-        #
         items_len = len(self.items)
         status = None
         if items_len > 0:
             prev_findex = self.findex
             
-            #if inputc == str(ord("q")):      
-            #    self.prevItem(prev_findex, items_len)
-            #elif inputc == str(ord("e")):
-            #    self.nextItem(prev_findex, items_len)
-            #elif inputc == str(ord(" ")):
-            if   inputaction == "up":      
+            if   actionstr == "up":      
                 status = self.prevItem(prev_findex, items_len)
-            elif inputaction == "down":
+            elif actionstr == "down":
                 status = self.nextItem(prev_findex, items_len)
-            elif inputaction == "select" or inputaction == "return":
+            elif actionstr == "slct" or actionstr == "rtrn":
                 if self.findex >= 0:
                     status = self.items[self.findex].select()
 
-            #if status != None:
-            #    stat_code = status[0:3]
-            #    if stat_code == "scr":
-            #        return status
             if status == "move":
                 if prev_findex != self.findex:
                     self.items[prev_findex].defocus()
                     self.items[self.findex].focus() 
+
             self.update_items()
         return status
 
+    def panel_actions(self, actionstr):
+        if self.infotexttar != None:
+            if actionstr == "left":
+                self.infotexttar.textbox.turnpage("prev")
+            elif actionstr == "rght":
+                self.infotexttar.textbox.turnpage("next")
+            self.infotexttar.update(True)
 
     def nextItem(self, prev_findex, items_len):
         # self.findex < 0 means no previous item was focused
@@ -183,7 +162,6 @@ class CursePanel(object):
             
             if self.items[self.findex].focusable == True:
                 break;
-
         return "move"
 
     def prevItem(self, prev_findex, items_len):
@@ -200,7 +178,6 @@ class CursePanel(object):
             
             if self.items[self.findex].focusable == True:
                 break;
-
         return "move"
 
     #       select_panel
