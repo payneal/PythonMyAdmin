@@ -35,7 +35,7 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 ##############################################      1       #####
 ############################################## INIT SCREENS #####
 ##############################################              #####
-def init_screens(stdscr, curseScreens, inputKeys, panelStyles, inwin):
+def init_screens(stdscr, curseScreens, inputKeys, inputKeys2, panelStyles, inwin):
 ###############################################################################
 ##                                                               INIT_SCREENS 1
 ##      SCREEN 0 (TITLE SCREEN)                                                   
@@ -186,8 +186,8 @@ def init_panels(stdscr, curseScreens, cursePanels, panelStyles):
     ])
 
 ###############################################################################
-##                                                            INIT_PANELS 2
-##      SCREEN 2                                        TBP
+##                                                            INIT_PANELS 1
+##      SCREEN 1                                        TBP
 ##                                              FCS ITM TBX NFO NFT 
 ##      panel scr1-0 : user strip               FCS     
 ##      panel scr1-1 : infobox panel 1                  TBP
@@ -303,7 +303,7 @@ def init_panels(stdscr, curseScreens, cursePanels, panelStyles):
     ]) 
 
 ###############################################################################
-##                                                            INIT_PANELS 3
+##                                                            INIT_PANELS 2
 ##      SCREEN 2                                        TBP
 ##                                              FCS ITM TBX NFO NFT 
 ##      panel scr2-0 :  user strip                      
@@ -477,7 +477,9 @@ def init_panels(stdscr, curseScreens, cursePanels, panelStyles):
 ##                                              FCS ITM TBX NFO NFT 
 ##      panel scr3-0 :  user strip                      
 ##      panel scr3-1 :  bg art panel                    TBX
-##            
+##      panel scr3-2 :  team panel                      TBX            
+##      panel scr3-3 :  info panel                      
+##
 ###############################################################################
 
     cursePanels.append([
@@ -502,14 +504,14 @@ def init_panels(stdscr, curseScreens, cursePanels, panelStyles):
     "id"            : -1, 
     "name"          : "BG panel",
     "parent"        : curseScreens[3],
-    "h"             : 23, 
-    "w"             : 80, 
+    "h"             : 22, 
+    "w"             : 62, 
     "y"             : 1,   
     "x"             : 0, 
     "textbox"       : CurseTextbox(**{
         "y": 0,   
         "x": 0,  
-        "h": 22, 
+        "h": 21, 
         "w": 62,
         "style": panelStyles["dashscrbg"]}),
     "titleyx"       : (0,0),
@@ -517,7 +519,47 @@ def init_panels(stdscr, curseScreens, cursePanels, panelStyles):
     "style"         : panelStyles["dashscrbg"],
     "dftstyle"      : panelStyles["default"],
     "focusable"     : False}),
+
+    ##      panel scr3-2 : team panel                  TBX
+    CursePanel(**{
+    "id"            : -1, 
+    "name"          : "team panel",
+    "parent"        : curseScreens[3],
+    "h"             : 21, 
+    "w"             : 19, 
+    "y"             : 1,   
+    "x"             : 61, 
+    "textbox"       : CurseTextbox(**{
+        "y": 6,   
+        "x": 1,  
+        "h": 12, 
+        "w": 17,
+        "style": panelStyles["middlepanes2"]}),
+    "titleyx"       : (0,0),
+    "title"         : "",
+    "style"         : panelStyles["middlepanes2"],
+    "dftstyle"      : panelStyles["default"],
+    "focusable"     : False}),
+
+    ##      panel scr3-3 : info strip                  
+    CursePanel(**{
+    "id"            : -1, 
+    "name"          : "info_strip",
+    "parent"        : curseScreens[3],
+    "h"             : 1,
+    "w"             : 80,
+    "y"             : 23, 
+    "x"             : 0,
+    "titleyx"       : (0,0),
+    "title"         : 
+        "Press Z to return to Title Screen, if you dare...".center(79),
+    "textbox"       : None,
+    "style"         : panelStyles["infobox2"],
+    "dftstyle"      : panelStyles["default"],
+    "focusable"     : False})
+
     ])
+
 
 
 #############################################      3      ####
@@ -563,7 +605,7 @@ def load_panels(curseScreens, cursePanels, panelStyles):
             "func_type" : "other",
             "func"      : curseScreens[0].hideScreen,
             "args"      : [curseScreens[1]],
-            "rinfo" : "schg=3"}, 
+            "rinfo" : "schg=1"}, 
         "style"         : panelStyles["title_menu"]
     },
     ##      ITEM: ACCOUNT CREATE                FCS 
@@ -586,7 +628,7 @@ def load_panels(curseScreens, cursePanels, panelStyles):
                             },
         "style"         : panelStyles["title_menu"]
     },
-    ##      ITEM: ACCOUNT CREATE                FCS 
+    ##      ITEM: ABOUT CURSEDB                 FCS 
     {
         "parent"        : cursePanels[0][1],
         "lindex"        : 1,
@@ -815,16 +857,6 @@ def load_panels(curseScreens, cursePanels, panelStyles):
     "infotext"          : "",
     "infotexttar"       : None})
 
-        ##      panel scr2-0 : user strip                      
-    cursePanels[2][0].load({
-    "infotext"          : "",
-    "infotexttar"       : None})
-
-    ##      panel scr2-1 : 
-    cursePanels[2][1].load({
-    "infotext"          : "",
-    "infotexttar"       : None})
-
 ###############################################################################
 ##                                                            INIT_PANELS 3
 ##      SCREEN 3                                        TBP
@@ -839,11 +871,20 @@ def load_panels(curseScreens, cursePanels, panelStyles):
     "infotext"          : "",
     "infotexttar"       : None})
 
-    ##      panel scr2-1 : 
+    ##      panel scr3-1 : 
     cursePanels[3][1].load({
     "infotext"          : "",
     "infotexttar"       : None})
 
+    ##      panel scr3-2 : 
+    cursePanels[3][2].load({
+    "infotext"          : "",
+    "infotexttar"       : None})
+
+    ##      panel scr3-3 : 
+    cursePanels[3][3].load({
+    "infotext"          : "",
+    "infotexttar"       : None})
 
 ##########################################      4         ####
 ########################################## LOAD TEXTBOXES ####
@@ -907,9 +948,21 @@ def load_textboxes(cursePanels):
 ##                                              FCS ITM TBX NFO NFT 
 ##      panel scr3-0 :  user strip                      
 ##      panel scr3-1 :  bg art panel                    TBX
-##            
+##      panel scr3-2 :  about panel                     TBX      
+##      panel scr3-3 :  info panel
+##
 ###############################################################################
     cursePanels[3][1].textbox.load(cursePanels[3][1], asciiart.titlestr3b)
+    cursePanels[3][2].textbox.load(cursePanels[3][2],
+        " The CursesDB Team:"\
+        " *--*-------*--* "\
+        " -- Ali Payne -- "\
+        " ---*-------*--- "\
+        "   Josh McQueen  "\
+        " ---*-------*--- "\
+        "   Tyler Hadley  "\
+        " *--*-------*--* ",
+        True)
 
 ###############################################      5     #####################
 ############################################## LOAD SCREENS ####################

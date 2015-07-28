@@ -487,7 +487,7 @@ def init_style():
         "ftxt_clr"      : 0,
         "ftxt_bg_clr"   : colors["BLU"]
     })
-    panelStyles["middlepanes"] = CursePanelStyle({
+    panelStyles["middlepanes2"] = CursePanelStyle({
         "bg_chr"        : sp,
         "bg_atr"        : 0,
         "bg_clr"        : colors["BLU"],

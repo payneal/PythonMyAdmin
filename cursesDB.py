@@ -18,6 +18,8 @@ curseScreens = []
 cursePanels = []
 
 inputKeys = {}
+inputKeys2 = {}
+
 inputWin = None
 
 screenKey = None
@@ -60,6 +62,8 @@ def cursedPyDbApp(scr):
     global cursePanels
     global screenKey          # key to active screen in screen dictionary
     global inputKeys
+    global inputKeys2
+
     #global stdscr             # set panel vars dependant on other panel/screen
                               #     curses library initialization
     global inputWin           # inputWin gets user keyboard input and forwards
@@ -78,7 +82,7 @@ def cursedPyDbApp(scr):
 
     init_keys()               # setup input key -> cmd dictionary, screen level
 
-    curseInit.init_screens(stdscr, curseScreens, inputKeys, 
+    curseInit.init_screens(stdscr, curseScreens, inputKeys, inputKeys2,
         curseStyle.panelStyles, inputWin)
     curseInit.init_panels(stdscr, curseScreens, cursePanels, curseStyle.panelStyles)
     curseInit.load_panels(curseScreens, cursePanels, curseStyle.panelStyles)
@@ -152,6 +156,7 @@ def setaccount(fetch_status, field, content):
 
 def init_keys():
     global inputKeys
+    global inputKeys2
     inputKeys[str(ord("a"))]            = "prev"
     inputKeys[str(ord("d"))]            = "next"
     inputKeys[str(ord(" "))]            = "slct"
@@ -165,6 +170,9 @@ def init_keys():
     inputKeys[str(curses.KEY_RIGHT)]    = "rght"
     inputKeys[str(curses.KEY_UP)]       = "up"
     inputKeys[str(curses.KEY_DOWN)]     = "down"
+
+    inputKeys2[str(ord("z"))]           = "pscr"
+
 
 def clampval(minv, maxv, v):
     return max(minv, min(maxv, v))
