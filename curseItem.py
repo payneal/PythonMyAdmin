@@ -11,9 +11,9 @@ class CurseItem(object):
          x: x origin, relative to parent's yx coordinates
     height: 
     width :
-
     
     """
+
     def __init__(self, **kwargs):
         self.globals         = kwargs["globals"] 
         self.parent                 = kwargs["parent"]

@@ -35,56 +35,58 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
            "molestiae consequatur, vel illum qui dolorem eum fugiat quo "\
            "voluptas nulla pariatur?"
 
-# 
-#                                                                           ITEM
-#                                                                     TEXTBOX  |
-#                                                                    PANEL  |  |
-# CurseScreen    | CursePanel                 | Curse   | Curse   SCREEN |  |  |  
+#         SEARCH INDEX: USE UNIQUE XX-XX-XX-XX CODE WITH CTRL-F TO FIND WHERE
+#                       COMPONENT IS CREATED
+#                                                                            ITEM
+#                                                                      TEXTBOX  |
+#                                                                     PANEL  |  |
+# CurseScreen    | CursePanel                 | Curse   | Curse   SCREEN  |  |  |  
 #                |                            | Textbox | Item         SC PA TB IT
-#                |                            |         |              !@#$
-#"title_screen"--|----------------------------|---------|--------------00-..-..-..
-#----------------|"title_scr_user_strip"------|---------|--------------00-00-..-..
-#----------------|"title_scr_panel"-----------|---------|--------------00-01-..-..
+#----------------|----------------------------|---------|--------------!!-!!-!!-!!
+#-title_screen---|----------------------------|---------|--------------00-..-..-..
+#----------------|-title_scr_user_strip-------|---------|--------------00-00-..-..
+#----------------|-title_scr_panel------------|---------|--------------00-01-..-..
 #----------------|----------------------------|(textbox)|--------------00-01-00-..
 #----------------|----------------------------|---------|login_link----00-01-..-00
 #----------------|----------------------------|---------|act_create_lk-00-01-..-01
 #----------------|----------------------------|---------|about_DB_link-00-01-..-02
-#----------------|"title_scr_infopanel"-------|---------|--------------00-02-..-..
+#----------------|-title_scr_infopanel--------|---------|--------------00-02-..-..
 #----------------|----------------------------|(textbox)|--------------00-02-00-..
-#----------------|"title_scr_background"------|---------|--------------00-03-..-..
-#"test_screen"---|----------------------------|---------|--------------01-..-..-..
-#----------------|"test_scr_user_strip"-------|---------|--------------01-00-..-..
-#----------------|"test_scr_upper_infopanel"--|---------|--------------01-01-..-..
+#----------------|-title_scr_background-------|---------|--------------00-03-..-..
+#-test_screen----|----------------------------|---------|--------------01-..-..-..
+#----------------|-test_scr_user_strip--------|---------|--------------01-00-..-..
+#----------------|-test_scr_upper_infopanel---|---------|--------------01-01-..-..
 #----------------|----------------------------|(textbox)|--------------01-01-00-..
-#----------------|"test_scr_left_mid_panel"---|---------|--------------01-02-..-..
-#----------------|"test_scr_r_mid_panel"------|---------|--------------01-03-..-..
-#----------------|"test_scr_lower_infopanel"--|---------|--------------01-04-..-..
+#----------------|-test_scr_left_mid_panel----|---------|--------------01-02-..-..
+#----------------|-test_scr_r_mid_panel-------|---------|--------------01-03-..-..
+#----------------|-test_scr_lower_infopanel---|---------|--------------01-04-..-..
 #----------------|----------------------------|(textbox)|--------------01-04-00-..
-#----------------|"test_scr_input_strip"------|---------|--------------01-05-..-..
-#"account_screen"|----------------------------|---------|--------------02-..-..-..
-#----------------|"acct_scr_user_strip"-------|---------|--------------02-00-..-..
-#----------------|"acct_scr_NW_text_art"------|---------|--------------02-01-..-..
+#----------------|-test_scr_input_strip-------|---------|--------------01-05-..-..
+#-account_screen-|----------------------------|---------|--------------02-..-..-..
+#----------------|-acct_scr_user_strip--------|---------|--------------02-00-..-..
+#----------------|-acct_scr_NW_text_art-------|---------|--------------02-01-..-..
 #----------------|----------------------------|(textbox)|--------------02-01-00-..
-#----------------|"acct_scr_SW_text_art"------|---------|--------------02-02-..-..
+#----------------|-acct_scr_SW_text_art-------|---------|--------------02-02-..-..
 #----------------|----------------------------|(textbox)|--------------02-02-00-..
-#----------------|"acct_scr_NE_text_art"------|---------|--------------02-03-..-..
+#----------------|-acct_scr_NE_text_art-------|---------|--------------02-03-..-..
 #----------------|----------------------------|(textbox)|--------------02-03-00-..
-#----------------|"acct_scr_SE_text_art"------|---------|--------------02-04-..-..
+#----------------|-acct_scr_SE_text_art-------|---------|--------------02-04-..-..
 #----------------|----------------------------|(textbox)|--------------02-04-00-..
-#----------------|"acct_scr_mid_back_panel"---|---------|--------------02-08-..-..
-#----------------|"acct_scr_mid_panel"--------|---------|--------------02-05-..-..
-#----------------|----------------------------|---------|--"username"--02-05-..-00
-#----------------|"acct_scr_infobox"----------|---------|--------------02-06-..-..
+#----------------|-acct_scr_mid_back_panel----|---------|--------------02-08-..-..
+#----------------|-acct_scr_mid_panel---------|---------|--------------02-05-..-..
+#----------------|----------------------------|---------|---username---02-05-..-00
+#----------------|----------------------------|---------|---password---02-05-..-00
+#----------------|-acct_scr_infobox-----------|---------|--------------02-06-..-..
 #----------------|----------------------------|(textbox)|--------------02-06-00-..
-#----------------|"acct_scr_input_strip"------|---------|--------------02-07-..-..
-#"about_screen"--|----------------------------|---------|--------------03-..-..-..
-#----------------|"about_scr_user_strip"------|---------|--------------03-00-..-..
-#----------------|"about_scr_bg_text_art"-----|---------|--------------03-01-..-..
+#----------------|-acct_scr_input_strip-------|---------|--------------02-07-..-..
+#-about_screen---|----------------------------|---------|--------------03-..-..-..
+#----------------|-about_scr_user_strip-------|---------|--------------03-00-..-..
+#----------------|-about_scr_bg_text_art------|---------|--------------03-01-..-..
 #----------------|----------------------------|(textbox)|--------------03-01-00-..
-#----------------|"about_scr_team_txt_panel"--|---------|--------------03-02-..-..
+#----------------|-about_scr_team_txt_panel---|---------|--------------03-02-..-..
 #----------------|----------------------------|(textbox)|--------------03-02-00-..
-#----------------|"about_scr_info_strip"------|---------|--------------03-03-..-..
-#"login_screen"--|----------------------------|---------|--------------04-..-..-..
+#----------------|-about_scr_info_strip-------|---------|--------------03-03-..-..
+#-login_screen---|----------------------------|---------|--------------04-..-..-..
 
 #--- TITLE SCREEN: "title_screen"-----------------------------------00-..-..-..
 #--- TEST SCREEN: "test_screen"-------------------------------------01-..-..-..
@@ -182,23 +184,23 @@ def init_panels(curse_container):
     global_curseDB = curse_container["global_curseDB"]
                                                                          
 #"title_screen"----00-..-..-..            
-                    #  y, x, h, w
-    # 00-03-..-..
-    title_screen.panels["title_scr_background"]               = CursePanel(**{
+  
+    # 00-03-..-..      y, x, h, w
+    title_screen.panels["title_scr_background"]            = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : title_screen,
     "size"          : (0, 0, 24, 80),   
     "style"         : curseStyles["title_panel"]})
 
     # 00-00-..-..
-    title_screen.panels["title_scr_user_strip"]               = CursePanel(**{
+    title_screen.panels["title_scr_user_strip"]            = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : title_screen,
     "size"          : (0, 0, 1, 80), 
     "style"         : curseStyles["user_strip"]})
 
     # 00-01-..-..
-    title_screen.panels["title_scr_panel"]                    = CursePanel(**{
+    title_screen.panels["title_scr_panel"]                 = CursePanel(**{
     "globals"       : global_curseDB,
     "act_msg_map"   : panel_msg_map,
     "parent"        : title_screen,
@@ -207,7 +209,7 @@ def init_panels(curse_container):
     "focusable"     : True})
 
     # 00-02-..-..
-    title_screen.panels["title_scr_infopanel"]                = CursePanel(**{
+    title_screen.panels["title_scr_infopanel"]             = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : title_screen,
     "size"          : (21, 0, 1, 80),   
@@ -223,21 +225,22 @@ def init_panels(curse_container):
         "title_scr_infopanel"]
 
 #"test_screen"------------------------------------------------------01-..-..-..
-                    #  y, x, h, w
-    test_screen.panels["test_scr_user_strip"]                 = CursePanel(**{
+
+    # 01-00-..-..      y, x, h, w
+    test_screen.panels["test_scr_user_strip"]              = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : test_screen,
     "size"          : (0, 0, 1, 80),  
     "style"         : curseStyles["user_strip"]})
-     
-    test_screen.panels["test_scr_upper_infopanel"]            = CursePanel(**{
+    # 01-01-..-.. 
+    test_screen.panels["test_scr_upper_infopanel"]         = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : test_screen,    
     "size"          : (1, 0, 5, 80),
     "style"         : curseStyles["infobox1"],    
     "title"         : ("(INFOBOX 1)", 0, 1)})
-
-    test_screen.panels["test_scr_left_mid_panel"]             = CursePanel(**{
+    # 01-02-..-..
+    test_screen.panels["test_scr_left_mid_panel"]          = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : test_screen,
     "act_msg_map"   : panel_msg_map,
@@ -247,8 +250,8 @@ def init_panels(curse_container):
     "title"         : ("(LEFT MAIN PANE)", 0, 1), # string, y, x  
     "info"          : teststr1,
     "infotar"       : "test_scr_upper_infopanel"})
-
-    test_screen.panels["test_scr_r_mid_panel"]            = CursePanel(**{
+    # 01-03-..-..
+    test_screen.panels["test_scr_r_mid_panel"]             = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : test_screen,
     "act_msg_map": panel_msg_map,
@@ -258,14 +261,14 @@ def init_panels(curse_container):
     "title"         : ("(RIGHT MAIN PANE)", 0, 1),
     "info"          : teststr2,
     "infotar"       : "test_scr_upper_infopanel"})
-
-    test_screen.panels["test_scr_lower_infopanel"]            = CursePanel(**{
+    # 01-04-..-..
+    test_screen.panels["test_scr_lower_infopanel"]         = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : test_screen,
     "size"          : (18, 0, 4, 80),
     "style"         : curseStyles["infobox2"]})
-
-    test_screen.panels["test_scr_input_strip"]                = CursePanel(**{
+    # 01-05-..-..
+    test_screen.panels["test_scr_input_strip"]             = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : test_screen,
     "size"          : (22, 0, 1, 80),
@@ -283,45 +286,46 @@ def init_panels(curse_container):
         "test_scr_lower_infopanel",
         "test_scr_input_strip"]
 
-#"account_screen"---------------------------------------------------02-..-..-..                                
-                    #  y, x, h, w
+#"account_screen"---------------------------------------------------02-..-..-..   
+                             
+    # 02-00-..-..
     account_screen.panels["acct_scr_user_strip"]           = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "size"          : (0, 0, 1, 80),  
     "style"         : curseStyles["user_strip"]})
-
+    # 02-01-..-..
     account_screen.panels["acct_scr_NW_text_art"]          = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "size"          : (1, 0, 13, 30),  # w.31->w.29
     "style"         : curseStyles["dashscrbg"]})
-
+    # 02-02-..-..
     account_screen.panels["acct_scr_SW_text_art"]          = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "size"          : (12, 0, 13, 30), # w.31->w.29
     "style"         : curseStyles["dashscrbg"]})
-
+    # 02-03-..-..
     account_screen.panels["acct_scr_NE_text_art"]          = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "size"          : (1, 51, 13, 30),
     "style"         : curseStyles["dashscrbg"]})
-
+    # 02-04-..-..
     account_screen.panels["acct_scr_SE_text_art"]          = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "size"          : (12, 51, 13, 30), 
     "style"         : curseStyles["dashscrbg"]})
-                    #  y, x, h, w
+    # 02-08-..-..
     account_screen.panels["acct_scr_mid_back_panel"]       = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "size"          : (9, 29, 8, 22),
     "style"         : curseStyles["middlepanes"]})
-
-    account_screen.panels["acct_scr_mid_panel"]         = CursePanel(**{
+    # 02-05-..-..
+    account_screen.panels["acct_scr_mid_panel"]            = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "act_msg_map": panel_msg_map,
@@ -329,13 +333,13 @@ def init_panels(curse_container):
     "title"         : ( "ACCOUNT CREATION", 2, 3), 
     "style"         : curseStyles["middlepanes"],   
     "focusable"     : True})
-
+    # 02-06-..-..
     account_screen.panels["acct_scr_infobox"]              = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
     "size"          : (17, 29, 7, 22),
     "style"         : curseStyles["infobox2"]})
-
+    # 02-07-..-..
     account_screen.panels["acct_scr_input_strip"]          = CursePanel(**{
     "globals"       : global_curseDB,
     "parent"        : account_screen,
@@ -357,25 +361,25 @@ def init_panels(curse_container):
         "acct_scr_input_strip"]
                                                                           
 #"about_screen"-----------------------------------------------------03-..-..-..                                                                            
-
+    # 03-00-..-..
     about_screen.panels["about_scr_user_strip"]               = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : about_screen,
     "size"          : (0, 0, 1, 80),
     "style"         : curseStyles["user_strip"]})
-
+    # 03-01-..-..
     about_screen.panels["about_scr_bg_text_art"]              = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : about_screen,
     "size"          : (1, 0, 22, 61), # w: 62->61
     "style"         : curseStyles["dashscrbg"]})
-
+    # 03-02-..-..
     about_screen.panels["about_scr_team_txt_panel"]          = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : about_screen,
     "size"          : (1, 61, 21, 19),
     "style"         : curseStyles["middlepanes2"]})
-
+    # 03-03-..-..
     about_screen.panels["about_scr_info_strip"]               = CursePanel(**{
     "globals": global_curseDB,
     "parent"        : about_screen,
@@ -512,7 +516,7 @@ def init_items(curse_container):
     "style"         : account_panels["acct_scr_mid_panel"].style,
     "label"         : "USERNAME".center(16),
     "info"          : "input between 4 and 10 alphanumeric char "\
-                      "hit ENTER to submit",
+                      "press SPACE BAR to begin entry",
     "infotar"       : "acct_scr_infobox",
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
@@ -533,7 +537,7 @@ def init_items(curse_container):
     "style"         : account_panels["acct_scr_mid_panel"].style,
     "label"         : "PASSWORD".center(16),
     "info"          : "input between 4 and 10 alphanumeric char "\
-                      "hit ENTER to submit",
+                      "press SPACE BAR to begin entry",
     "infotar"       : "acct_scr_infobox",
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
@@ -568,8 +572,8 @@ def init_textboxes(curse_container):
     #login_panels   = curse_container["screens"]["login_screen"].panels
 
 #"title_screen"-----------------------------------------------------00-..-..-..
-    #                      y, x, h, w      
-    # 00-01-00-..
+    
+    # 00-01-00-..          y, x, h, w  
     title_panels["title_scr_panel"].textbox          = CurseTextbox(**dict(
     parent      = title_panels["title_scr_panel"],
     base_text    = asciiart.titlestr5,
@@ -584,8 +588,8 @@ def init_textboxes(curse_container):
             style       = curse_styles["infobox2"]))
 
 #"test_screen"------------------------------------------------------01-..-..-..
-    #                      y, x, h, w      
-    # 01-01-00-..
+        
+    # 01-01-00-..          y, x, h, w 
     test_panels["test_scr_upper_infopanel"].textbox  = CurseTextbox(**dict(
             parent      = test_panels["test_scr_upper_infopanel"],
             base_text    = "",
@@ -602,8 +606,8 @@ def init_textboxes(curse_container):
             style       = curse_styles["infobox2"]))
 
 #"account_screen"---------------------------------------------------02-..-..-..
-    #                      y, x, h, w                          
-    # 02-01-00-..
+                             
+    # 02-01-00-..          y, x, h, w 
     account_panels["acct_scr_NW_text_art"].textbox   = CurseTextbox(**dict(
             parent      = account_panels["acct_scr_NW_text_art"],
             base_text    = asciiart.artstr3,
