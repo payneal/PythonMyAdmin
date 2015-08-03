@@ -1,165 +1,166 @@
-﻿import curses
+﻿import copy
+import curses
 
 class CurseScreen(object):
     """description of class"""
     def __init__(self, **kwargs):
-        self.id = kwargs["id"]
-        self.name = kwargs["name"]
-        self.panels = kwargs["panels"]
-        self.inputkeys = kwargs["inputkeys"]
-        self.findex = kwargs["findex"]  # findex is index of focused panel
-      
-        self.canpanelchange = kwargs["canpanelchange"]
-        self.prevscr = None
+        self.globals            = kwargs["globals"]
+        self.key_action_map     = kwargs["key_action_map"]
+        self.act_msg_map        = kwargs["act_msg_map"]
+        self.can_panel_change   = kwargs["can_panel_change"]
 
-        self.stdscr = kwargs["stdscr"]
-        self.yx = self.stdscr.getmaxyx()
+        self.style              = kwargs["style"]
 
-        self.inputwin = kwargs["inputwin"]
-        self.win = curses.newwin(self.yx[0], self.yx[1], 0, 0)
+        self.panels             = {}    # dictionary of cursePanels
+        self.panel_indexes      = []    # list of panel keys in intended order
+        self.panel_count        = 0     # number of panaels
 
-        self.usestyle = kwargs["usestyle"]
-        self.bg_ch = kwargs["style"].bg_chr
-        self.bg_atr = kwargs["style"].bg_atr
-        self.bg_clr = kwargs["style"].bg_clr
+        self.is_panel_focused   = False # is a panel focused on the screen now
+        self.focus_key          = ""    # key for current focused panel
+        self.focus_index        = -1    # focus panel key index in panel_indexes
+        self.focus_panel        = None  # current focused panel
 
-        self.isactive = False
+        if "default_focus_key" in kwargs: 
+              self.default_focus_key = kwargs["default_focus_key"]
+        else: self.default_focus_key = ""
+
+        self.is_active          = False
+        self.update_screen      = False
         
-    def update(self, input_i):
-
-        # try to black out $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $  
-        if self.usestyle == True:
-            ch  = self.bg_ch
-            atr = self.bg_atr
-            clr = self.bg_clr
-        else:
-            ch  = 35
-            atr = 0
-            clr = curses.color_pair(1)
-
-        self.win.attron(clr | atr)
-        for l in range (0, self.yx[0]):
-            self.win.hline(l, 0, ch, self.yx[1])
-        self.win.attroff(clr | atr)
-        self.win.refresh()
-        # try to black out $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $  
-
-        if self.isactive == True:
-            status = self.checkInput(input_i) # <----------------- CHECK INPUT
-            self.updatePanels()
-            return status
-
-    def updatePanels(self, force_refresh=False):
-        for p in range(0, len(self.panels)):
-            self.panels[p].update(force_refresh)
+    def checkInput(self, input):
+        """ checks if input triggers action in screen or its focused panel """
+        if self.is_active != True: return
+        if input not in self.key_action_map: return
         
+        msg = None
+        act_key = self.key_action_map[input]
+       
+        if act_key in self.act_msg_map: 
+            msg = copy.deepcopy(self.act_msg_map[act_key])
+        elif self.focus_panel != None: #
+            msg = self.focus_panel.checkInput(act_key)
+
+        self.readMessage(msg)
+        return msg
+             
+    def updateScreen(self): self.updatePanels()
+
+    def readMessage(self, msg):
+        if msg == None: return
+        
+        if msg["msg_status"] == "unread":
+            if msg["recv_layer"] == "screen" or msg["recv_layer"] == "self":
+                if msg["on_recv"] == "call_function":
+
+                    func = getattr(self, msg["recv_act"])
+                    if msg["recv_args"] == None:  
+                        msg["ret_info"] = func()
+                    else:        
+                        msg["ret_info"] = func(*msg["recv_args"])
+
+                    msg["msg_status"] = "read"
+        return msg
+
+    #/\ SCREEN FUNCTIONS /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\        
  
-    def checkInput(self, input_i): # < < < < < < < < < < < < < < < < < < < < < 
-        status = None
-        if input_i == ord("u"):
-            return status
+    def showScreen(self):
+        """ activates screen, its default focus panel, and updates all panels"""
+        self.is_active = True
+        self.drawPanels()
+        self.focusPanel(self.default_focus_key) #
+        self.updatePanels()
+                  
+    def hideScreen(self):
+        self.is_active = False      
+        for panel_key in self.panels:       
+            self.panels[panel_key].clearPanel()
+         
+    #/\ PANEL FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
-        input_s = str(input_i)
-        if input_s in self.inputkeys:
-            actionstr = self.inputkeys[input_s]
-        else:
-            actionstr = "undefined"
+    def drawPanels(self):
+        """ draws all panels to screen """
+        for i in range(0, self.panel_count):
+            self.panels[self.panel_indexes[i]].draw()
 
-        if actionstr != "undefined":
-            # check for screen actions < < < < < < < < < < < < < < < < < < < < 
-            status = self.screen_actions(actionstr) 
-            if status != None:
-                return status
-            # if no screen actions, check for panel actions  < < < < < < < < < 
-            if self.findex >= 0:
-                status = self.panels[self.findex].check_input(actionstr)
-        return status
+        #for panel_key in self.panels:
+        #    self.panels[panel_key].draw()
 
+    def updatePanels(self): 
+        """ flags changed panels to be redrawn to screen by curses.doupdate """
+        for i in range(0, self.panel_count):
+            self.panels[self.panel_indexes[i]].update()
 
-    def screen_actions(self, action):
-        if   action == "prev" or action == "back":
-            self.prevPanel()
-        elif action == "next" or action == "fwrd":
-            self.nextPanel()
-        elif action == "quit":
-            return "exit"
-        elif action == "pscr":
-            self.hideScreen(self.prevscr)
-            return "schg="+str(self.prevscr.id)
+        #for panel_key in self.panels:
+        #    self.panels[panel_key].update() 
+
+    def getPanel(self, panel_name):
+        """ returns panel if it's in the screen's panel collection """
+        if panel_name in self.panels: return self.panels[panel_name]
+        else: return None
+
+    def focusPanel(self, panel_key):
+        """ apply focus to screen child panel """
+        if panel_key not in self.panels: return
+
+        self.focus_panel = self.panels[panel_key]
+        self.focus_panel.focus()     
+        self.focus_index = self.panel_indexes.index(panel_key)
+        self.focus_key = panel_key
+        self.is_panel_focused = True
+
+    def defocusPanel(self, panel_key):
+        """ remove focus from screen child panel """
+        if panel_key not in self.panels: return 
+                                
+        self.focus_panel.defocus()
+        self.focus_panel = None     
+        self.focus_index = -1
+        self.focus_key = ""
+        self.is_panel_focused = False
 
     def prevPanel(self):
-        if self.canpanelchange != True:
-            return
+        """ defocus current panel in focus indices and focus panel after it"""
+        if self.can_panel_change != True: return
 
-        prev_index = self.findex
-
-        # findex = -2 : no focusable indices on screen
-        # findex = -1 : focusable indices on screen, but no current focus
+        prev_focus_index = self.focus_index
+        prev_focus_key   = self.focus_key
         while True:
-            self.findex -= 1     
-           
-            if self.findex == prev_index:          # back @ start       
-                return                             
-            elif self.findex == -3:                # (-2 - 1) = -3  
-                return                                   
-            elif self.findex == -2:                # (-1 - 1) = -2   
-                self.findex = 0                             
-            elif self.findex == -1:                # was @first index, wrap
-                self.findex = len(self.panels) - 1  
+            if self.focus_index < 0: 
+                self.focus_index = 0
+            else: 
+                self.focus_index -= 1    
+            
+            if   self.focus_index == prev_focus_index: return # @ start again                                      
+            elif self.focus_index == -1:
+                self.focus_index  = self.panel_count - 1
+            
+            new_focus_key = self.panel_indexes[self.focus_index]
+            if self.panels[new_focus_key].focusable == True:              
+                break
 
-            if self.panels[self.findex].focusable == True:
-                break               # quit looking if focusable panel found
-
-        if prev_index >= 0:
-            self.panels[prev_index].defocus()
-        self.panels[self.findex].focus()
+        if prev_focus_index >= 0:   
+            self.defocusPanel(prev_focus_key)
+        self.focusPanel(new_focus_key)
 
     def nextPanel(self):
-        if self.canpanelchange != True:
-            return
+        """ defocus current panel in focus indices and focus panel after it"""
+        if self.can_panel_change != True: return
 
-        prev_index = self.findex
-
-        # findex = -2 : no focusable indices on screen
-        # findex = -1 : focusable indices on screen, but no current focus
+        prev_focus_index = self.focus_index
+        prev_focus_key   = self.focus_key
         while True:
-            self.findex += 1     
+            if self.focus_index < 0: 
+                self.focus_index = 0
+            else:                      
+                self.focus_index += 1    
 
-            if self.findex == prev_index:           # back @ start 
-                return                              
-            elif self.findex == -1:                 # (-2 + 1) = -1
-                return                              
-            elif self.findex == len(self.panels):   # was @last index, wrap
-                self.findex = 0                     
+            if self.focus_index   == prev_focus_index: return # @ start again                                    
+            elif self.focus_index == self.panel_count: 
+                self.focus_index = 0
+            
+            new_focus_key = self.panel_indexes[self.focus_index]
+            if self.panels[new_focus_key].focusable == True: break
 
-            if self.panels[self.findex].focusable == True:
-                break               # quit looking if focusable panel found
-
-        if prev_index >= 0:
-            self.panels[prev_index].defocus()
-        self.panels[self.findex].focus()
-
-
-    def hideScreen(self, next_screen=None):
-        self.isactive = False
-        
-        for p in range(0, len(self.panels)):
-            self.panels[p].clear_panel()
-
-        self.win.move(0,0)
-        self.win.clrtobot()
-
-
-        # try to black out 
-        self.win.attron(curses.color_pair(1))
-        for l in range (0, 22):
-            self.win.hline(l, 0, 32, 80)
-        self.win.attroff(curses.color_pair(1))
-
-        if next_screen != None:
-            next_screen.showScreen(self)
-
-    def showScreen(self, prev_scr=None):
-        self.isactive = True
-        self.prevscr = prev_scr
-        self.updatePanels()                         # updatePanels()
+        if prev_focus_index >= 0:             
+            self.defocusPanel(prev_focus_key)
+        self.focusPanel(new_focus_key)
