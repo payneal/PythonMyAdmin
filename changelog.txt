@@ -1,7 +1,7 @@
 $$$$$$$$$$$$$$$$$$$$$$ CURSEDB UI CODE CHANGELOG $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 $$$$$$$$$$$$$$$$$$$$$ SCROLL DOWN FOR OLD UPDATES $$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-03AUG15, UPDATE 1--------------------------------------------------------------
+03AUG15, UPDATE 1.1------------------------------------------------------------
 
 Important Info:
 
@@ -39,16 +39,14 @@ Account Creation:
 	to do since there is already a function that does this 
 	(curseDB.py.changeScreen()) but I'm working on the login code first.
 
-Database Login:
-
 General Code info:
 
-1. CurseScreens, CursePanels, and CurseItems each have there own storage 
+1. CurseScreens, CursePanels, and CurseItems each have their own storage 
 	dictionaries now for future purposes. They are CurseScreen.screen_storage,
 	CursePanel.panel_storage, and CurseItem.item_storage.
 	
-	These storages can be used as an interface between the core UI code and 
-	periphial database code. For example, storing the user account 
+	These storage dicts can be used as an interface between the core UI code 
+	and periphial database code. For example, storing the user account 
 	name/password in the login screen's	screen_storage dictionary makes it 
 	easily accessible for other code.
 
