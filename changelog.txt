@@ -1,0 +1,121 @@
+$$$$$$$$$$$$$$$$$$$$$$ CURSEDB UI CODE CHANGELOG $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$ SCROLL DOWN FOR OLD UPDATES $$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+03AUG15, UPDATE 1--------------------------------------------------------------
+
+Important Info:
+
+Account Creation:
+
+	Some of the account creation code on my side is complete. So far:
+	
+	The user enters their name and password, the input is validated for length
+	and character type requirements and if they pass the strings are stored in: 
+
+	curse_container.
+		screens["account_screen"].
+		panels["acct_scr_mid_panel"].
+		panel_storage["account_name"]
+
+	and
+
+	curse_container.
+		screens["account_screen"].
+		panels["acct_scr_mid_panel"].
+		panel_storage["account_pw"]
+
+	The user then hits the "submit" button to execute code that will check
+	the server if a user account of that name exists already. If the name is
+	gravy, then the user gets forwarded to the login screen for logging in.
+
+<needs to be written by someone> <-------------------------------------------
+	The code to check if an account name exists in a database. 
+	I will pass:
+		a string that has the username
+		a string that has the password
+
+<needs to be written by me>:
+	The login page forwarding code if the account is OK. This should be easy 
+	to do since there is already a function that does this 
+	(curseDB.py.changeScreen()) but I'm working on the login code first.
+
+Database Login:
+
+General Code info:
+
+1. CurseScreens, CursePanels, and CurseItems each have there own storage 
+	dictionaries now for future purposes. They are CurseScreen.screen_storage,
+	CursePanel.panel_storage, and CurseItem.item_storage.
+	
+	These storages can be used as an interface between the core UI code and 
+	periphial database code. For example, storing the user account 
+	name/password in the login screen's	screen_storage dictionary makes it 
+	easily accessible for other code.
+
+2. Speaking of storage, there is also a global level of storage called 
+	"global_storage" that the main curse components (CurseScreens, CursePanels, 
+	and CurseItems) have references to.
+
+3. Added code for giving curse components instance specific methods. This code
+	 is in the init_funcs() method of curseInit.py after init_act_msg_maps().
+	
+	Before, a curse component (specifically curseItems) could have 
+	individualized behavior by calling component specific "messages" when 
+	select() was called on it. This message contained instructions for itself 
+	or another component to execute a certain function,	but did not actually 
+	allow specific functions to be tailored to that item. 
+	
+	Now, if an item needs to call a specialized function, instead of putting 
+	it in the class.py file, it is put in the in the init_funcs() method 
+	and assigned to that component there. Note that it is still necessary to 
+	use the message system to call this specialized function when its parent 
+	calls select() on it- just send the message using the "self" recv_layer
+
+	This will help solve the issue of either having to cram all the functions
+	needed for the entire program into a class file, even though most of the
+	instantiated class objects will not need those functions. Only code that
+	is needed by several instances of that object will get put in the class
+	.py file
+
+4. Added load() functions to CurseScreens, CursePanels, CurseItems, and
+	CurseTextboxes.	These functions are only called when changing screens, 
+	right before the new screen is loaded and after the old screen is unloaded.
+	Code for resetting default states can be put here. 
+	
+	4a. TODO: add unload() functionality if needed
+
+5. Decoupled error message output and user string input. The new error message
+	output method for string input is CurseItem.showErrorMsg(). Character 
+	validation should be working for name/password input...
+
+6.	Key-Action-Message system and overview of user input processing:
+	Single key user input is detected at the main loop in curseDB.py This input
+	character is passed to the active screen. 
+	
+	The active screen uses its key-action map (CurseScreen.key_action_map) 
+	to convert this input character to an "action string". The purpose of the
+	 "action string" is to make further input processing based on what key was
+	 entered more readable. Now, instead of have an else/if  conditional checking 
+	 "ord("a")" it checks "prev", which gives someone a better idea of what that
+	 key is intended for.
+
+	 Action strings are used as keys in "action-message" maps (see next item) to
+	 generate a "message" if the action string is in the CurseScreen. If the 
+	 screen does not have that action in its action-message map, it gives
+	 the action string to the active panel. The panel checks its action map for
+	 anything and if there is no entry for that action, the input is ignored.
+
+	*** NOTE **** I'll fill in the documentation for the messages themselves
+	later.
+	
+7. Added "action-message" maps. CurseScreens and CursePanels now have
+	"action-message" map attributes: act_msg_maps. Action-message maps allow
+	CurseScreens and CursePanels to have customized behavior in response to
+	certain "action" input. For instance, when the "back" action is input, one 
+	screen can go back to the previous screen, and another screen can have a
+	 different response (currently there is a special key for moving back a 
+	 screen that all screens share). The above is true for panels as well, 
+	 where this ability may be more useful.
+
+
+

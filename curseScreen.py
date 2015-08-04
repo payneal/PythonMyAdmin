@@ -4,7 +4,10 @@ import curses
 class CurseScreen(object):
     """description of class"""
     def __init__(self, **kwargs):
-        self.globals            = kwargs["globals"]
+        self.global_storage     = kwargs["global_storage" ]
+        self.screen_storage     = {}
+        self.user_strip         = kwargs["user_strip"]
+
         self.key_action_map     = kwargs["key_action_map"]
         self.act_msg_map        = kwargs["act_msg_map"]
         self.can_panel_change   = kwargs["can_panel_change"]
@@ -66,6 +69,14 @@ class CurseScreen(object):
     def showScreen(self):
         """ activates screen, its default focus panel, and updates all panels"""
         self.is_active = True
+
+        if hasattr(self, "_on_load"):
+            if self._on_load["action"] == "call_function":
+                func = getattr(self, _on_load["action_name"])
+                func(*_on_load["action_args"])
+
+        self.userStripInfo()
+        self.loadPanels()    
         self.drawPanels()
         self.focusPanel(self.default_focus_key) #
         self.updatePanels()
@@ -74,29 +85,39 @@ class CurseScreen(object):
         self.is_active = False      
         for panel_key in self.panels:       
             self.panels[panel_key].clearPanel()
+
+    def userStripInfo(self):
+        """ shows user info (name, etc...) in infostrip at top of page"""
+        if "username" in self.global_storage:
+            name = copy.copy(self.global_storage["username"])
+            user_strip.win.addstr(0, 1, "USERNAME: "+ name, 
+                user_strip.style.txt_atr | user_strip.style.txt_clr)
          
     #/\ PANEL FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+    def loadPanels(self):
+        """ calls all panel load functions"""
+        for i in range(0, self.panel_count):
+            self.panels[self.panel_indexes[i]].load()
 
     def drawPanels(self):
         """ draws all panels to screen """
         for i in range(0, self.panel_count):
             self.panels[self.panel_indexes[i]].draw()
 
-        #for panel_key in self.panels:
-        #    self.panels[panel_key].draw()
-
     def updatePanels(self): 
         """ flags changed panels to be redrawn to screen by curses.doupdate """
         for i in range(0, self.panel_count):
             self.panels[self.panel_indexes[i]].update()
 
-        #for panel_key in self.panels:
-        #    self.panels[panel_key].update() 
-
-    def getPanel(self, panel_name):
+    def getPanelByName(self, panel_name):
         """ returns panel if it's in the screen's panel collection """
         if panel_name in self.panels: return self.panels[panel_name]
-        else: return None
+
+    def getItemByName(self, item_name):
+        for panel in self.panels:
+            if item_name in panel.items:
+                return panel.items[item_name]
 
     def focusPanel(self, panel_key):
         """ apply focus to screen child panel """

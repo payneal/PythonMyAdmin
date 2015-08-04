@@ -8,8 +8,9 @@ class CursePanel(object):
      as functional and visual containers for all other content. The CursePanel
     class wraps the curses library classes curses.window and curses.panel"""   
     def __init__(self, **kwargs):      
-        self.globals                             = kwargs["globals"]  
-        self.parent                                     = kwargs["parent"]
+        self.global_storage                             = kwargs["global_storage" ]
+        self.panel_storage                              = {}  
+        self.parent_screen                              = kwargs["parent"]
                              
         if "act_msg_map" in kwargs:    self.act_msg_map = kwargs["act_msg_map"]
         else:                          self.act_msg_map = None
@@ -113,6 +114,14 @@ class CursePanel(object):
             self.resetTextbox()
             self.drawTextbox()
                           
+    def load(self):
+        if hasattr(self, "_on_load"):
+            if self._on_load["action"] == "call_function":
+                func = getattr(self, _on_load["action_name"])
+                func(*_on_load["action_args"])
+        self.loadItems()
+        self.loadTextbox()
+
     def select(self):
         """ tells focus item to activate its stored _on_select behavior"""
         if self.focus_item != None:
@@ -164,8 +173,7 @@ class CursePanel(object):
 
     def drawPanelContents(self):
         """ draws panel items and textbox to screen"""
-        for i in range(0, self.item_count):
-            self.items[self.item_indexes[i]].draw()
+        self.drawItems()
         self.drawTextbox()
 
     def clearPanel(self):
@@ -205,7 +213,19 @@ class CursePanel(object):
             self.win.border(0)
                                                                 
 #/\/\/\ ITEM FUNCTIONS  \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-             
+     
+    def loadItems(self):
+        for i in range(0, self.item_count):
+            self.items[self.item_indexes[i]].load()
+        
+    def drawItems(self):
+        for i in range(0, self.item_count):
+            self.items[self.item_indexes[i]].draw()
+
+    def getItemByName(self, item_name):
+            if item_name in self.items:
+                return self.items[item_name]
+
     def prevItem(self):
         """ defocus current item in focus indices and focus item before it"""
         if self.item_count == 0:                                         return
@@ -265,15 +285,8 @@ class CursePanel(object):
                      
 #/\/  TEXTBOX FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
-    def turnPage(self, direction, target):
-        """ turns textbox page and redraws textbox"""
-        if target == "self":
-            if self.textbox != None:
-                self.textbox.turnPage(direction)
-                self.drawTextbox()
-        elif target == "infotar":
-            if self.infotar != None:
-                self.infotar.turnPage(direction, "self")
+    def loadTextbox(self):
+        if self.textbox != None:                            self.textbox.load()
 
     def drawTextbox(self):
         """ draws textbox data to physical screen """
@@ -286,3 +299,13 @@ class CursePanel(object):
     def clearTextbox(self):
         """ clears textbox text from physical screen """
         if self.textbox != None:                       self.textbox.clearText()
+
+    def turnPage(self, direction, target):
+        """ turns textbox page and redraws textbox"""
+        if target == "self":
+            if self.textbox != None:
+                self.textbox.turnPage(direction)
+                self.drawTextbox()
+        elif target == "infotar":
+            if self.infotar != None:
+                self.infotar.turnPage(direction, "self")

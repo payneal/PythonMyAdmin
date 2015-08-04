@@ -6,17 +6,21 @@ import copy
 class CurseItem(object):
     """ a thing 
     
-    parent: the cursePanel that the curseItem is stored in
-         y: y origin, relative to parent's yx coordinates
-         x: x origin, relative to parent's yx coordinates
+    parentPanel: the cursePanel that the curseItem is stored in
+         y: y origin, relative to parentPanel's yx coordinates
+         x: x origin, relative to parentPanel's yx coordinates
     height: 
     width :
     
     """
 
     def __init__(self, **kwargs):
-        self.globals         = kwargs["globals"] 
-        self.parent                 = kwargs["parent"]
+        self.global_storage         = kwargs["global_storage"] 
+        self.parent_screen          = kwargs["parent_screen"]
+        self.parent_panel           = kwargs["parent"]
+        self.item_storage           = {}
+        
+        self.err_flag               = False
         
         self.y                      = kwargs["size"][0]
         self.x                      = kwargs["size"][1]
@@ -24,6 +28,7 @@ class CurseItem(object):
         self.width                  = kwargs["size"][3]
                       
         self.label                  = kwargs["label"]
+        self.base_label             = copy.copy(self.label)
 
         if "header" in kwargs       : self.header      = True
         else                        : self.header      = False
@@ -46,6 +51,13 @@ class CurseItem(object):
 
     #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
       
+    def load(self):
+        self.label = copy.copy(self.base_label)
+        if hasattr(self, "_on_load"):
+            if self._on_load["action"] == "call_function":
+                func = getattr(self, _on_load["action_name"])
+                func(*_on_load["action_args"])
+
     def draw(self):
         """ draws item to screen in parent's window """
         if self.is_focused == False: 
@@ -55,17 +67,10 @@ class CurseItem(object):
             attr = self.style.ftxt_atr | self.style.ftxt_clr
             battr = self.style.ftxt_bg_clr         
 
-        self.drawBgLine(self.parent.win, self.y, self.x, 32, self.width, battr)
-        ### label bg code ********************************************
-        #self.parent.win.attron(battr)
-        ##for l in range (0, self.height):
-        #self.parent.win.hline(self.y, self.x, 32, self.width)
-        #self.parent.win.attroff(battr)
-        ### **********************************************************
+        self.drawBgLine(self.parent_panel.win, self.y, self.x, 32, self.width, battr)
+        self.parent_panel.win.addstr(self.y, self.x, self.label, attr)
 
-        self.parent.win.addstr(self.y, self.x, self.label, attr)
-
-        self.parent.changed = True
+        self.parent_panel.changed = True
 
     def focus(self):
         """ sets item focus, redraws item and any infotex to screen """
@@ -113,6 +118,13 @@ class CurseItem(object):
         
         return self.readMessage(message)
 
+    def redrawLabel(self, text=None):
+        if text==None:
+            text = copy.copy(self.base_label)
+        self.label = copy.copy(text)
+        self.draw()
+        self.parent_panel.win.refresh()
+
     #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
     def readMessage(self, msg):
@@ -125,10 +137,10 @@ class CurseItem(object):
                 if msg["on_recv"] == "call_function":
 
                     func = getattr(self, msg["recv_act"])
-                    if msg["recv_args"] == None:  
-                        msg["ret_info"] = func()
-                    else:        
-                        msg["ret_info"] = func(*msg["recv_args"])
+                    #if msg["recv_args"] == None:  
+                    #    msg["ret_info"] = func()
+                    #else:        
+                    msg["ret_info"] = func(*msg["recv_args"])
 
                     msg["msg_status"] = "read"
 
@@ -151,7 +163,7 @@ class CurseItem(object):
     ### HERE THAR BEE DRAGYNS !!! BEWARRR vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
     def getUserString(self, format_str, ch_attr, str_out_win, 
-        info_out_panel, out_yx, min_len, max_len, echo_mode, pw_mode, cleanup):
+        out_yx, min_len, max_len, echo_mode, pw_mode, cleanup):
         """ gets a string of entered characters from user   
           
         format_str :    a string that indicates what chr types can be input;
@@ -174,13 +186,8 @@ class CurseItem(object):
         cleanup:         boolean for whether to remove echo'd input when done
 
         """
-        input_win       = self.globals["input_win"]
-        info_out_txtbox = info_out_panel.textbox
-        key_action_map  = self.parent.parent.key_action_map
-
+        input_win       = self.global_storage["input_win"]
         input_length    = 0
-        input_error     = False
-
         output_str      = ""
         y = out_yx[0]
         x = out_yx[1]
@@ -194,7 +201,8 @@ class CurseItem(object):
         str_out_win.refresh()
         while True:
             input_i = input_win.getch()                        # GET INPUT CHAR                             
-            status = self.checkChar(format_str, input_i, input_length, min_len)   
+            status = self.checkChar(
+                format_str, input_i, input_length, min_len)  # CHECK INPUT CHAR
                       
             if status == "OK":                            
                 output_str += chr(input_i)                  # UPDATE OUTPUT STR
@@ -211,23 +219,18 @@ class CurseItem(object):
                     str_out_win.addch(y, x + input_length, input_bg_ch)
                 status = "OK"
             
-            str_out_win.refresh() 
+            str_out_win.refresh()                          # REFRESH AFTER DRAW
 
-            if input_length == max_len:                      status = "OK_DONE"     
-            if status != "OK":                                            break 
-
-        if info_out_panel != None:
-            if status != "OK_DONE":           info_out_txtbox.resetText(status)
-            else:                         info_out_txtbox.resetText(output_str)
-
-            info_out_txtbox.drawText()
-            info_out_panel.win.refresh()
-
+            if input_length == max_len: 
+                status = "OK_DONE"                      
+            if status != "OK":                       
+                break
+        # loop end ---------------------
         if cleanup == True:
             str_out_win.hline(y, x, orig_bg_ch, max_len)
             str_out_win.refresh()
 
-        return output_str
+        return (status, output_str)
     
     def drawBgLine(self, win, y, x, ch, len, battr):
         win.attron(battr)
@@ -240,22 +243,44 @@ class CurseItem(object):
             else:                                        status = "ERR_MIN"
         elif input_i == curses.KEY_DC:                   status = "DELETE"
         else: # VALIDATE INPUT  
-            status = self.validate(format_str, input_i)    
+            status = self.validate_char(format_str, input_i)    
         return status
 
     # format string: [alpha][digit][whitespace][punctuation]
-    def validate(self, format, input_i):
+    def validate_char(self, format, input_i):
         
-        if format[0] == False:
+        if format[0] == "0":
             if curses.ascii.isalpha(input_i) != False:
                 return "ERR_ALPHA"
-        if format[1] == False:
+        if format[1] == "0":
             if curses.ascii.isdigit(input_i) != False:
                 return "ERR_DIGIT"
-        if format[2] == False:
+        if format[2] == "0":
             if curses.ascii.isspace(input_i) != False:
                 return "ERR_SPACE"
-        if format[3] == False:
+        if format[3] == "0":
             if curses.ascii.ispunct(input_i) != False:
                 return "ERR_PUNCT"         
         return "OK"
+    
+    def showErrorMsg(self, status, sargs, change_flag, err_txtbox):
+        if status == "ERR_MIN":
+            msg = "Input must be at least "+str(sargs[0])+" characters or longer!"
+        elif status == "ERR_ALPHA":
+            msg = "Input cannot contain alphabetic characters!"
+        elif status == "ERR_DIGIT":    
+            msg = "Input cannot contain numeric characters!"
+        elif status == "ERR_SPACE":
+            msg = "Input cannot contain whitespace characters!"
+        elif status == "ERR_PUNCT":
+            msg = "Input cannot contain punctuation characters!"
+
+        if status == "OK_DONE":
+            if change_flag == True:
+                self.err_flag = False
+        else:
+            if change_flag == True:
+                self.err_flag = True  
+            err_txtbox.resetText(msg)
+            err_txtbox.drawText()
+            err_txtbox.parent.win.refresh()

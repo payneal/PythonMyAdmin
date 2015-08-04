@@ -33,6 +33,12 @@ class CurseTextbox(object):
 
         self.resetText()
 
+    def load(self):
+        if hasattr(self, "_on_load"):
+            if self._on_load["action"] == "call_function":
+                func = getattr(self, _on_load["action_name"])
+                func(*_on_load["action_args"])
+
     def drawText(self):
         """ draws textbox text to screen """
         txt_atrclr =          self.style.txt_atr | self.style.txt_clr
@@ -106,98 +112,3 @@ class CurseTextbox(object):
                 self.index -= self.height
                 self.current_pg -= 1
             if self.pages > 1:                          self.more_content = True
-
-
-#def getUserString(item, valid_in_format, input_panel, minlen, maxlen, 
-#        echo_input, cursor_yx_pos, password):
-
-
-#    input_count = 0
-
-#    cur_y = cursor_yx_pos[0]
-#    cur_x = cursor_yx_pos[1]
-    
-#    outstr = ""
-
-#    input_win = input_panel.win
-#    input_scr = input_panel.parent
-
-#    cursor_start_pos = input_win.getyx()
-#    cursor_start_ch = input_win.inch(cur_y, cur_x)
-
-#    # if no max length given, default to size of input window
-#    if maxlen == 0:
-#        maxlen = input_win.getmaxyx()[1] - cur_x
-
-#    if echo_input == True:
-#        input_win.move(cur_y, cur_x)
-
-#    # DEBUG %%%%%
-#    input_scr.panels[0].title=""
-#    for r in range (0, max+1):       
-#        self.parent.parent.panels[0].win.delch(
-#            self.parent.parent.panels[0].titleyx[0],
-#            self.parent.parent.panels[0].titleyx[1])
-#    # DEBUG %%%%%
-
-
-#    target.focus()
-#    self.parent.parent.updatePanels()
-#    curses.doupdate()   
-#    while incount < max:               
-#        input_i = self.parent.win.getch()
-            
-#        if input_i == ord("\n"):                   # RETURN
-#            if incount >= min:
-#                status = "GOOD"
-#            else:
-#                status = "SHRT"
-#            incount = max
-#        elif input_i == 27:                        # ESCAPE
-#            self.parent.win.nodelay(True)
-#            n = self.parent.win.getch()
-#            #n = self.parent.parent.inputwin.getch()
-#            self.parent.win.nodelay(False)
-#            if n == -1:
-#                status = "CNCL"
-#        elif input_i == curses.KEY_BACKSPACE:      # BACKSPACE                
-#            if incount > 0:
-#                xpos -= 1
-#                target.win.delch(y, xpos)
-#                incount -= 1
-#            continue
-#        elif input_i == curses.KEY_DC:             # DELETE
-#            target.win.delch(y, xpos)
-#            if incount > 0:
-#                incount -= 1
-#            continue
-#        else:                                      # OTHER
-#            status = self.validate(ok_format, input_i)
-                
-#            # DEBUG %%%%%
-#            self.parent.parent.panels[0].title = copy.copy(status)##
-#            # DEBUG %%%%%
-                
-#            if status == "GOOD":
-#                outstr = outstr + chr(input_i)
-#            else:
-#                status = "FAIL"
-#                break
-
-#            if echo == True:               
-#                if pw == True:
-#                    target.win.addch(y, xpos, ord("#"))
-#                else:
-#                    target.win.addch(y, xpos, input_i)
-#            incount += 1
-#            xpos += 1
-
-#        if echo == True:
-#            target.win.move(y, xpos)
-#        self.parent.parent.updatePanels()
-#        curses.doupdate()              
-
-#    target.win.hline(y,x, prech, max + 1)
-#    target.defocus()
-        
-#    return status+":"+outstr

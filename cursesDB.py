@@ -42,13 +42,14 @@ def cursedPyDbApp(scr):
 
     curse_container = curseInit.init_container(
         key_action_map, curseStyle.init_style())
-    curse_container["global_curseDB"]["input_win"] = input_win
+    curse_container["global_storage"]["input_win"] = input_win
 
     curseInit.init_screens(curse_container)
     curseInit.init_panels(curse_container)
     curseInit.init_items(curse_container)
     curseInit.init_textboxes(curse_container)
     curseInit.load_targets(curse_container)
+    curseInit.init_funcs(curse_container)
 
     changeScreen("title_screen")
 

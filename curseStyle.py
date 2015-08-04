@@ -95,6 +95,7 @@ def init_style():
     pls = ord("+")
     cln = ord(":")
     dot = ord(".")
+    at = ord("@")
     NWcrner = u"\u250C"
     SWcrner = u"\u2514"
     SEcrner = u"\u2518"
@@ -520,5 +521,36 @@ def init_style():
         "ftxt_atr"      : curses.A_BOLD,
         "ftxt_clr"      : colors["RYLW"],
         "ftxt_bg_clr"   : colors["RYLW"], 
+    })
+    panel_styles["at_scrbg"] = CursePanelStyle({
+        "bg_chr"        : at,
+        "bg_atr"        : curses.A_DIM,
+        "bg_clr"        : colors["BLU"],
+
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : 0,
+        "br_clr"        : colors["BLK"],
+
+        "ttl_atr"       : curses.A_BOLD,
+        "ttl_clr"       : colors["RMGA"],
+
+        "txt_atr"       : curses.A_BOLD,
+        "txt_clr"       : colors["BLU"],
+        "txt_bg_clr"    : None,
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : 0,
+        "fbg_clr"       : colors["RBLU"],
+
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : 0,
+        "fbr_clr"       : colors["BLK"],
+
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["CYN"],
+
+        "ftxt_atr"      : 0,
+        "ftxt_clr"      : 0,
+        "ftxt_bg_clr"   : colors["BLU"]
     })
     return panel_styles
