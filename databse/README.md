@@ -66,5 +66,27 @@ mysql.connector.errors.InterfaceError: 2003: Can't connect to MySQL server on 'l
 
 error = same as 3 
 
+##Answer 
 
+to get to local mysql db this is the call that needs to be made: 
+
+import os
+os.system('/usr/local/mysql/bin/mysql -u root -p -h localhost -P 3306')
+
+now the '/usr/local/mysql/bin/mysql' is being used because Im on a mac if you can acces mysl db with just myql there is no need you can just do: 
+
+import os
+os.system('mysql -u root -p -h localhost -P 3306')
+
+it will ask you for password
+
+now a better idea maybe jst be to log in as 
+import os
+os.system('mysql')
+
+then check users with 
+
+SELECT * FROM mysql.user; (need a more selective call)
+
+then we can see who are individuals thaat can login 
 
