@@ -123,6 +123,19 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #---------------|usermain_scr_r_pnl---------|-|--------------05-04-..-..
 #---------------|usermain_scr_l_info--------|-|--------------05-05-..-..
 #---------------|---------------------------|X|--------------05-05-00-..
+#viewDB_screen--|---------------------------|-|--------------06-..-..-..
+#---------------|viewDB_scr_bg--------------|-|--------------06-00-..-..
+#---------------|viewDB_scr_ustrip----------|-|--------------06-01-..-..
+#---------------|viewDB_scr_menu_pnl--------|-|--------------06-02-..-..
+#manageDB_screen|---------------------------|-|--------------07-..-..-..
+#---------------|mngDBS_scr_bg--------------|-|--------------07-00-..-..
+#---------------|mngDBS_scr_ustrip----------|-|--------------07-01-..-..
+#---------------|mngDBS_scr_menu_pnl--------|-|--------------07-02-..-..
+#cfg_acct_screen|---------------------------|-|--------------08-..-..-..
+#---------------|cfgAcct_scr_bg-------------|-|--------------08-00-..-..
+#---------------|cfgAcct_scr_ustrip---------|-|--------------08-01-..-..
+#---------------|cfgAcct_scr_menu_pnl-------|-|--------------08-02-..-..
+
 
 
 #--- TITLE SCREEN: "title_screen"-----------------------------------00-..-..-..
@@ -203,6 +216,33 @@ def init_screens(curse_container):
     "default_focus_key" : "usermain_scr_menu_pnl",
     "can_panel_change"  : True,
     "style"             : curseStyles["dashscrbg"]})
+    # 06-..-..-..
+    curseScreens["viewDB_screen"] = CurseScreen(**{
+    "global_storage"    : global_storage,
+    "user_strip"        : "viewDB_scr_ustrip",
+    "key_action_map"    : key_action_map,
+    "act_msg_map"       : default_msg_map,
+    "default_focus_key" : "viewDB_scr_menu_pnl",
+    "can_panel_change"  : False,
+    "style"             : curseStyles["dashscrbg"]})
+    # 07-..-..-..
+    curseScreens["manageDB_screen"] = CurseScreen(**{
+    "global_storage"    : global_storage,
+    "user_strip"        : "mngDBS_scr_ustrip",
+    "key_action_map"    : key_action_map,
+    "act_msg_map"       : default_msg_map,
+    "default_focus_key" : "mngDBS_scr_menu_pnl",
+    "can_panel_change"  : False,
+    "style"             : curseStyles["dashscrbg"]})
+    # 08-..-..-..
+    curseScreens["cfg_acct_screen"] = CurseScreen(**{
+    "global_storage"    : global_storage,
+    "user_strip"        : "cfgAcct_scr_ustrip",
+    "key_action_map"    : key_action_map,
+    "act_msg_map"       : default_msg_map,
+    "default_focus_key" : "cfgAcct_scr_menu_pnl",
+    "can_panel_change"  : False,
+    "style"             : curseStyles["dashscrbg"]})
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -224,7 +264,10 @@ def init_panels(curse_container):
     account_screen  = curseScreens["account_screen"]  
     about_screen    = curseScreens["about_screen"]
     login_screen    = curseScreens["login_screen"]
-    user_screen     = curseScreens["usermain_screen"]  
+    user_screen     = curseScreens["usermain_screen"]
+    viewDB_screen   = curseScreens["viewDB_screen"]  
+    mngDBS_screen   = curseScreens["manageDB_screen"]  
+    cfgAcct_screen  = curseScreens["cfg_acct_screen"]    
 
     panel_msg_map = curse_container["act_msg_maps"]["panel_msg_map"]
     global_storage = curse_container["global_storage"]
@@ -323,7 +366,7 @@ def init_panels(curse_container):
         "test_scr_input_strip"]
     test_screen.panel_count = len(test_screen.panel_indexes)
                            
-    # 02-00-..-..
+    # 02-00-..-..      y, x, h, w
     account_screen.panels["acct_scr_user_strip"]           = CursePanel(**{
     "global_storage"       : global_storage,
     "parent"        : account_screen,
@@ -410,7 +453,7 @@ def init_panels(curse_container):
         "acct_scr_user_strip"]
     account_screen.panel_count = len(account_screen.panel_indexes)
                                                                                                                                                
-    # 03-00-..-..
+    # 03-00-..-..      y, x, h, w
     about_screen.panels["about_scr_user_strip"]            = CursePanel(**{
     "global_storage" : global_storage,
     "parent"        : about_screen,
@@ -509,7 +552,7 @@ def init_panels(curse_container):
         "login_scr_pw_strip"]
     login_screen.panel_count = len(login_screen.panel_indexes)
 
-    # 05-00-..-..
+    # 05-00-..-..      y, x, h, w
     user_screen.panels["usermain_scr_bg"]                  = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : user_screen,
@@ -554,7 +597,8 @@ def init_panels(curse_container):
     "parent"        : user_screen,
     "size"          : (18, 0, 5, 80),
     "style"         : curseStyles["infobox2"]})
-
+    # panels are updated/ drawn in the order below- this affects
+    # overlapping panels so pay attention to this!
     user_screen.panel_indexes = [
         "usermain_scr_bg",
         "usermain_scr_u_info",
@@ -563,6 +607,95 @@ def init_panels(curse_container):
         "usermain_scr_l_info",
         "usermain_scr_ustrip"]
     user_screen.panel_count = len(user_screen.panel_indexes)
+
+    # 06-00-..-..      y, x, h, w
+    viewDB_screen.panels["viewDB_scr_bg"]                  = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewDB_screen,
+    "size"          : (0, 0, 24, 80),
+    "style"         : curseStyles["title_panel"]})
+    # 06-01-..-.. 
+    viewDB_screen.panels["viewDB_scr_ustrip"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewDB_screen,
+    "size"          : (0, 0, 1, 80),
+    "style"         : curseStyles["user_strip"]})
+    # 06-02-..-..
+    viewDB_screen.panels["viewDB_scr_menu_pnl"]            = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewDB_screen,
+    "title"         : ("VIEW DATABASE".center(18), 2, 1),
+    "act_msg_map"   : panel_msg_map,
+    "size"          : (6, 0, 12, 26 ),
+    "style"         : curseStyles["middlepanes"],   
+    "focusable"     : True})
+    # panels are updated/ drawn in the order below- this affects
+    # overlapping panels so pay attention to this!
+    viewDB_screen.panel_indexes = [
+        "viewDB_scr_bg",
+        "viewDB_scr_menu_pnl",
+        "viewDB_scr_ustrip"]
+    viewDB_screen.panel_count = len(viewDB_screen.panel_indexes)
+
+    # 07-00-..-..      y, x, h, w
+    mngDBS_screen.panels["mngDBS_scr_bg"]                  = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : mngDBS_screen,
+    "size"          : (0, 0, 24, 80),
+    "style"         : curseStyles["title_panel"]})
+    # 07-01-..-.. 
+    mngDBS_screen.panels["mngDBS_scr_ustrip"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : mngDBS_screen,
+    "size"          : (0, 0, 1, 80),
+    "style"         : curseStyles["user_strip"]})
+    # 07-02-..-..
+    mngDBS_screen.panels["mngDBS_scr_menu_pnl"]            = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : mngDBS_screen,
+    "title"         : ("MANAGE DATABASES".center(18), 2, 1),
+    "act_msg_map"   : panel_msg_map,
+    "size"          : (6, 0, 12, 26 ),
+    "style"         : curseStyles["middlepanes"],   
+    "focusable"     : True})
+    # panels are updated/ drawn in the order below- this affects
+    # overlapping panels so pay attention to this!
+    mngDBS_screen.panel_indexes = [
+        "mngDBS_scr_bg",
+        "mngDBS_scr_menu_pnl",
+        "mngDBS_scr_ustrip"]
+    mngDBS_screen.panel_count = len(mngDBS_screen.panel_indexes)
+
+    # 08-00-..-..      y, x, h, w
+    cfgAcct_screen.panels["cfgAcct_scr_bg"]                  = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : cfgAcct_screen,
+    "size"          : (0, 0, 24, 80),
+    "style"         : curseStyles["title_panel"]})
+    # 08-01-..-.. 
+    cfgAcct_screen.panels["cfgAcct_scr_ustrip"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : cfgAcct_screen,
+    "size"          : (0, 0, 1, 80),
+    "style"         : curseStyles["user_strip"]})
+    # 08-02-..-..
+    cfgAcct_screen.panels["cfgAcct_scr_menu_pnl"]            = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : cfgAcct_screen,
+    "title"         : ("ACCOUNT CONFIG".center(18), 2, 1),
+    "act_msg_map"   : panel_msg_map,
+    "size"          : (6, 0, 12, 26 ),
+    "style"         : curseStyles["middlepanes"],   
+    "focusable"     : True})
+    # panels are updated/ drawn in the order below- this affects
+    # overlapping panels so pay attention to this!
+    cfgAcct_screen.panel_indexes = [
+        "cfgAcct_scr_bg",
+        "cfgAcct_scr_menu_pnl",
+        "cfgAcct_scr_ustrip"]
+    cfgAcct_screen.panel_count = len(cfgAcct_screen.panel_indexes)
+    
+          
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -816,50 +949,74 @@ def init_items(curse_container):
 
     # 05-03-..-00
     user_scr_panels["usermain_scr_menu_pnl"].items["hdr"]    =CurseItem(**{
-    "global_storage" : global_storage,
+    "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
-    "parent_screen"  : curseScreens["usermain_screen"],
+    "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (3, 3, 4, 20), # y, x, h, w
     "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
     "label"         : "",
     "focusable"     : False })
     # 05-03-..-01
-    user_scr_panels["usermain_scr_menu_pnl"].items["viewDB"]= CurseItem(**{
-    "global_storage" : global_storage,
+    user_scr_panels["usermain_scr_menu_pnl"].items["viewDB_lnk"]= CurseItem(**{
+    "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
-    "parent_screen"  : curseScreens["usermain_screen"],
+    "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (4, 3, 4, 20), # y, x, h, w
     "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
-    "label"         : "view database"})
+    "label"         : "view database",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["viewDB_screen"],
+        ret_info    = None)})
     # 05-03-..-02
-    user_scr_panels["usermain_scr_menu_pnl"].items["mngDBS"]= CurseItem(**{
-    "global_storage" : global_storage,
+    user_scr_panels["usermain_scr_menu_pnl"].items["mngDBS_lnk"]= CurseItem(**{
+    "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
-    "parent_screen"  : curseScreens["usermain_screen"],
+    "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (5, 3, 4, 20), # y, x, h, w
     "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
-    "label"         : "manage databases"})
+    "label"         : "manage databases",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["manageDB_screen"],
+        ret_info    = None)})
     # 05-03-..-03
-    user_scr_panels["usermain_scr_menu_pnl"].items["cfgAcct"]=CurseItem(**{
-    "global_storage" : global_storage,
-    "parent"       : user_scr_panels["usermain_scr_menu_pnl"],
-    "parent_screen"  : curseScreens["usermain_screen"],
+    user_scr_panels["usermain_scr_menu_pnl"].items["cfgAcct_lnk"]=CurseItem(**{
+    "global_storage": global_storage,
+    "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
+    "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (6, 3, 4, 20), # y, x, h, w
     "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
-    "label"         : "edit account options"})
+    "label"         : "edit account options",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["cfg_acct_screen"],
+        ret_info    = None)})
     # 05-03-..-04
     user_scr_panels["usermain_scr_menu_pnl"].items["logout"]= CurseItem(**{
-    "global_storage" : global_storage,
-    "parent"       : user_scr_panels["usermain_scr_menu_pnl"],
-    "parent_screen"  : curseScreens["usermain_screen"],
+    "global_storage": global_storage,
+    "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
+    "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (7, 3, 4, 20), # y, x, h, w
     "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
     "label"         : "log out"})
     user_scr_panels["usermain_scr_menu_pnl"].item_indexes = [
         "hdr", 
-        "viewDB", 
-        "mngDBS",
-        "cfgAcct",
+        "viewDB_lnk", 
+        "mngDBS_lnk",
+        "cfgAcct_lnk",
         "logout"]
     user_scr_panels["usermain_scr_menu_pnl"].item_count = len(
         user_scr_panels["usermain_scr_menu_pnl"].item_indexes)
