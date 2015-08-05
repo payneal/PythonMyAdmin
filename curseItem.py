@@ -162,7 +162,7 @@ class CurseItem(object):
 ##################################################################################
     ### HERE THAR BEE DRAGYNS !!! BEWARRR vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-    def getUserString(self, format_str, ch_attr, str_out_win, 
+    def getUserString(self, format_str, ch_attr, str_out_pnl, 
         out_yx, min_len, max_len, echo_mode, pw_mode, cleanup):
         """ gets a string of entered characters from user   
           
@@ -187,10 +187,12 @@ class CurseItem(object):
 
         """
         input_win       = self.global_storage["input_win"]
+        str_out_win     = str_out_pnl.win
         input_length    = 0
         output_str      = ""
         y = out_yx[0]
         x = out_yx[1]
+
         orig_bg_ch      = str_out_win.inch(y, x)
         orig_cursor_pos = str_out_win.getyx()
 
@@ -198,6 +200,7 @@ class CurseItem(object):
 
         self.drawBgLine(str_out_win, y, x, 32, max_len, ch_attr)
         input_bg_ch     = str_out_win.inch(y, x)
+
         str_out_win.refresh()
         while True:
             input_i = input_win.getch()                        # GET INPUT CHAR                             
@@ -226,8 +229,18 @@ class CurseItem(object):
             if status != "OK":                       
                 break
         # loop end ---------------------
-        if cleanup == True:
+        if cleanup == True or status != "OK_DONE":
             str_out_win.hline(y, x, orig_bg_ch, max_len)
+            str_out_win.refresh()
+        else:
+            str_out_win.hline(y, x, orig_bg_ch, max_len)
+            if pw_mode == False:
+                str_out_win.addstr(y, x, output_str, 
+                    str_out_pnl.style.txt_clr | str_out_pnl.style.txt_atr)
+            else:
+                for i in range(0, len(output_str)):
+                    str_out_win.addch(y, x + i, ord("@"), 
+                        str_out_pnl.style.txt_clr | str_out_pnl.style.txt_atr)
             str_out_win.refresh()
 
         return (status, output_str)

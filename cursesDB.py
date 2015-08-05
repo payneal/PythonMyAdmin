@@ -50,6 +50,7 @@ def cursedPyDbApp(scr):
     curseInit.init_textboxes(curse_container)
     curseInit.load_targets(curse_container)
     curseInit.init_funcs(curse_container)
+    curseInit.load_globals(curse_container)
 
     changeScreen("title_screen")
 

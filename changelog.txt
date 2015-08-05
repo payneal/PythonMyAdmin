@@ -1,6 +1,26 @@
 $$$$$$$$$$$$$$$$$$$$$$ CURSEDB UI CODE CHANGELOG $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 $$$$$$$$$$$$$$$$$$$$$ SCROLL DOWN FOR OLD UPDATES $$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+04AUG15, UPDATE 1--------------------------------------------------------------
+
+General Info:
+
+	UI_documentation updated!
+
+1.  "User Strips": The green strips at the top of every screen have a use now.
+	They're called "user strips" and will have the user's name and maybe one
+	or two other things up there. Every time the screen loads, that information
+	is updated. I wanted to have something like the current time shown up there
+	but that will be down the road. Right now I'm using it to show the user's
+	log in name, after they've "logged in" via the log in screen. The user 
+	name is drawn from global_storage and not given to the user strip directly
+	on the login page, demonstrating that the global_storage is working.
+
+2. Account Screen and Login screen are completely finished except for 
+	code that redirects after account/login validation. 
+
+3.	Probably a few more things I missed here and there...
+
 03AUG15, UPDATE 1.1------------------------------------------------------------
 
 Important Info:

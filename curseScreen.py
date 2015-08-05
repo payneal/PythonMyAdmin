@@ -6,7 +6,7 @@ class CurseScreen(object):
     def __init__(self, **kwargs):
         self.global_storage     = kwargs["global_storage" ]
         self.screen_storage     = {}
-        self.user_strip         = kwargs["user_strip"]
+        self.user_strip_str     = kwargs["user_strip"]
 
         self.key_action_map     = kwargs["key_action_map"]
         self.act_msg_map        = kwargs["act_msg_map"]
@@ -75,7 +75,7 @@ class CurseScreen(object):
                 func = getattr(self, _on_load["action_name"])
                 func(*_on_load["action_args"])
 
-        self.userStripInfo()
+        self.setUserStripInfo()
         self.loadPanels()    
         self.drawPanels()
         self.focusPanel(self.default_focus_key) #
@@ -86,12 +86,15 @@ class CurseScreen(object):
         for panel_key in self.panels:       
             self.panels[panel_key].clearPanel()
 
-    def userStripInfo(self):
+    def setUserStripInfo(self):
         """ shows user info (name, etc...) in infostrip at top of page"""
-        if "username" in self.global_storage:
-            name = copy.copy(self.global_storage["username"])
-            user_strip.win.addstr(0, 1, "USERNAME: "+ name, 
-                user_strip.style.txt_atr | user_strip.style.txt_clr)
+        if "log_name" in self.global_storage:
+            name = copy.copy(self.global_storage["log_name"])
+            pw = copy.copy(self.global_storage["log_pw"])
+            self.user_strip.title = "USERNAME: "+name.ljust(20)+\
+                "PASSWORD: "+pw.ljust(20) 
+    def drawUserStripInfo(self):
+        self.user_strip.refreshPanel()
          
     #/\ PANEL FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
