@@ -7,120 +7,108 @@ import string
 class CurseTextbox(object):
     """description of class"""
     def __init__(self, **kwargs):
-        self.height = kwargs["h"]
-        self.width = kwargs["w"]
-        self.y = kwargs["y"]        #   Y RELATIVE TO PARENT WINDOW
-        self.x = kwargs["x"]        #   X RELATIVE TO PARENT WINDOW
+        self.parent                 = kwargs["parent"]
 
-        self.linetext = []
+        self.y                      = kwargs["size"][0]
+        self.x                      = kwargs["size"][1]
+        self.height                 = kwargs["size"][2]
+        self.width                  = kwargs["size"][3]
+
+        if "base_text" in kwargs:   self.base_text = kwargs["base_text"]
+        else:                       self.base_text = ""
         
-        self.totalheight = 0
-        self.pageheight = 0
-        self.pages = 0
-        self.currentpg = 0
-        self.index = 0
-        self.morecontent = False
+        self.line_text              = []
 
-        self.style = kwargs["style"]
+        self.total_height           = 0
+        self.page_height            = 0
+        self.pages                  = 0
+        self.current_pg             = 0
+        self.index                  = 0
+        self.more_content           = False
 
-    #
-    def update(self, refresh=False):
-        self.drawtext()
-        if refresh == True:
-            self.parent.win.refresh()
+        self.style                  = kwargs["style"]
 
-    def load(self, parent, basetext="", centertxt=False):
-        self.onload(parent, basetext, centertxt)
+        if "center" in kwargs:      self.center = kwargs["center"]
+        else:                       self.center = False
 
-    #       onload
-    def onload(self, parent, basetext, centertxt):
-        self.parent = parent
-        self.defaulttext = copy.copy(basetext)
-        self.centertext = centertxt
-        self.resettext(basetext)
+        self.resetText()
 
-    def resettext(self, text):
-        self.index = 0
-        self.currentpg = 0
-        self.cleartext()
-        self.basetext = text
-        if text == "":
-            self.basetext = self.defaulttext
-        #if self.basetext != "":
-        self.texttolines(self.basetext)
-        self.setpages()
-        self.turnpage("prev")
+    def load(self):
+        if hasattr(self, "_on_load"):
+            if self._on_load["action"] == "call_function":
+                func = getattr(self, _on_load["action_name"])
+                func(*_on_load["action_args"])
 
-    #       
-    def texttolines(self, text):  
-     
-        if self.centertext == True:
-            self.linetext = textwrap.wrap(text, self.width)
-            for l in range (0, len(self.linetext)):
-                self.linetext[l] = textwrap.dedent(
-                    self.linetext[l]).center(self.width," ")
+    def drawText(self):
+        """ draws textbox text to screen """
+        txt_atrclr =          self.style.txt_atr | self.style.txt_clr
+
+        self.parent.win.attron(txt_atrclr)
+        self.clearText()       
+        for l in range(0, self.height):
+            if l + self.index >= len(self.line_text):           break
+            self.parent.win.addstr(
+                self.y + l,
+                self.x, 
+                self.line_text[self.index + l], 
+                txt_atrclr)
+        if self.more_content == True:
+            self.parent.win.addstr(
+                self.y + self.height, 
+                self.x, 
+                "(MORE...)", 
+                txt_atrclr)
+        self.parent.win.attroff(txt_atrclr)
+
+        self.parent.changed = True
+
+    def clearText(self):
+        """ removes text from textbox on screen """
+        bg_chtype = self.parent.win.getbkgd()
+        for l in range(0, self.height):
+            self.parent.win.hline(self.y + l, self.x, bg_chtype, self.width)
+
+    def resetText(self, text=None):
+        """ resets textbox data to base text or passed text"""
+        if text == None:    text = self.base_text
+        else:               self.base_text = copy.copy(text)
+
+        self.index          = 0
+        self.current_pg     = 0
+        
+        self.textToLines()
+        self.setPages()
+        self.turnPage("prev")
+      
+    def textToLines(self):
+        if self.center == True:
+            self.line_text = textwrap.wrap(self.base_text, self.width)
+            for l in range (0, len(self.line_text)):
+                self.line_text[l] = textwrap.dedent(
+                        self.line_text[l]).center(self.width," ")
         else:
             wr = textwrap.TextWrapper(
-                width=self.width,
-                replace_whitespace=False,
-                drop_whitespace=False)
-            self.linetext = wr.wrap(text)    
-    #
-    def setpages(self):
-        self.totalheight = len(self.linetext)
-        self.pages = self.totalheight / self.height
-        if self.totalheight % self.height != 0:
-            self.pages += 1
-        if self.pages > 1:
-            self.morecontent = True
+                    width=self.width, 
+                    replace_whitespace=False,
+                    drop_whitespace=False)
+            self.line_text = wr.wrap(self.base_text)    
+
+    def setPages(self):
+        self.total_height = len(self.line_text)
+        self.pages        = self.total_height / self.height
+
+        if self.total_height % self.height != 0 :               self.pages += 1
+        if self.pages > 1 :                            self.more_content = True
      
-    #
-    def turnpage(self, direction):
+    def turnPage(self, direction):
         if direction == "next":         
-            if self.index + self.height < self.totalheight :
+            if self.index + self.height < self.total_height :
                 self.index += self.height
-                self.currentpg += 1
-            if self.currentpg + 1 == self.pages:
-                self.morecontent = False
-            else:
-                self.morecontent = True
+                self.current_pg += 1
+            if self.current_pg + 1 == self.pages:      self.more_content = False
+            else:                                       self.more_content = True
         elif direction == "prev":
             if self.index - self.height >= 0:
                 self.index -= self.height
-                self.currentpg -= 1
-            if self.pages > 1:
-                self.morecontent = True
-
-    #
-    def drawtext(self):
-        txt_atrclr = self.style.txt_atr | self.style.txt_clr
-        self.parent.win.attron(txt_atrclr)
-        self.cleartext()       
-
-        for l in range(0, self.height):
-            if l + self.index >= len(self.linetext):
-                break
-
-            self.parent.win.addstr(self.y + l, self.x, 
-                self.linetext[self.index + l], txt_atrclr)
-
-            # draw line
-            #ln = copy.copy(self.linetext[self.index + l])
-            #if self.centertext == True:
-            #    ln.center(self.width)
-            #self.parent.win.addstr(self.y + l, self.x, 
-            #    ln, txt_atrclr)
-            #ln = None
-                 
-        if self.morecontent == True:
-            self.parent.win.addstr(
-                self.y + self.height, self.x, "(MORE...)", txt_atrclr)
-
-        self.parent.win.attroff(txt_atrclr)      
-        
-    def cleartext(self):
-        bg_chtype = self.parent.win.getbkgd()
-        #self.parent.win.refresh()
-        for l in range(0, self.height):
-            self.parent.win.hline(self.y + l, self.x, 32, self.width)
-            #self.parent.win.hline(self.y + l, self.x, bg_chtype, self.width)
+                self.current_pg -= 1
+            if self.pages > 1:                          self.more_content = True

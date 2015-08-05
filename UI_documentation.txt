@@ -1,0 +1,175 @@
+
+
+================ TABLE OF CONTENTS ============================================
+
+.. PART 1 (CDB-SEC1) : UI background
+.. PART 2 (CDB-SEC2) : Database-UI Interface
+........... 2.1 (CDB-SEC2.1) account creation / validation
+........... 2.2 (CDB-SEC2.2) login / validation
+.. PART 3 (CDB-SEC3) :
+
+APPENDIX A (CDB-APXA) : index of curse components in curseInit.py
+
+
+
+
+
+===============================================================================
+================ PART 1 (CDB-SEC1) : UI background ============================
+===============================================================================
+
+
+
+===============================================================================
+================ PART 2 (CDB-SEC2) : Database-UI Interface ====================
+===============================================================================
+----- 2.1 (CDB-SEC2.1) account creation / validation --------------------------
+
+	< access screen > 
+		curse_container.screens["account_screen"]	( 02-..-..-.. )
+
+
+	< related panels >
+		curse_container.screens["account_screen"].panels[p], where p is
+			"acct_scr_mid_panel"				( 02-05-..-.. )
+			"acct_scr_infobox"					( 02-06-..-.. )	
+			"acct_scr_input_strip"				( 02-07-..-.. )	
+
+	< related items >
+		...["account_screen"].panels["acct_scr_mid_panel"].items[i], where i is
+			"username"							( 02-05-..-00 )
+			"password"							( 02-05-..-01 )
+			"submit_acct"						( 02-05-..-02 )
+
+	< related FUNC >
+		createAcctName()						( IFUNC_001 )
+		createAcctPW()							( IFUNC_002 )
+		submitAccount()							( IFUNC_003 )
+
+	< interface variables >
+		username:
+		curse_container.
+			screens["account_screen"].
+				panels["acct_scr_mid_panel"].
+					panel_storage["username"]   <--- string
+
+		password:
+		curse_container.
+			screens["account_screen"].
+				panels["acct_scr_mid_panel"].
+					panel_storage["account_pw"] <--- string
+
+	< interface preconditions >
+		Strings "username" and "account_pw" will be available in the above 
+		locations after the user has entered these values via the "username" 
+		and "password" items shown above.
+
+	< interface connecting action >
+		When the user selects the "submit_acct" item, the database side
+		function will be called:
+
+		submitAccount("username", "account_pw")
+
+	< interface postconditions >
+		
+		"OK" (string type) will be returned if there is no existing account
+			by that name, and an account was created successfully
+		"EXISTS" will be returned if there is an account by that name already
+		"NO_PRIVS" will be returned if the user lacks privileges to make an
+			account on the databse
+		"FAIL" will be returned if there's some unspecified error 
+
+----- 2.2 (CDB-SEC2.2) login / validation -------------------------------------
+
+	< access screen > 
+	< related panels >
+	< related items >
+	< related FUNC >
+		loginName()								( IFUNC_004)
+
+	< interface variables >
+		username:
+		curse_container.global_storage["log_name"]
+
+		password:
+		curse_container.global_storage["password"]
+
+	< interface preconditions >
+	< interface connecting action >
+	< interface postconditions >
+
+===============================================================================
+==== APPENDIX A (CDB-APXA) : index of curse components in curseInit.py ========
+===============================================================================
+
+		SEARCH INDEX: USE UNIQUE XX-XX-XX-XX CODE W/ CTRL-F TO GOTO COMPONENT
+#                       
+#                                                                            ITEM
+#                                                                      TEXTBOX  |
+#                                                                     PANEL  |  |
+# CurseScreen    | CursePanel                 | Curse   | Curse   SCREEN  |  |  |  
+#                |                            | Textbox | Item         SC PA TB IT
+#----------------|----------------------------|---------|--------------!!-!!-!!-!!
+#-title_screen---|----------------------------|---------|--------------00-..-..-..
+#----------------|-title_scr_user_strip-------|---------|--------------00-00-..-..
+#----------------|-title_scr_panel------------|---------|--------------00-01-..-..
+#----------------|----------------------------|(textbox)|--------------00-01-00-..
+#----------------|----------------------------|---------|login_link----00-01-..-00
+#----------------|----------------------------|---------|act_create_lk-00-01-..-01
+#----------------|----------------------------|---------|about_DB_link-00-01-..-02
+#----------------|-title_scr_infopanel--------|---------|--------------00-02-..-..
+#----------------|----------------------------|(textbox)|--------------00-02-00-..
+#----------------|-title_scr_background-------|---------|--------------00-03-..-..
+#-test_screen----|----------------------------|---------|--------------01-..-..-..
+#----------------|-test_scr_user_strip--------|---------|--------------01-00-..-..
+#----------------|-test_scr_upper_infopanel---|---------|--------------01-01-..-..
+#----------------|----------------------------|(textbox)|--------------01-01-00-..
+#----------------|-test_scr_left_mid_panel----|---------|--------------01-02-..-..
+#----------------|-test_scr_r_mid_panel-------|---------|--------------01-03-..-..
+#----------------|----------------------------|---------|list_hdr------01-03-..-00
+#----------------|----------------------------|---------|item1---------01-03-..-01
+#----------------|----------------------------|---------|item2---------01-03-..-02
+#----------------|----------------------------|---------|item3---------01-03-..-03
+#----------------|-test_scr_lower_infopanel---|---------|--------------01-04-..-..
+#----------------|----------------------------|(textbox)|--------------01-04-00-..
+#----------------|-test_scr_input_strip-------|---------|--------------01-05-..-..
+#-account_screen-|----------------------------|---------|--------------02-..-..-..
+#----------------|-acct_scr_user_strip--------|---------|--------------02-00-..-..
+#----------------|-acct_scr_NW_text_art-------|---------|--------------02-01-..-..
+#----------------|----------------------------|(textbox)|--------------02-01-00-..
+#----------------|-acct_scr_SW_text_art-------|---------|--------------02-02-..-..
+#----------------|----------------------------|(textbox)|--------------02-02-00-..
+#----------------|-acct_scr_NE_text_art-------|---------|--------------02-03-..-..
+#----------------|----------------------------|(textbox)|--------------02-03-00-..
+#----------------|-acct_scr_SE_text_art-------|---------|--------------02-04-..-..
+#----------------|----------------------------|(textbox)|--------------02-04-00-..
+#----------------|-acct_scr_mid_back_panel----|---------|--------------02-08-..-..
+#----------------|-acct_scr_mid_panel---------|---------|--------------02-05-..-..
+#----------------|----------------------------|---------|username------02-05-..-00
+#----------------|----------------------------|---------|password------02-05-..-01
+#----------------|----------------------------|---------|submit_acct---02-05-..-02
+#----------------|-acct_scr_infobox-----------|---------|--------------02-06-..-..
+#----------------|----------------------------|(textbox)|--------------02-06-00-..
+#----------------|-acct_scr_input_strip-------|---------|--------------02-07-..-..
+#-about_screen---|----------------------------|---------|--------------03-..-..-..
+#----------------|-about_scr_user_strip-------|---------|--------------03-00-..-..
+#----------------|-about_scr_bg_text_art------|---------|--------------03-01-..-..
+#----------------|----------------------------|(textbox)|--------------03-01-00-..
+#----------------|-about_scr_team_txt_panel---|---------|--------------03-02-..-..
+#----------------|----------------------------|(textbox)|--------------03-02-00-..
+#----------------|-about_scr_info_strip-------|---------|--------------03-03-..-..
+#-login_screen---|----------------------------|---------|--------------04-..-..-..
+
+
+
+
+END DOCUMENTATION #############################################################
+
+< access screen > 
+	< related panels >
+	< related items >
+	< related FUNC >
+	< interface variables >
+	< interface preconditions >
+	< interface connecting action >
+	< interface postconditions >

@@ -1,5 +1,5 @@
-﻿import curses
-import curses.panel
+﻿import copy
+import curses
 from curseTextbox import CurseTextbox
 from curseItem import CurseItem
 
@@ -7,228 +7,198 @@ class CursePanel(object):
     """The CursePanel class is the central class of CursesDB. CursePanels serve
      as functional and visual containers for all other content. The CursePanel
     class wraps the curses library classes curses.window and curses.panel"""   
-    def __init__(self, **kwargs):
-        self.id = kwargs["id"]
-        self.name = kwargs["name"]          
-             
-        self.parent = kwargs["parent"]                     
+    def __init__(self, **kwargs):      
+        self.global_storage                             = kwargs["global_storage" ]
+        self.panel_storage                              = {}  
+        self.parent_screen                              = kwargs["parent"]
+                             
+        if "act_msg_map" in kwargs:    self.act_msg_map = kwargs["act_msg_map"]
+        else:                          self.act_msg_map = None
 
-        self.height = kwargs["h"]
-        self.width = kwargs["w"]
-        self.y = kwargs["y"]
-        self.x = kwargs["x"]
+        self.y                                          = kwargs["size"][0]
+        self.x                                          = kwargs["size"][1]
+        self.height                                     = kwargs["size"][2]
+        self.width                                      = kwargs["size"][3]
 
-        self.win = curses.newwin(self.height, self.width, self.y, self.x)           
-             
-        self.titleyx = kwargs["titleyx"]
-        self.title = kwargs["title"]
-            
-        self.textbox = kwargs["textbox"]    
-                            
-        #self.infotext = None                   # set in separate load function
-        #self.infotexttar = None                # set in separate load function
-
+        self.win          = curses.newwin(self.height, self.width, self.y, self.x)           
+        
         self.style = kwargs["style"]
-        self.dftstyle = kwargs["dftstyle"]   
 
-        self.focusable = kwargs["focusable"]     
-        self.isfocused = False
-
-        self.items = []                         
-        self.findex = -2                        
-
-    ###########################################################################
-
-    #       update
-    def update(self, force_refresh=False):
-        self.set_style(self.isfocused)
-        self.update_textbox()
-        self.update_items()
-        if force_refresh == True:
-            self.win.refresh()
+        if "title" in kwargs:        
+            self.title                                  = kwargs["title"][0]
+            self.title_y                                = kwargs["title"][1]    
+            self.title_x                                = kwargs["title"][2]
         else:
-            self.win.noutrefresh()     
-            
-    def update_items(self):
-        item_count = len(self.items)
-        for i in range(0, item_count):
-            self.items[i].update()
+            self.title                                  = "" 
+            self.title_y                                = 0 
+            self.title_x                                = 0
+        
+        if "textbox" in kwargs:            self.textbox = kwargs["textbox"]
+        else:                              self.textbox = None     
 
-    ###########################################################################                   
+        if "info" in kwargs:                  self.info = kwargs["info"]
+        else:                                 self.info = None
 
-    #
-    def load(self, kwargs):
-        self.onload(**kwargs)
+        if "infotar" in kwargs:        self.infotar_str = kwargs["infotar"] 
+        else:                          self.infotar_str = None
 
-    def onload(self, **kwargs):
-        self.infotext = kwargs["infotext"]
-        self.infotexttar = kwargs["infotexttar"]
+        self.infotar = None            
+                              
+        if "focusable" in kwargs:        self.focusable = kwargs["focusable"]
+        else:                            self.focusable = False     
 
-    def load_items(self, item_list):
-        for i in range(0, len(item_list)):
-            self.items.append(CurseItem(**item_list[i]))
+        self.items                  = {} # dict of item name : item object pairs
+        self.item_indexes           = [] # list of item names
+        self.item_count             = 0
+       
+        self.is_item_focused        = False
+        self.focus_key              = ""
+        self.focus_index            = -1
+        self.focus_item             = None
 
-    def clear_panel(self):            
-        # try to black out
-        self.win.attron(curses.color_pair(1))
-        winsize = self.win.getmaxyx()
+        self.is_focused             = False
+        self.changed                = False
 
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+                    
+    def update(self):
+        if self.changed == True:
+            self.win.touchwin()
+            self.win.noutrefresh()
+            self.changed = False
+
+    def checkInput(self, act_key):
+        """ check if action triggers a response in panel or panel items """
+        msg = None
+        if act_key in self.act_msg_map:
+            if act_key == "select":
+                return self.select()
+            else:             
+                msg = copy.deepcopy(self.act_msg_map[act_key])
+
+        self.readMessage(msg)
+        return msg
+        
+    def readMessage(self, msg):
+        if msg == None:                                                  return
+        
+        if msg["msg_status"] == "unread":
+            if msg["recv_layer"] == "screen" or msg["recv_layer"] == "self":
+                if msg["on_recv"] == "call_function":
+
+                    func = getattr(self, msg["recv_act"])
+                    if msg["recv_args"] == None:  
+                        msg["ret_info"] = func()
+                    else:        
+                        msg["ret_info"] = func(*msg["recv_args"])
+
+                    msg["msg_status"] = "read"
+
+        return msg
+
+    def showInfo(self):
+        """ reset infotar and tell it to redraw textbox"""      
+        if self.infotar != None:
+            self.infotar.resetTextbox(self.info)
+            self.infotar.drawTextbox()
+        elif self.info != None:
+            self.resetTextbox(self.info)
+            self.drawTextbox()
+
+    def hideInfo(self):
+        """ reset infotar and tell it to redraw textbox"""      
+        if self.infotar != None:
+            self.infotar.resetTextbox()
+            self.infotar.drawTextbox()
+        elif self.info != None:
+            self.resetTextbox()
+            self.drawTextbox()
+                          
+    def load(self):
+        if hasattr(self, "_on_load"):
+            if self._on_load["action"] == "call_function":
+                func = getattr(self, _on_load["action_name"])
+                func(*_on_load["action_args"])
+        self.loadItems()
+        self.loadTextbox()
+
+    def select(self):
+        """ tells focus item to activate its stored _on_select behavior"""
+        if self.focus_item != None:
+            return self.focus_item.select()
+
+    def focus(self):
+        """ sets panel focus, redraws panel, infotex to screen """
+        self.is_focused = True
+        self.draw()
+        self.showInfo()
+
+    def defocus(self):
+        """ removes panel focus, redraws panel, hides infotex from screen """
+        self.is_focused = False
+        self.draw()
+        self.hideInfo()
+
+        if self.item_count > 0:
+            self._defocusItem()
+
+#/\/\/  PANEL DRAW FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+
+    def draw(self):
+        """ draw panel and contents to screen and flag to be updated """    
+        self.drawPanel()
+        self.drawPanelContents()
+        self.changed = True
+
+    def drawPanel(self):
+        """ draws panel background, border, and title to screen """
+        if self.is_focused == False:
+            bg_chtype   = self.style.bg_chtype
+            br_chrs     = self.style.br_chrs
+            br_atr      = self.style.br_atr
+            br_clr      = self.style.br_clr
+            ttl_atr     = self.style.ttl_atr
+            ttl_clr     = self.style.ttl_clr
+        else:
+            bg_chtype   = self.style.fbg_chtype
+            br_chrs     = self.style.fbr_chrs
+            br_atr      = self.style.fbr_atr
+            br_clr      = self.style.fbr_clr
+            ttl_atr     = self.style.fttl_atr
+            ttl_clr     = self.style.fttl_clr            
+
+        self._setBg(bg_chtype)                
+        self._setBorder(br_chrs, br_atr, br_clr)
+        self.drawTitle()
+
+    def drawPanelContents(self):
+        """ draws panel items and textbox to screen"""
+        self.drawItems()
+        self.drawTextbox()
+
+    def clearPanel(self):
+        """ clears everything inside panel from screen """
         self.win.move(0,0)
         self.win.clrtobot()
+        self.changed = True
 
-    ###########################################################################
+    def drawTitle(self):
+        """ draws panel title to screen """
+        if self.title == "" or self.title == None:                       return
 
-    #       focus
-    def focus(self):
-        self.isfocused = True
-        self.onfocus()
+        ttl_atr = self.style.ttl_atr
+        ttl_clr = self.style.ttl_clr
+        self.win.attron(ttl_atr | ttl_clr)
+        self.win.addstr(self.title_y, self.title_x,self.title, ttl_atr|ttl_clr)
+        self.win.attroff(ttl_atr | ttl_clr)
 
-    #       defocus
-    def defocus(self):
-        self.isfocused = False
-        self.ondefocus()
-
-    #       onfocus
-    def onfocus(self):
-        self.select_panel()
-        self.showinfotxt()
-
-    #       ondefocus
-    def ondefocus(self):
-        self.deselect_panel()
-        if self.infotexttar != None:
-            self.infotexttar.reset_textbox()
-            self.infotexttar.update(True)
-        if len(self.items) > 0:
-            if self.findex >= 0:
-                self.items[self.findex].defocus()
-                self.items[self.findex].infotexttar.reset_textbox()
-                self.findex = -2
-                                   
-    ###########################################################################
-
-    #       showinfotxt        
-    def showinfotxt(self):
-        if self.infotexttar != None:
-            if len(self.infotext) != 0:
-                self.infotexttar.reset_textbox(self.infotext)
-                self.infotexttar.draw_textbox()
-
-    #       getinput
-    def check_input(self, actionstr):   
-        self.panel_actions(actionstr) # check for panel actions  < < < < < < < 
-
-        items_len = len(self.items)
-        status = None
-        if items_len > 0:
-            prev_findex = self.findex
-            
-            if   actionstr == "up":      
-                status = self.prevItem(prev_findex, items_len)
-            elif actionstr == "down":
-                status = self.nextItem(prev_findex, items_len)
-            elif actionstr == "slct" or actionstr == "rtrn":
-                if self.findex >= 0:
-                    status = self.items[self.findex].select()
-
-            if status == "move":
-                if prev_findex != self.findex:
-                    self.items[prev_findex].defocus()
-                    self.items[self.findex].focus() 
-
-            self.update_items()
-        return status
-
-    def panel_actions(self, actionstr):
-        if self.infotexttar != None:
-            if actionstr == "left":
-                self.infotexttar.textbox.turnpage("prev")
-            elif actionstr == "rght":
-                self.infotexttar.textbox.turnpage("next")
-            self.infotexttar.update(True)
-
-    def nextItem(self, prev_findex, items_len):
-        # self.findex < 0 means no previous item was focused
-        while True:
-            if self.findex < 0:
-                self.findex = 0
-            else:
-                self.findex += 1
-
-            if self.findex == prev_findex:
-                return                                      # back @ start
-            elif self.findex == items_len:
-                self.findex = 0
-            
-            if self.items[self.findex].focusable == True:
-                break;
-        return "move"
-
-    def prevItem(self, prev_findex, items_len):
-        while True:
-            if self.findex < 0:
-                self.findex = 0
-            else:
-                self.findex -= 1    
-
-            if self.findex == prev_findex:
-                return                                      # back @ start
-            elif self.findex == -1:
-                self.findex = items_len - 1
-            
-            if self.items[self.findex].focusable == True:
-                break;
-        return "move"
-
-    #       select_panel
-    def select_panel(self):
-        self.set_style(True)
-
-    #       deselect_panel
-    def deselect_panel(self):
-        self.set_style()
-
-    ###########################################################################
-
-    #       set_style
-    def set_style(self, focus=False, s_obj=0):
-        try:
-            if s_obj == 0:
-                s_obj = self.style
-        except:
-            s_obj = self.dftstyle
-        
-        if focus == False:
-            bg_chtype = s_obj.bg_chtype
-            br_chrs = s_obj.br_chrs
-            br_atr = s_obj.br_atr
-            br_clr = s_obj.br_clr
-            ttl_atr = s_obj.ttl_atr
-            ttl_clr = s_obj.ttl_clr
-        else:
-            bg_chtype = s_obj.fbg_chtype
-            br_chrs = s_obj.fbr_chrs
-            br_atr = s_obj.fbr_atr
-            br_clr = s_obj.fbr_clr
-            ttl_atr = s_obj.fttl_atr
-            ttl_clr = s_obj.fttl_clr            
-
-        self.set_bg(bg_chtype)                
-        self.set_border(br_chrs, br_atr, br_clr)
-        self.draw_title(ttl_atr, ttl_clr)
-
-    #       set_bg
-    def set_bg(self, bg_chtype=0):
-        try:
-            if bg_chtype == 0:
-                bg_chtype = self.style.bg_chtype
-        except:
-            bg_chtype = 32
-
+    def _setBg(self, bg_chtype=0):
+        """ sets panel background color and attributes """
+        if bg_chtype == 0:                    bg_chtype = self.style.bg_chtype
         self.win.bkgd(bg_chtype)
 
-    #       set_border
-    def set_border(self, br_chs=[], br_at=0, br_cl=0):
+    def _setBorder(self, br_chs=[], br_at=0, br_cl=0):
+        """ draws panel border (all inner cells adjacet to window edge) """
         try:           
             if len(br_chs) == 0:
                 br_chs = self.style.br_chrs
@@ -241,57 +211,101 @@ class CursePanel(object):
             self.win.attroff(br_at | br_cl)
         except:
             self.win.border(0)
-    
-    #       draw_title                 
-    def draw_title(self, ttl_atr=0, ttl_clr=0):
-        if len(self.title) == 0:
-            return
-        try:
-            y = self.titleyx[0]
-            x = self.titleyx[1]
-            txt = self.title
-            if ttl_atr == 0:
-                ttl_atr = self.style.ttl_atr
-            if ttl_clr == 0:
-                ttl_clr = self.style.ttl_clr
-        except:
-            y = 0
-            x = 0
-            txt = "DFT"
-            ttl_atr = 0
-            ttl_clr = curses.color_pairs(0)
-
-        self.win.attron(ttl_atr | ttl_clr)
-        self.win.addstr(y, x, txt, ttl_atr | ttl_clr)
-        self.win.attroff(ttl_atr | ttl_clr)
-        
-    #       update_textbox
-    def update_textbox(self, refresh=False):
-        if self.textbox != None:
-            self.textbox.update(refresh)
-
-    #       draw_textbox
-    def draw_textbox(self):
-        if self.textbox != None:
-            self.textbox.drawtext()
-
-    #       reset_textbox
-    def reset_textbox(self, text=""):
-        if self.textbox != None:
-            self.textbox.resettext(text)
-
-    #       clear_textbox
-    def clear_textbox(self):
-        if self.textbox != None:
-            self.textbox.cleartext()
-
-    ###########################################################################
-
-    ##       get_relxy
-    #def get_relxy(self):                                                      
-    #    return (self.ppanel.y - self.y, self.ppanel.x - self.x)
+                                                                
+#/\/\/\ ITEM FUNCTIONS  \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
      
-# . . . . E N D . . . C L A S S . . . D E F I N I T I O N . . . . . . . . . . . 
+    def loadItems(self):
+        for i in range(0, self.item_count):
+            self.items[self.item_indexes[i]].load()
+        
+    def drawItems(self):
+        for i in range(0, self.item_count):
+            self.items[self.item_indexes[i]].draw()
 
+    def getItemByName(self, item_name):
+            if item_name in self.items:
+                return self.items[item_name]
 
+    def prevItem(self):
+        """ defocus current item in focus indices and focus item before it"""
+        if self.item_count == 0:                                         return
+          
+        prev_focus_index = self.focus_index 
+        while True:
+            if self.focus_index < 0:                       self.focus_index = 0
+            else:                                         self.focus_index -= 1    
 
+            if self.focus_index == prev_focus_index:                     return                                     
+            elif self.focus_index == -1: 
+                self.focus_index = self.item_count - 1
+            
+            item_key = self.item_indexes[self.focus_index]
+            if self.items[item_key].focusable == True:                    break
+
+        self.changeFocusItem(item_key)
+
+    def nextItem(self):
+        """ defocus current item in focus indices and focus item after it"""
+        if self.item_count == 0:                                         return
+          
+        prev_focus_index = self.focus_index 
+        while True:
+            if self.focus_index < 0:                       self.focus_index = 0
+            else:                                         self.focus_index += 1
+
+            if self.focus_index == prev_focus_index:                     return
+            elif self.focus_index == self.item_count:      self.focus_index = 0
+            
+            item_key = self.item_indexes[self.focus_index]
+            if self.items[item_key].focusable == True:                    break
+
+        self.changeFocusItem(item_key)
+        
+    def changeFocusItem(self, new_key):
+        """ switches focus from current focused item to new item """
+        self._defocusItem()
+        self._focusItem(new_key)
+
+    def _focusItem(self, item_key):
+        """ apply focus to panel child item """
+        self.is_item_focused     = True
+        self.focus_key           = item_key
+        self.focus_index         = self.item_indexes.index(item_key)
+        self.focus_item          = self.items[item_key]
+        self.focus_item.focus()
+        
+    def _defocusItem(self):
+        """ remove focus from panel child item """
+        if self.focus_item != None:
+            self.focus_item.defocus()  
+            self.is_item_focused = False
+            self.focus_key       = ""
+            self.focus_index     = -1
+            self.focus_item      = None
+                     
+#/\/  TEXTBOX FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+    def loadTextbox(self):
+        if self.textbox != None:                            self.textbox.load()
+
+    def drawTextbox(self):
+        """ draws textbox data to physical screen """
+        if self.textbox != None:                        self.textbox.drawText()
+
+    def resetTextbox(self, text=""):
+        """ resets textbox data to text or empty string """
+        if self.textbox != None:                   self.textbox.resetText(text)
+
+    def clearTextbox(self):
+        """ clears textbox text from physical screen """
+        if self.textbox != None:                       self.textbox.clearText()
+
+    def turnPage(self, direction, target):
+        """ turns textbox page and redraws textbox"""
+        if target == "self":
+            if self.textbox != None:
+                self.textbox.turnPage(direction)
+                self.drawTextbox()
+        elif target == "infotar":
+            if self.infotar != None:
+                self.infotar.turnPage(direction, "self")
