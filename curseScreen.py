@@ -91,10 +91,10 @@ class CurseScreen(object):
         if "log_name" in self.global_storage:
             name = copy.copy(self.global_storage["log_name"])
             pw = copy.copy(self.global_storage["log_pw"])
-            self.user_strip.title = "USERNAME: "+name.ljust(20)+\
+            self.user_strip.title = " USERNAME: "+name.ljust(20)+\
                 "PASSWORD: "+pw.ljust(20) 
-    def drawUserStripInfo(self):
-        self.user_strip.refreshPanel()
+
+    def drawUserStripInfo(self):                 self.user_strip.refreshPanel()
          
     #/\ PANEL FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 

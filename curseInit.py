@@ -61,7 +61,7 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #---------------|test_scr_user_strip--------|-|--------------01-00-..-..
 #---------------|test_scr_upper_infopanel---|-|--------------01-01-..-..
 #---------------|---------------------------|X|--------------01-01-00-..
-#---------------|test_scr_left_mid_panel----|-|--------------01-02-..-..
+#---------------|test_scr_l_mid_panel-------|-|--------------01-02-..-..
 #---------------|test_scr_r_mid_panel-------|-|--------------01-03-..-..
 #---------------|---------------------------|-|list_hdr------01-03-..-00
 #---------------|---------------------------|-|item1---------01-03-..-01
@@ -80,15 +80,16 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #---------------|---------------------------|X|--------------02-03-00-..
 #---------------|acct_scr_SE_text_art-------|-|--------------02-04-..-..
 #---------------|---------------------------|X|--------------02-04-00-..
-#---------------|acct_scr_mid_back_panel----|-|--------------02-08-..-..
+#---------------|acct_scr_back_panel--------|-|--------------02-10-..-..
+#---------------|acct_scr_mid_back_panel----|-|--------------02-07-..-..
 #---------------|acct_scr_mid_panel---------|-|--------------02-05-..-..
 #---------------|---------------------------|-|username------02-05-..-00 IFUNC_001
 #---------------|---------------------------|-|password------02-05-..-01 IFUNC_002
 #---------------|---------------------------|-|submit_acct---02-05-..-02 IFUNC_003
 #---------------|acct_scr_infobox-----------|-|--------------02-06-..-..
 #---------------|---------------------------|X|--------------02-06-00-..
-#---------------|acct_scr_name_strip--------|-|--------------02-07-..-..
-#---------------|acct_scr_pw_strip----------|-|--------------02-08-..-..
+#---------------|acct_scr_name_strip--------|-|--------------02-08-..-..
+#---------------|acct_scr_pw_strip----------|-|--------------02-09-..-..
 #about_screen---|---------------------------|-|--------------03-..-..-..
 #---------------|about_scr_user_strip-------|-|--------------03-00-..-..
 #---------------|about_scr_bg_text_art------|-|--------------03-01-..-..
@@ -111,7 +112,17 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #usermain_screen|---------------------------|-|--------------05-..-..-..
 #---------------|usermain_scr_bg------------|-|--------------05-00-..-..
 #---------------|usermain_scr_ustrip--------|-|--------------05-01-..-..
-#---------------|usermain_scr_menu_pnl------|-|--------------05-02-..-..
+#---------------|usermain_scr_u_info--------|-|--------------05-02-..-..
+#---------------|---------------------------|X|--------------05-02-00-..
+#---------------|usermain_scr_menu_pnl------|-|--------------05-03-..-..
+#---------------|---------------------------|-|hdr-----------05-03-..-00
+#---------------|---------------------------|-|viewDB--------05-03-..-01
+#---------------|---------------------------|-|mngDBS--------05-03-..-02
+#---------------|---------------------------|-|cfgAcct-------05-03-..-03
+#---------------|---------------------------|-|logout--------05-03-..-04
+#---------------|usermain_scr_r_pnl---------|-|--------------05-04-..-..
+#---------------|usermain_scr_l_info--------|-|--------------05-05-..-..
+#---------------|---------------------------|X|--------------05-05-00-..
 
 
 #--- TITLE SCREEN: "title_screen"-----------------------------------00-..-..-..
@@ -184,14 +195,14 @@ def init_screens(curse_container):
     "can_panel_change"  : False,
     "style"             : curseStyles["dashscrbg"]})
     # 05-..-..-..
-    #curseScreens["usermain_screen"]    = CurseScreen(**{
-    #"global_storage"    : global_storage,
-    #"user_strip"        : "usermain_scr_ustrip",
-    #"key_action_map"    : key_action_map,
-    #"act_msg_map"       : default_msg_map,
-    #"default_focus_key" : "usermain_scr_menu_pnl",
-    #"can_panel_change"  : False,
-    #"style"             : curseStyles["dashscrbg"]})
+    curseScreens["usermain_screen"] = CurseScreen(**{
+    "global_storage"    : global_storage,
+    "user_strip"        : "usermain_scr_ustrip",
+    "key_action_map"    : key_action_map,
+    "act_msg_map"       : default_msg_map,
+    "default_focus_key" : "usermain_scr_menu_pnl",
+    "can_panel_change"  : True,
+    "style"             : curseStyles["dashscrbg"]})
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -207,11 +218,13 @@ def init_panels(curse_container):
 
     curseScreens = curse_container["screens"]
     curseStyles = curse_container["styles"]
+
     title_screen    = curseScreens["title_screen"]
     test_screen     = curseScreens["test_screen"]
     account_screen  = curseScreens["account_screen"]  
     about_screen    = curseScreens["about_screen"]
-    login_screen    = curseScreens["login_screen"]  
+    login_screen    = curseScreens["login_screen"]
+    user_screen     = curseScreens["usermain_screen"]  
 
     panel_msg_map = curse_container["act_msg_maps"]["panel_msg_map"]
     global_storage = curse_container["global_storage"]
@@ -253,20 +266,20 @@ def init_panels(curse_container):
 
     # 01-00-..-..      y, x, h, w
     test_screen.panels["test_scr_user_strip"]              = CursePanel(**{
-    "global_storage" : global_storage,
+    "global_storage": global_storage,
     "parent"        : test_screen,
     "size"          : (0, 0, 1, 80),  
     "style"         : curseStyles["user_strip"]})
     # 01-01-..-.. 
     test_screen.panels["test_scr_upper_infopanel"]         = CursePanel(**{
-    "global_storage"       : global_storage,
+    "global_storage": global_storage,
     "parent"        : test_screen,    
     "size"          : (1, 0, 5, 80),
     "style"         : curseStyles["infobox1"],    
     "title"         : ("(INFOBOX 1)", 0, 1)})
     # 01-02-..-..
-    test_screen.panels["test_scr_left_mid_panel"]          = CursePanel(**{
-    "global_storage"       : global_storage,
+    test_screen.panels["test_scr_l_mid_panel"]             = CursePanel(**{
+    "global_storage": global_storage,
     "parent"        : test_screen,
     "act_msg_map"   : panel_msg_map,
     "size"          : (6, 0, 12, 20),
@@ -277,9 +290,9 @@ def init_panels(curse_container):
     "infotar"       : "test_scr_upper_infopanel"})
     # 01-03-..-..
     test_screen.panels["test_scr_r_mid_panel"]             = CursePanel(**{
-    "global_storage" : global_storage,
+    "global_storage": global_storage,
     "parent"        : test_screen,
-    "act_msg_map": panel_msg_map,
+    "act_msg_map"   : panel_msg_map,
     "size"          : (6, 20, 12, 69), 
     "style"         : curseStyles["middlepanes"],    
     "focusable"     : True,
@@ -288,7 +301,7 @@ def init_panels(curse_container):
     "infotar"       : "test_scr_upper_infopanel"})
     # 01-04-..-..
     test_screen.panels["test_scr_lower_infopanel"]         = CursePanel(**{
-    "global_storage" : global_storage,
+    "global_storage": global_storage,
     "parent"        : test_screen,
     "size"          : (18, 0, 4, 80),
     "style"         : curseStyles["infobox2"]})
@@ -304,7 +317,7 @@ def init_panels(curse_container):
     test_screen.panel_indexes = [
         "test_scr_user_strip", 
         "test_scr_upper_infopanel",
-        "test_scr_left_mid_panel",
+        "test_scr_l_mid_panel",
         "test_scr_r_mid_panel",
         "test_scr_lower_infopanel",
         "test_scr_input_strip"]
@@ -340,7 +353,7 @@ def init_panels(curse_container):
     "parent"        : account_screen,
     "size"          : (12, 51, 13, 30), 
     "style"         : curseStyles["dashscrbg"]})
-    # 02-08-..-..
+    # 02-07-..-..
     account_screen.panels["acct_scr_mid_back_panel"]       = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : account_screen,
@@ -361,22 +374,22 @@ def init_panels(curse_container):
     "parent"        : account_screen,
     "size"          : (17, 29, 6, 22),
     "style"         : curseStyles["infobox2"]})
-    # 02-07-..-..
+    # 02-08-..-..
     account_screen.panels["acct_scr_name_strip"]           = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : account_screen,
     "title"         : ( "ACCOUNT NAME".center(18), 0, 0), 
     "size"          : (11, 31, 2, 18),
     "style"         : curseStyles["input_strip3"]})
-    # 02-08-..-..
+    # 02-09-..-..
     account_screen.panels["acct_scr_pw_strip"]             = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : account_screen,
     "title"         : ( "ACCOUNT PASSWORD".center(18), 0, 0), 
     "size"          : (13, 31, 2, 18),
     "style"         : curseStyles["input_strip3"]})
-    # 02-09-..-..
-    account_screen.panels["acct_scr_back_panel"]             = CursePanel(**{
+    # 02-10-..-..
+    account_screen.panels["acct_scr_back_panel"]           = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : account_screen,
     "size"          : (1, 26, 24, 26),
@@ -496,6 +509,60 @@ def init_panels(curse_container):
         "login_scr_pw_strip"]
     login_screen.panel_count = len(login_screen.panel_indexes)
 
+    # 05-00-..-..
+    user_screen.panels["usermain_scr_bg"]                  = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,
+    "size"          : (0, 0, 24, 80),
+    "style"         : curseStyles["title_panel"]}) 
+    # 05-01-..-..
+    user_screen.panels["usermain_scr_ustrip"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,
+    "size"          : (0, 0, 1, 80),
+    "style"         : curseStyles["user_strip"]})  
+    # 05-02-..-..
+    user_screen.panels["usermain_scr_u_info"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,    
+    "size"          : (1, 0, 5, 80),
+    "style"         : curseStyles["infobox1"]})
+    # 05-03-..-..
+    user_screen.panels["usermain_scr_menu_pnl"]            = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,
+    "title"         : ("USER MAIN MENU".center(18), 2, 1),
+    "act_msg_map"   : panel_msg_map,
+    "size"          : (6, 0, 12, 26 ),
+    "style"         : curseStyles["middlepanes"],   
+    "focusable"     : True,
+    "info"          : "press SPACE to select menu option".center(72),
+    "infotar"       : "usermain_scr_u_info"})
+    # 05-04-..-..
+    user_screen.panels["usermain_scr_r_pnl"]               = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,
+    "act_msg_map"   : panel_msg_map,
+    "size"          : (6, 26, 12, 54), 
+    "style"         : curseStyles["middlepanes"],    
+    "focusable"     : True,
+    "info"          : "",
+    "infotar"       : "usermain_scr_u_info"})
+    # 05-05-..-..
+    user_screen.panels["usermain_scr_l_info"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,
+    "size"          : (18, 0, 5, 80),
+    "style"         : curseStyles["infobox2"]})
+
+    user_screen.panel_indexes = [
+        "usermain_scr_bg",
+        "usermain_scr_u_info",
+        "usermain_scr_menu_pnl",
+        "usermain_scr_r_pnl",
+        "usermain_scr_l_info",
+        "usermain_scr_ustrip"]
+    user_screen.panel_count = len(user_screen.panel_indexes)
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -509,13 +576,14 @@ def init_items(curse_container):
     curseStyles         = curse_container["styles"]
     curseScreens        = curse_container["screens"]
 
-    global_storage = curse_container["global_storage"]
+    global_storage      = curse_container["global_storage"]
 
-    title_panels   = curseScreens["title_screen"].panels
-    test_panels    = curseScreens["test_screen"].panels
-    account_panels = curseScreens["account_screen"].panels
-    about_scr_panels   = curseScreens["about_screen"].panels
-    login_scr_panels   = curseScreens["login_screen"].panels
+    title_panels        = curseScreens["title_screen"].panels
+    test_panels         = curseScreens["test_screen"].panels
+    account_panels      = curseScreens["account_screen"].panels
+    about_scr_panels    = curseScreens["about_screen"].panels
+    login_scr_panels    = curseScreens["login_screen"].panels
+    user_scr_panels     = curseScreens["usermain_screen"].panels
     
     # 00-01-..-00
     title_panels["title_scr_panel"].items["login_link"]     = CurseItem(**{
@@ -565,11 +633,12 @@ def init_items(curse_container):
         recv_act    = "changeScreen",
         recv_args   = ["about_screen"],
         ret_info    = None)})
-    title_panels["title_scr_panel"].item_count = 3
     title_panels["title_scr_panel"].item_indexes = [
         "login_link", 
         "act_create_lk", 
         "about_DB_link"]
+    title_panels["title_scr_panel"].item_count = len(
+        title_panels["title_scr_panel"].item_indexes)
 
     # 01-03-..-00
     test_panels["test_scr_r_mid_panel"].items["list_hdr"]   = CurseItem(**{
@@ -604,12 +673,13 @@ def init_items(curse_container):
     "size"          : (5, 3, 4, 10), # y, x, h, w
     "style"         : test_panels["test_scr_r_mid_panel"].style,
     "label"         : "item3"})
-    test_panels["test_scr_r_mid_panel"].item_count = 4
     test_panels["test_scr_r_mid_panel"].item_indexes = [
         "list_hdr", 
         "item1", 
         "item2",
         "item3"]
+    test_panels["test_scr_r_mid_panel"].item_count = len(
+        test_panels["test_scr_r_mid_panel"].item_indexes)
 
     # 02-05-..-00       IFUNC_001
     account_panels["acct_scr_mid_panel"].items["username"]  = CurseItem(**{
@@ -669,11 +739,12 @@ def init_items(curse_container):
         recv_act    = "submitAccount",
         recv_args   = [],
         ret_info    = None)})
-    account_panels["acct_scr_mid_panel"].item_count = 3
     account_panels["acct_scr_mid_panel"].item_indexes = [
         "username", 
         "password",
         "submit_acct"]
+    account_panels["acct_scr_mid_panel"].item_count = len(
+        account_panels["acct_scr_mid_panel"].item_indexes)
 
     # 03-..-..-..
     pass
@@ -736,20 +807,74 @@ def init_items(curse_container):
         recv_act    = "logSubmit",
         recv_args   = [],
         ret_info    = None)})
-    login_scr_panels["login_scr_menu_pnl"].item_count = 3
     login_scr_panels["login_scr_menu_pnl"].item_indexes = [
         "logname", 
         "logpw",
         "logsubmit"]
+    login_scr_panels["login_scr_menu_pnl"].item_count = len(
+        login_scr_panels["login_scr_menu_pnl"].item_indexes)
+
+    # 05-03-..-00
+    user_scr_panels["usermain_scr_menu_pnl"].items["hdr"]    =CurseItem(**{
+    "global_storage" : global_storage,
+    "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
+    "parent_screen"  : curseScreens["usermain_screen"],
+    "size"          : (3, 3, 4, 20), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
+    "label"         : "",
+    "focusable"     : False })
+    # 05-03-..-01
+    user_scr_panels["usermain_scr_menu_pnl"].items["viewDB"]= CurseItem(**{
+    "global_storage" : global_storage,
+    "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
+    "parent_screen"  : curseScreens["usermain_screen"],
+    "size"          : (4, 3, 4, 20), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
+    "label"         : "view database"})
+    # 05-03-..-02
+    user_scr_panels["usermain_scr_menu_pnl"].items["mngDBS"]= CurseItem(**{
+    "global_storage" : global_storage,
+    "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
+    "parent_screen"  : curseScreens["usermain_screen"],
+    "size"          : (5, 3, 4, 20), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
+    "label"         : "manage databases"})
+    # 05-03-..-03
+    user_scr_panels["usermain_scr_menu_pnl"].items["cfgAcct"]=CurseItem(**{
+    "global_storage" : global_storage,
+    "parent"       : user_scr_panels["usermain_scr_menu_pnl"],
+    "parent_screen"  : curseScreens["usermain_screen"],
+    "size"          : (6, 3, 4, 20), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
+    "label"         : "edit account options"})
+    # 05-03-..-04
+    user_scr_panels["usermain_scr_menu_pnl"].items["logout"]= CurseItem(**{
+    "global_storage" : global_storage,
+    "parent"       : user_scr_panels["usermain_scr_menu_pnl"],
+    "parent_screen"  : curseScreens["usermain_screen"],
+    "size"          : (7, 3, 4, 20), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_menu_pnl"].style,
+    "label"         : "log out"})
+    user_scr_panels["usermain_scr_menu_pnl"].item_indexes = [
+        "hdr", 
+        "viewDB", 
+        "mngDBS",
+        "cfgAcct",
+        "logout"]
+    user_scr_panels["usermain_scr_menu_pnl"].item_count = len(
+        user_scr_panels["usermain_scr_menu_pnl"].item_indexes)
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def init_textboxes(curse_container):
+
     title_panels   = curse_container["screens"]["title_screen"].panels
     test_panels    = curse_container["screens"]["test_screen"].panels
     account_panels = curse_container["screens"]["account_screen"].panels
     about_panels   = curse_container["screens"]["about_screen"].panels
     login_panels   = curse_container["screens"]["login_screen"].panels
+    usermain_panels   = curse_container["screens"]["usermain_screen"].panels
+
     curse_styles   = curse_container["styles"]
     
     # 00-01-00-..          y, x, h, w  
@@ -842,10 +967,22 @@ def init_textboxes(curse_container):
             parent      = login_panels["login_scr_infobox"],
             base_text   = "select field and press SPACE to begin "\
                            "entry",              
-            size        = (2, 2, 6, 18),   
+            size        = (1, 2, 6, 18),   
             style       = curse_styles["infobox2"],
             center      = True))
-    pass
+    
+    # 05-02-00-..          y, x, h, w 
+    usermain_panels["usermain_scr_u_info"].textbox   = CurseTextbox(**dict(
+        parent      = usermain_panels["usermain_scr_u_info"],
+        base_text   = "",
+        size        = (1, 4, 3, 72),  
+        style       = curse_styles["infobox1"]))
+    # 05-05-00-..
+    usermain_panels["usermain_scr_l_info"].textbox   = CurseTextbox(**dict(
+        parent      = usermain_panels["usermain_scr_l_info"],
+        base_text   = "",
+        size        = (0, 1, 3, 78), 
+        style       = curse_styles["infobox2"]))
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -891,7 +1028,7 @@ def init_act_msg_maps():
                 recv_act    = "prevPanel",
                 recv_args   = None,
                 ret_info    = None),
-            "forward"      : dict(  msg_status  = "unread", 
+            "forward"   : dict(  msg_status  = "unread", 
                 send_layer  = "screen", 
                 recv_layer  = "self", 
                 recv_name   = "self",   
@@ -914,6 +1051,22 @@ def init_act_msg_maps():
                 on_recv     = "call_function", 
                 recv_act    = "changeScreen", 
                 recv_args   = ["_previous"],
+                ret_info    = None),
+            "user_scr"  : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "main", 
+                recv_name   = "main",   
+                on_recv     = "call_function", 
+                recv_act    = "changeScreen", 
+                recv_args   = ["usermain_screen"],
+                ret_info    = None),
+            "test_scr"  : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "main", 
+                recv_name   = "main",   
+                on_recv     = "call_function", 
+                recv_act    = "changeScreen", 
+                recv_args   = ["test_screen"],
                 ret_info    = None)},
         "panel_msg_map" : {
             "left"      : dict(  msg_status  = "unread", 
@@ -963,9 +1116,9 @@ def init_funcs(curse_container):
     curseStyles         = curse_container["styles"]
     curseScreens        = curse_container["screens"]
 
-    title_panels   = curseScreens["title_screen"].panels
-    test_panels    = curseScreens["test_screen"].panels
-    account_panels = curseScreens["account_screen"].panels
+    title_panels       = curseScreens["title_screen"].panels
+    test_panels        = curseScreens["test_screen"].panels
+    account_panels     = curseScreens["account_screen"].panels
     about_scr_panels   = curseScreens["about_screen"].panels
     login_screen       = curseScreens["login_screen"]
     login_scr_panels   = login_screen.panels
@@ -979,15 +1132,13 @@ def init_funcs(curse_container):
     #tscreen = curseScreens["title_screen"]
     #tscreenshowUserInfo = MethodType(showUserInfo,tscreen)
 
-    # 00-..-..-..
-    pass
-
-    # 01-..-..-..
-    pass
-
-    # 02-05-..-00       IFUNC_001
     min = 4
     max = 18
+    # 00-..-..-..
+    pass
+    # 01-..-..-..
+    pass
+    # 02-05-..-00       IFUNC_001
     def createAcctName(self):
         """ get user password and store it for validation """
         result = self.getUserString("1100", curses.color_pair(10), 
@@ -1022,10 +1173,8 @@ def init_funcs(curse_container):
     def submitAccount(self):pass
     act_item3       = account_panels["acct_scr_mid_panel"].items["submit_acct"]
     act_item3.submitAccount   = MethodType(submitAccount, act_item3, CurseItem)
-
     # 03-..-..-..
     pass
-
     # 04-02-..-00       IFUNC_004
     def loginName(self):
         """ get user login name and store it for validation """
@@ -1064,6 +1213,9 @@ def init_funcs(curse_container):
     def logSubmit(self):pass
     log_item3     = login_scr_panels["login_scr_menu_pnl"].items["logsubmit"]
     log_item3.logSubmit       = MethodType(logSubmit, log_item3, CurseItem)
+    # 05-..-..-..
+
+
 
 def load_globals(curse_container):
     curse_container["global_storage"]["log_name"] = "NONE"

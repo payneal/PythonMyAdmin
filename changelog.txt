@@ -1,7 +1,13 @@
 $$$$$$$$$$$$$$$$$$$$$$ CURSEDB UI CODE CHANGELOG $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 $$$$$$$$$$$$$$$$$$$$$ SCROLL DOWN FOR OLD UPDATES $$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-04AUG15, UPDATE 1--------------------------------------------------------------
+04AUG15, UPDATE 2--------------------------------------------------------------
+
+1.	Started on "user main" screen. Press "u" to jump to that page, since 
+	normally the only way to get there is to actually log in and we haven't
+	implemented that yet.
+
+04AUG15, UPDATE 1 -------------------------------------------------------------
 
 General Info:
 
