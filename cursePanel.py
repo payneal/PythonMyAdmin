@@ -47,6 +47,8 @@ class CursePanel(object):
         if "focusable" in kwargs:        self.focusable = kwargs["focusable"]
         else:                            self.focusable = False     
 
+        if "_inner_text" in kwargs:     self._inner_text = kwargs["_inner_text"]
+
         self.items                  = {} # dict of item name : item object pairs
         self.item_indexes           = [] # list of item names
         self.item_count             = 0
@@ -115,10 +117,20 @@ class CursePanel(object):
             self.drawTextbox()
                           
     def load(self):
+        """ executes custom behavior, then does so for items and text boxes"""
         if hasattr(self, "_on_load"):
+            # to call a function on load:
+            #   "action"        = "call_function"
+            #   "action_args"   = packed list of arguments for above function
+            # to draw text to screen on load:
+            #   "action"        = "draw_text"
+            #   "action_args"   = "list of 4-tuples- each list provides a
+            #       4-tuple for addstr (y, x, character drawn, character attr)
+            #       and uses one tuple per addstr call
             if self._on_load["action"] == "call_function":
                 func = getattr(self, _on_load["action_name"])
                 func(*_on_load["action_args"])
+
         self.loadItems()
         self.loadTextbox()
 
@@ -141,6 +153,10 @@ class CursePanel(object):
 
         if self.item_count > 0:
             self._defocusItem()
+
+    def refreshPanel(self):
+        self.draw()
+        self.win.refresh()
 
 #/\/\/  PANEL DRAW FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 
@@ -170,6 +186,7 @@ class CursePanel(object):
         self._setBg(bg_chtype)                
         self._setBorder(br_chrs, br_atr, br_clr)
         self.drawTitle()
+        self.drawInnerText()
 
     def drawPanelContents(self):
         """ draws panel items and textbox to screen"""
@@ -191,6 +208,17 @@ class CursePanel(object):
         self.win.attron(ttl_atr | ttl_clr)
         self.win.addstr(self.title_y, self.title_x,self.title, ttl_atr|ttl_clr)
         self.win.attroff(ttl_atr | ttl_clr)
+
+    def drawInnerText(self):
+        """ draws hidden field _inner_text if set"""
+        #     "_inner_text"   : [ (4, 21, "--------------------"),
+        #                         (5, 21, "--------------------")]
+        if hasattr(self, "_inner_text"):
+            txt_atr = self.style.txt_atr
+            txt_clr = self.style.txt_clr
+            for t in range (0, len(self._inner_text)):
+                self.win.addstr(self._inner_text[t][0], self._inner_text[t][1],
+                                self._inner_text[t][2], txt_atr | txt_clr)
 
     def _setBg(self, bg_chtype=0):
         """ sets panel background color and attributes """

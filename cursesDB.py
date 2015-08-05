@@ -50,6 +50,7 @@ def cursedPyDbApp(scr):
     curseInit.init_textboxes(curse_container)
     curseInit.load_targets(curse_container)
     curseInit.init_funcs(curse_container)
+    curseInit.load_globals(curse_container)
 
     changeScreen("title_screen")
 
@@ -73,6 +74,8 @@ def init_action_map():
     key_action_map[str(ord("\n"))]           = "return"
     key_action_map[str(ord("q"))]            = "quit"
     key_action_map[str(ord("z"))]            = "prev_scr"
+    key_action_map[str(ord("u"))]            = "user_scr"
+    key_action_map[str(ord("t"))]            = "test_scr"
 
     key_action_map[str(curses.KEY_BTAB)]     = "back"
     key_action_map[str(ord("\t"))]           = "forward"

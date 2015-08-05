@@ -1,1 +1,17 @@
-1. 
+1. in CurseScreen.setUserStripinfo:
+	change field "log_name" back to "username" after database side code has been
+	completed
+
+2. CurseScreen.user_strip:
+	this field is set is like CursePanel/CurseItem targets; CurseScreen
+	is passed a string on instantiation that is the name of the user_strip to be 
+	assigned to the screen. This assignment actually occurs in load_targets().
+
+3. user_config.cfg:
+	make a user config file that stores non sensitive information concerning 
+	their account- e.g. what is their default query language log-in
+
+4. IMPORTANT!:
+	change string formatting that uses deprecated python 2 functions:
+		string.center, string.ljust, string.rjust to python 3 compatible
+		functions
