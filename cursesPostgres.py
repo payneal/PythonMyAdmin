@@ -23,17 +23,17 @@ def queryPostgres(json_login):
 	    	cur = con.cursor() #cursor can be used to execute SQL
 	        if json_login_parsed['query_string']:
 			cur.execute(json_login_parsed['query_string'])
-			return cur.fetchall()       
-	except psycopg2.DatabaseError, e:
-	    	print 'Error %s' % e    
-	    	return False
+			return {'True':cur.fetchall()}       
+	except psycopg2.DatabaseError, e: 
+	    	return {'False':e}
 	       
 	finally:
 	    	if con:
 			con.close()
 
+
 print "Should be success:"
-json_to_pass = '{ "username" : "postgres", "password": "", "database": "world", "query_string": "SELECT * FROM COUNTRY" }'
+json_to_pass = '{ "username" : "postgres", "password": "", "database": "world", "query_string": "SELECT * FROM COUNTRY LIMIT 3" }'
 print queryPostgres(json_to_pass)
 
 print "Should fail:"
