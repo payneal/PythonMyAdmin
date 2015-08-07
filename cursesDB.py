@@ -12,6 +12,7 @@ from curseScreen import CurseScreen
 import asciiart
 
 import curseInit
+from curseInit import CurseContainer
 
 curse_container = {}
 input_win       = None
@@ -40,9 +41,10 @@ def cursedPyDbApp(scr):
     curses.curs_set(0)
     curseStyle.init_color_pairs()       
 
-    curse_container = curseInit.init_container(
-        key_action_map, curseStyle.init_style())
-    curse_container["global_storage"]["input_win"] = input_win
+    curse_container = CurseContainer(key_action_map, curseStyle.init_style()) 
+    #curseInit.init_container(
+        #key_action_map, curseStyle.init_style())
+    curse_container.global_storage["input_win"] = input_win
 
     curseInit.init_screens(curse_container)
     curseInit.init_panels(curse_container)
@@ -120,7 +122,7 @@ def changeScreen(new_key_str):
         if previous_key != None:                     
             new_key_str = previous_key
 
-    current_screen = curse_container["screens"][new_key_str]
+    current_screen = curse_container.screens[new_key_str]
     current_screen.showScreen()     
 
     if previous_key != None:                         

@@ -48,6 +48,9 @@ class CursePanel(object):
         else:                            self.focusable = False     
 
         if "_inner_text" in kwargs:     self._inner_text = kwargs["_inner_text"]
+        if "_secondary_focus" in kwargs:
+            self._sec_foc_key        = kwargs["_secondary_focus"]
+            self._sec_foc_prereq_key = kwargs["_secondary_focus_prereq"]
 
         self.items                  = {} # dict of item name : item object pairs
         self.item_indexes           = [] # list of item names
@@ -254,39 +257,64 @@ class CursePanel(object):
             if item_name in self.items:
                 return self.items[item_name]
 
-    def prevItem(self):
+    def prevItem(self, target_key=None):
         """ defocus current item in focus indices and focus item before it"""
-        if self.item_count == 0:                                         return
-          
-        prev_focus_index = self.focus_index 
+        if target_key == None:  target = self
+
+        if target.item_count == 0:                                       return
+               
+        prev_focus_index = target.focus_index 
         while True:
-            if self.focus_index < 0:                       self.focus_index = 0
-            else:                                         self.focus_index -= 1    
+            if target.focus_index < 0:                   target.focus_index = 0
+            else:                                       target.focus_index -= 1    
 
-            if self.focus_index == prev_focus_index:                     return                                     
-            elif self.focus_index == -1: 
-                self.focus_index = self.item_count - 1
+            if target.focus_index == prev_focus_index:                   return                                     
+            elif target.focus_index == -1: 
+                target.focus_index = target.item_count - 1
             
-            item_key = self.item_indexes[self.focus_index]
-            if self.items[item_key].focusable == True:                    break
+            item_key = target.item_indexes[target.focus_index]
+            if target.items[item_key].is_active == True:
+                if target.items[item_key].focusable == True:              break
 
+        # if this panels has a secondary focus and we're changing item
+        # indices, if the next index isn't the prereq item for that
+        # secondary panel, defocus the secondary panel
+        if hasattr(target, "_sec_foc_key"):
+            sec_panel = self.parent_screen.getPanelByName(target._sec_foc_key)
+            if target._sec_foc_prereq_key == item_key:
+                 sec_panel.focus()
+            else:
+                sec_panel.defocus()
         self.changeFocusItem(item_key)
 
-    def nextItem(self):
+    def nextItem(self, target_key=None):
         """ defocus current item in focus indices and focus item after it"""
-        if self.item_count == 0:                                         return
-          
-        prev_focus_index = self.focus_index 
+        if target_key == None:   target = self
+
+        if target.item_count == 0:                                       return
+         
+        prev_focus_index = target.focus_index 
         while True:
-            if self.focus_index < 0:                       self.focus_index = 0
-            else:                                         self.focus_index += 1
+            if target.focus_index < 0:                   target.focus_index = 0
+            else:                                       target.focus_index += 1
 
-            if self.focus_index == prev_focus_index:                     return
-            elif self.focus_index == self.item_count:      self.focus_index = 0
+            if target.focus_index == prev_focus_index:                   return
+            elif target.focus_index == target.item_count:      
+                target.focus_index = 0
             
-            item_key = self.item_indexes[self.focus_index]
-            if self.items[item_key].focusable == True:                    break
-
+            item_key = self.item_indexes[target.focus_index]
+            if target.items[item_key].is_active == True:
+                if target.items[item_key].focusable == True:              break
+       
+        # if this panels has a secondary focus and we're changing item
+        # indices, if the next index isn't the prereq item for that
+        # secondary panel, defocus the secondary panel
+        if hasattr(target, "_sec_foc_key"):
+            sec_panel = self.parent_screen.getPanelByName(target._sec_foc_key)
+            if target._sec_foc_prereq_key == item_key:
+                 sec_panel.focus()
+            else:
+                sec_panel.defocus()
         self.changeFocusItem(item_key)
         
     def changeFocusItem(self, new_key):

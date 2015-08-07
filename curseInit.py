@@ -121,6 +121,9 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #---------------|---------------------------|-|cfgAcct-------05-03-..-03
 #---------------|---------------------------|-|logout--------05-03-..-04
 #---------------|usermain_scr_r_pnl---------|-|--------------05-04-..-..
+#---------------|---------------------------|-|hdr-----------05-04-..-00T
+#---------------|---------------------------|-|viewDB--------05-04-..-01T
+#---------------|---------------------------|-|mngDBS--------05-04-..-02T
 #---------------|usermain_scr_l_info--------|-|--------------05-05-..-..
 #---------------|---------------------------|X|--------------05-05-00-..
 #viewDB_screen--|---------------------------|-|--------------06-..-..-..
@@ -144,27 +147,62 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #--- ABOUT SCREEN: "about_screen"-----------------------------------03-..-..-..
 #--- LOGIN SCREEN --------------------------------------------------04-..-..-..
 
-def init_container(key_acts, curseStyles):
-    curse_container = dict(
-        key_action_map  = key_acts,
-        act_msg_maps = init_act_msg_maps(),    
-        styles          = curseStyles,
-        screens         = {},
-        global_storage  = {}) 
-    return curse_container 
+class CurseContainer(object):
+    def __init__(self, *args):
+        self.key_action_map = args[0]
+        self.styles         = args[1]
+        self.act_msg_maps   = init_act_msg_maps()
+        self.screens        = {}
+        self.global_storage = {}
+
+    def getScreenByName(self, screen_key):
+        if screen_key in self.screens:
+            return self.screens[screen_key]
+        return None
+
+    def getPanelByName(self, panel_key):
+        for screen_key in self.screens:
+            screen = self.screens[screen_key]
+            if panel_key in screen.panels:
+                return screen.panels[panel_key]
+        return None
+
+    def getItemByName(self, item_key):
+        for screen_key in self.screens:
+            screen = self.screens[screen_key]
+            for panel_key in screen.panels:
+                panel = screen.panels[panel_key]
+                if item_key in panel.items:
+                    return panel.items[item_key]
+        return None
+
+    def getTextboxByName(self, textbox_parent_key):
+        for screen_key in self.screens:
+            screen = self.screens[screen_key]
+            if textbox_parent_key in screen.panels:
+                panel = screen.panels[textbox_parent_key]
+                if panel.textbox != None:
+                    return panel.textbox               
+        return None
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def init_screens(curse_container):
     global layers
-    key_action_map      = curse_container["key_action_map"]
-    curseStyles         = curse_container["styles"]
-    curseScreens        = curse_container["screens"]
+    key_action_map      = curse_container.key_action_map #["key_action_map"]
+    curseStyles         = curse_container.styles         #["styles"]
+    curseScreens        = curse_container.screens        #["screens"]
 
-    default_msg_map     = curse_container["act_msg_maps"]["screen"]
-    global_storage      = curse_container["global_storage"]
+    default_msg_map     = curse_container.act_msg_maps["screen"]  
+    #["act_msg_maps"]["screen"]
+    usermain_msg_map    = curse_container.act_msg_maps["user_screen"] 
+    #["act_msg_maps"]["user_screen"]
+    global_storage      = curse_container.global_storage #["global_storage"]
 
     # 00-..-..-..                     
     curseScreens["title_screen"]    = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "title_scr_user_strip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -174,6 +212,7 @@ def init_screens(curse_container):
     # 01-..-..-..
     curseScreens["test_screen"]     = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "test_scr_user_strip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -183,6 +222,7 @@ def init_screens(curse_container):
     # 02-..-..-..
     curseScreens["account_screen"]  = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "acct_scr_user_strip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -192,6 +232,7 @@ def init_screens(curse_container):
     # 03-..-..-..
     curseScreens["about_screen"]    = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "about_scr_user_strip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -201,6 +242,7 @@ def init_screens(curse_container):
     # 04-..-..-..
     curseScreens["login_screen"]    = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "login_scr_user_strip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -210,15 +252,17 @@ def init_screens(curse_container):
     # 05-..-..-..
     curseScreens["usermain_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "usermain_scr_ustrip",
     "key_action_map"    : key_action_map,
-    "act_msg_map"       : default_msg_map,
+    "act_msg_map"       : usermain_msg_map,
     "default_focus_key" : "usermain_scr_menu_pnl",
     "can_panel_change"  : True,
     "style"             : curseStyles["dashscrbg"]})
     # 06-..-..-..
     curseScreens["viewDB_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "viewDB_scr_ustrip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -228,6 +272,7 @@ def init_screens(curse_container):
     # 07-..-..-..
     curseScreens["manageDB_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "mngDBS_scr_ustrip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -237,6 +282,7 @@ def init_screens(curse_container):
     # 08-..-..-..
     curseScreens["cfg_acct_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
+    "screens"           : curseScreens,
     "user_strip"        : "cfgAcct_scr_ustrip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
@@ -256,8 +302,8 @@ def init_panels(curse_container):
         panel.infotar           (set in load_targets)  
     """
 
-    curseScreens = curse_container["screens"]
-    curseStyles = curse_container["styles"]
+    curseScreens = curse_container.screens      #["screens"]
+    curseStyles = curse_container.styles        #["styles"]
 
     title_screen    = curseScreens["title_screen"]
     test_screen     = curseScreens["test_screen"]
@@ -269,8 +315,9 @@ def init_panels(curse_container):
     mngDBS_screen   = curseScreens["manageDB_screen"]  
     cfgAcct_screen  = curseScreens["cfg_acct_screen"]    
 
-    panel_msg_map = curse_container["act_msg_maps"]["panel_msg_map"]
-    global_storage = curse_container["global_storage"]
+    panel_msg_map = curse_container.act_msg_maps["panel_msg_map"]
+    #["act_msg_maps"]["panel_msg_map"]
+    global_storage = curse_container.global_storage #["global_storage"]
                                                                                
     # 00-03-..-..      y, x, h, w
     title_screen.panels["title_scr_background"]            = CursePanel(**{
@@ -296,7 +343,7 @@ def init_panels(curse_container):
     title_screen.panels["title_scr_infopanel"]             = CursePanel(**{
     "global_storage"       : global_storage,
     "parent"        : title_screen,
-    "size"          : (21, 0, 1, 80),   
+    "size"          : (23, 0, 1, 80),   
     "style"         : curseStyles["infobox2"]})
     # panels are updated/ drawn in the order below- this affects
     # overlapping panels so pay attention to this!      
@@ -366,7 +413,7 @@ def init_panels(curse_container):
         "test_scr_input_strip"]
     test_screen.panel_count = len(test_screen.panel_indexes)
                            
-    # 02-00-..-..      y, x, h, w
+    ## 02-00-..-..      y, x, h, w
     account_screen.panels["acct_scr_user_strip"]           = CursePanel(**{
     "global_storage"       : global_storage,
     "parent"        : account_screen,
@@ -472,10 +519,10 @@ def init_panels(curse_container):
     "size"          : (1, 61, 21, 19),
     "style"         : curseStyles["middlepanes2"]})
     # 03-03-..-..
-    about_screen.panels["about_scr_info_strip"]            = CursePanel(**{
+    about_screen.panels["about_scr_footer"]            = CursePanel(**{
     "global_storage" : global_storage,
     "parent"        : about_screen,
-    "size"          : (22, 0, 1, 80), # x. 23->22
+    "size"          : (23, 0, 1, 80), # x. 23->22
     "style"         : curseStyles["infobox2"],
     "title"         : (
         "Press Z to return to Title Screen, if you dare...".center(79), 0, 0)})
@@ -485,7 +532,7 @@ def init_panels(curse_container):
         "about_scr_user_strip", 
         "about_scr_bg_text_art",
         "about_scr_team_txt_panel",
-        "about_scr_info_strip"]
+        "about_scr_footer"]
     about_screen.panel_count = len(about_screen.panel_indexes)
 
     # 04-00-..-..      y, x, h, w
@@ -498,7 +545,7 @@ def init_panels(curse_container):
     login_screen.panels["login_scr_mid_bg_panel"]          = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : login_screen,
-    "size"          : (9, 29, 6, 22),
+    "size"          : (9, 29, 7, 22),
     "style"         : curseStyles["middlepanes"]})
     # 04-01-..-.. 
     login_screen.panels["login_scr_user_strip"]            = CursePanel(**{
@@ -517,7 +564,7 @@ def init_panels(curse_container):
     # 04-03-..-..
     login_screen.panels["login_scr_infobox"]               = CursePanel(**{
     "global_storage": global_storage,
-    "parent"        : account_screen,
+    "parent"        : login_screen,
     "size"          : (8, 51, 9, 22),
     "style"         : curseStyles["infobox2"]})
     # 04-04-..-..
@@ -532,13 +579,26 @@ def init_panels(curse_container):
     "parent"        : login_screen,
     "size"          : (12, 31, 1, 18),
     "style"         : curseStyles["input_strip2"]})
+    # 04-08-..-..
+    login_screen.panels["login_scr_db_strip"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : login_screen,
+    "size"          : (13, 31, 1, 18),
+    "style"         : curseStyles["input_strip2"]})
     # 04-07
     login_screen.panels["login_scr_title_panel"]           = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : login_screen,
     "title"         : ("ACCOUNT LOGIN".center(16), 1, 3),
     "size"          : (4, 29, 3, 22),
-    "style"         : curseStyles["middlepanes3"]})                            
+    "style"         : curseStyles["middlepanes3"]})
+    # 04-09
+    login_screen.panels["login_scr_footer"]                = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : login_screen,
+    "size"          : (23, 0, 1, 80),
+    "style"         : curseStyles["input_strip"]})
+                                
     # panels are updated/ drawn in the order below- this affects
     # overlapping panels so pay attention to this!
     login_screen.panel_indexes = [
@@ -549,7 +609,9 @@ def init_panels(curse_container):
         "login_scr_title_panel",
         "login_scr_infobox",
         "login_scr_name_strip",
-        "login_scr_pw_strip"]
+        "login_scr_pw_strip",
+        "login_scr_db_strip",
+        "login_scr_footer"]
     login_screen.panel_count = len(login_screen.panel_indexes)
 
     # 05-00-..-..      y, x, h, w
@@ -580,17 +642,21 @@ def init_panels(curse_container):
     "style"         : curseStyles["middlepanes"],   
     "focusable"     : True,
     "info"          : "press SPACE to select menu option".center(72),
-    "infotar"       : "usermain_scr_u_info"})
+    "infotar"       : "usermain_scr_u_info",
+    "_secondary_focus"       : "usermain_scr_r_pnl",
+    "_secondary_focus_prereq": "viewDB_lnk"})
     # 05-04-..-..
     user_screen.panels["usermain_scr_r_pnl"]               = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : user_screen,
+    "title"         : ("ACCOUNT DATABASES".center(19), 0, 2),
     "act_msg_map"   : panel_msg_map,
-    "size"          : (6, 26, 12, 54), 
+    "size"          : (6, 26, 12, 24), 
     "style"         : curseStyles["middlepanes"],    
     "focusable"     : True,
     "info"          : "",
     "infotar"       : "usermain_scr_u_info"})
+
     # 05-05-..-..
     user_screen.panels["usermain_scr_l_info"]              = CursePanel(**{
     "global_storage": global_storage,
@@ -695,8 +761,6 @@ def init_panels(curse_container):
         "cfgAcct_scr_ustrip"]
     cfgAcct_screen.panel_count = len(cfgAcct_screen.panel_indexes)
     
-          
-
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def init_items(curse_container):
@@ -706,10 +770,10 @@ def init_items(curse_container):
     all fields of an item are set here EXCEPT:
         item.infotar 
     """
-    curseStyles         = curse_container["styles"]
-    curseScreens        = curse_container["screens"]
+    curseStyles         = curse_container.styles            #["styles"]
+    curseScreens        = curse_container.screens           #["screens"]
 
-    global_storage      = curse_container["global_storage"]
+    global_storage      = curse_container.global_storage    #["global_storage"]
 
     title_panels        = curseScreens["title_screen"].panels
     test_panels         = curseScreens["test_screen"].panels
@@ -719,13 +783,14 @@ def init_items(curse_container):
     user_scr_panels     = curseScreens["usermain_screen"].panels
     
     # 00-01-..-00
-    title_panels["title_scr_panel"].items["login_link"]     = CurseItem(**{
+    title_panels["title_scr_panel"].items["login_link"]    = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : title_panels["title_scr_panel"],
     "parent_screen"  : curseScreens["title_screen"],
     "size"          : (15, 30, 1, 20), # y, x, h, w
     "style"         : curseStyles["title_menu"],
-    "label"         : "account log in".center(20),
+    "label"         : "log in".center(20),
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
         recv_layer  = "main", 
@@ -735,13 +800,15 @@ def init_items(curse_container):
         recv_args   = ["login_screen"],
         ret_info    = None)})
     # 00-01-..-01
-    title_panels["title_scr_panel"].items["act_create_lk"]  = CurseItem(**{
-    "global_storage" : global_storage,
+    title_panels["title_scr_panel"].items["act_create_lk"] = CurseItem(**{ 
+    "container" : curse_container,
+    "global_storage": global_storage,
     "parent"        : title_panels["title_scr_panel"],
-    "parent_screen"  : curseScreens["title_screen"],
+    "parent_screen" : curseScreens["title_screen"],
     "size"          : (16, 30, 1, 20), # y, x, h, w
     "style"         : curseStyles["title_menu"],
-    "label"         : "create account".center(20),
+    "label"         : "(x) create account".center(20),
+    "active"        : False,
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
         recv_layer  = "main", 
@@ -750,14 +817,33 @@ def init_items(curse_container):
         recv_act    = "changeScreen",
         recv_args   = ["account_screen"],
         ret_info    = None)})
+    # 00-01-..-03
+    title_panels["title_scr_panel"].items["usr_main_link"] = CurseItem(**{ 
+    "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : title_panels["title_scr_panel"],
+    "parent_screen" : curseScreens["title_screen"],
+    "size"          : (17, 30, 1, 20), # y, x, h, w
+    "style"         : curseStyles["title_menu"],
+    "label"         : " user portal".center(20),
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["usermain_screen"],
+        ret_info    = None)})
+
     # 00-01-..-02
-    title_panels["title_scr_panel"].items["about_DB_link"]  = CurseItem(**{
+    title_panels["title_scr_panel"].items["about_DB_link"] = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : title_panels["title_scr_panel"],
     "parent_screen"  : curseScreens["title_screen"],
-    "size"          : (17, 30, 1, 20), # y, x, h, w
+    "size"          : (18, 30, 1, 20), # y, x, h, w
     "style"         : curseStyles["title_menu"],
-    "label"         : "about curseDB".center(20),
+    "label"         : "about curseDB".center(21),
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
         recv_layer  = "main", 
@@ -768,13 +854,15 @@ def init_items(curse_container):
         ret_info    = None)})
     title_panels["title_scr_panel"].item_indexes = [
         "login_link", 
-        "act_create_lk", 
+        "act_create_lk",
+        "usr_main_link", 
         "about_DB_link"]
     title_panels["title_scr_panel"].item_count = len(
         title_panels["title_scr_panel"].item_indexes)
 
     # 01-03-..-00
-    test_panels["test_scr_r_mid_panel"].items["list_hdr"]   = CurseItem(**{
+    test_panels["test_scr_r_mid_panel"].items["list_hdr"]  = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : test_panels["test_scr_r_mid_panel"],
     "parent_screen"  : curseScreens["test_screen"],
@@ -783,7 +871,8 @@ def init_items(curse_container):
     "label"         : "header",
     "focusable"     : False })
     # 01-03-..-01
-    test_panels["test_scr_r_mid_panel"].items["item1"]      = CurseItem(**{
+    test_panels["test_scr_r_mid_panel"].items["item1"]     = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : test_panels["test_scr_r_mid_panel"],
     "parent_screen"  : curseScreens["test_screen"],
@@ -791,7 +880,8 @@ def init_items(curse_container):
     "style"         : test_panels["test_scr_r_mid_panel"].style,
     "label"         : "item1"})
     # 01-03-..-02
-    test_panels["test_scr_r_mid_panel"].items["item2"]      = CurseItem(**{
+    test_panels["test_scr_r_mid_panel"].items["item2"]     = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : test_panels["test_scr_r_mid_panel"],
     "parent_screen"  : curseScreens["test_screen"],
@@ -799,7 +889,8 @@ def init_items(curse_container):
     "style"         : test_panels["test_scr_r_mid_panel"].style,
     "label"         : "item2"})
     # 01-03-..-03
-    test_panels["test_scr_r_mid_panel"].items["item3"]      = CurseItem(**{
+    test_panels["test_scr_r_mid_panel"].items["item3"]     = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage" : global_storage,
     "parent"       : test_panels["test_scr_r_mid_panel"],
     "parent_screen"  : curseScreens["test_screen"],
@@ -814,8 +905,9 @@ def init_items(curse_container):
     test_panels["test_scr_r_mid_panel"].item_count = len(
         test_panels["test_scr_r_mid_panel"].item_indexes)
 
-    # 02-05-..-00       IFUNC_001
-    account_panels["acct_scr_mid_panel"].items["username"]  = CurseItem(**{
+    # 02-05-..-00       IFUNC_001X
+    account_panels["acct_scr_mid_panel"].items["username"] = CurseItem(**{ 
+    "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : account_panels["acct_scr_mid_panel"],
     "parent_screen"  : curseScreens["account_screen"],
@@ -834,8 +926,9 @@ def init_items(curse_container):
         recv_act    = "createAcctName",
         recv_args   = [],
         ret_info    = None)})  
-    # 02-05-..-01       IFUNC_002
-    account_panels["acct_scr_mid_panel"].items["password"]  = CurseItem(**{
+    # 02-05-..-01       IFUNC_001X
+    account_panels["acct_scr_mid_panel"].items["password"] = CurseItem(**{ 
+    "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : account_panels["acct_scr_mid_panel"],
     "parent_screen" : curseScreens["account_screen"],
@@ -854,8 +947,9 @@ def init_items(curse_container):
         recv_act    = "createAcctPW",
         recv_args   = [],
         ret_info    = None)})
-    # 02-05-..-02       IFUNC_003
+    # 02-05-..-02       IFUNC_001X
     account_panels["acct_scr_mid_panel"].items["submit_acct"]=CurseItem(**{
+    "container" : curse_container,
     "global_storage" : global_storage,
     "parent"        : account_panels["acct_scr_mid_panel"],
     "parent_screen" : curseScreens["account_screen"],
@@ -882,15 +976,16 @@ def init_items(curse_container):
     # 03-..-..-..
     pass
 
-    # 04-02-..-00       IFUNC_004
-    login_scr_panels["login_scr_menu_pnl"].items["logname"] = CurseItem(**{
+    # 04-02-..-00       IFUNC_001
+    login_scr_panels["login_scr_menu_pnl"].items["logname"]= CurseItem(**{ 
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : login_scr_panels["login_scr_menu_pnl"],
     "parent_screen" : curseScreens["login_screen"],
     "size"          : (3, 3, 4, 10), # y, x, h, w
     "style"         : login_scr_panels["login_scr_menu_pnl"].style,
     "label"         : "USERNAME".center(16),
-    "info"          : "press SPACE to enter your account log-in name "\
+    "info"          : "press SPACE to enter database log-in name "\
                       "................. "\
                       "hit RETURN to finish entry",
     "infotar"       : "login_scr_infobox",
@@ -899,18 +994,21 @@ def init_items(curse_container):
         recv_layer  = "self", 
         recv_name   = "self",   
         on_recv     = "call_function", 
-        recv_act    = "loginName",
-        recv_args   = [],
+        recv_act    = "getEntry",
+        recv_args   = [
+            "login_scr_name_strip", curses.color_pair(10), "1100", (4,16,17), 
+            (True,False,False),global_storage,"log_name","login_scr_infobox"],
         ret_info    = None)})
-    # 04-02-..-01       IFUNC_005
-    login_scr_panels["login_scr_menu_pnl"].items["logpw"]   = CurseItem(**{
+    # 04-02-..-01       IFUNC_001
+    login_scr_panels["login_scr_menu_pnl"].items["logpw"]  = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : login_scr_panels["login_scr_menu_pnl"],
     "parent_screen" : curseScreens["login_screen"],
     "size"          : (4, 3, 4, 10), # y, x, h, w
     "style"         : login_scr_panels["login_scr_menu_pnl"].style,
     "label"         : "PASSWORD".center(16),
-    "info"          : "press SPACE to enter your account log-in password "\
+    "info"          : "press SPACE to enter database log-in password "\
                       "................. "\
                       "hit RETURN to finish entry",
     "infotar"       : "login_scr_infobox",
@@ -919,11 +1017,38 @@ def init_items(curse_container):
         recv_layer  = "self", 
         recv_name   = "self",   
         on_recv     = "call_function", 
-        recv_act    = "loginPW",
-        recv_args   = [],
+        recv_act    = "getEntry",
+        recv_args   = [
+            "login_scr_pw_strip", curses.color_pair(10), "1100", (4,16,17), 
+            (True,True,False),global_storage,"log_pw","login_scr_infobox"],
         ret_info    = None)})
-    # 04-02-..-02       IFUNC_006
+    # 04-02-..-03       IFUNC_001
+    login_scr_panels["login_scr_menu_pnl"].items["logdb"]  = CurseItem(**{ 
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : login_scr_panels["login_scr_menu_pnl"],
+    "parent_screen" : curseScreens["login_screen"],
+    "size"          : (5, 3, 4, 10), # y, x, h, w
+    "style"         : login_scr_panels["login_scr_menu_pnl"].style,
+    "label"         : "DATABASE NAME".center(16),
+    "info"          : "press SPACE to enter database name\n"\
+                      "................. "\
+                      "hit RETURN to finish entry",
+    "infotar"       : "login_scr_infobox",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item",
+        recv_layer  = "self", 
+        recv_name   = "self",   
+        on_recv     = "call_function", 
+        recv_act    = "getEntry",
+        recv_args   = [
+            "login_scr_db_strip", curses.color_pair(10), "1100", (4,64,17), 
+            (True,False,False),global_storage,"log_db","login_scr_infobox",
+            "login_scr_footer"],
+        ret_info    = None)})
+    # 04-02-..-02       IFUNC_001
     login_scr_panels["login_scr_menu_pnl"].items["logsubmit"]=CurseItem(**{
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : login_scr_panels["login_scr_menu_pnl"],
     "parent_screen" : curseScreens["login_screen"],
@@ -943,12 +1068,14 @@ def init_items(curse_container):
     login_scr_panels["login_scr_menu_pnl"].item_indexes = [
         "logname", 
         "logpw",
+        "logdb",
         "logsubmit"]
     login_scr_panels["login_scr_menu_pnl"].item_count = len(
         login_scr_panels["login_scr_menu_pnl"].item_indexes)
 
     # 05-03-..-00
-    user_scr_panels["usermain_scr_menu_pnl"].items["hdr"]    =CurseItem(**{
+    user_scr_panels["usermain_scr_menu_pnl"].items["hdr"]  = CurseItem(**{ 
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
@@ -957,7 +1084,8 @@ def init_items(curse_container):
     "label"         : "",
     "focusable"     : False })
     # 05-03-..-01
-    user_scr_panels["usermain_scr_menu_pnl"].items["viewDB_lnk"]= CurseItem(**{
+    user_scr_panels["usermain_scr_menu_pnl"].items["viewDB_lnk"]=CurseItem(**{
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
@@ -973,7 +1101,8 @@ def init_items(curse_container):
         recv_args   = ["viewDB_screen"],
         ret_info    = None)})
     # 05-03-..-02
-    user_scr_panels["usermain_scr_menu_pnl"].items["mngDBS_lnk"]= CurseItem(**{
+    user_scr_panels["usermain_scr_menu_pnl"].items["mngDBS_lnk"]= CurseItem(**{ 
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
@@ -989,7 +1118,8 @@ def init_items(curse_container):
         recv_args   = ["manageDB_screen"],
         ret_info    = None)})
     # 05-03-..-03
-    user_scr_panels["usermain_scr_menu_pnl"].items["cfgAcct_lnk"]=CurseItem(**{
+    user_scr_panels["usermain_scr_menu_pnl"].items["cfgAcct_lnk"]=CurseItem(**{ 
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
@@ -1005,7 +1135,8 @@ def init_items(curse_container):
         recv_args   = ["cfg_acct_screen"],
         ret_info    = None)})
     # 05-03-..-04
-    user_scr_panels["usermain_scr_menu_pnl"].items["logout"]= CurseItem(**{
+    user_scr_panels["usermain_scr_menu_pnl"].items["logout"]= CurseItem(**{ 
+        "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_menu_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
@@ -1021,18 +1152,58 @@ def init_items(curse_container):
     user_scr_panels["usermain_scr_menu_pnl"].item_count = len(
         user_scr_panels["usermain_scr_menu_pnl"].item_indexes)
 
+    # 05-04-..-00T
+    user_scr_panels["usermain_scr_r_pnl"].items["temp_db1"]= CurseItem(**{ 
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : user_scr_panels["usermain_scr_r_pnl"],
+    "parent_screen" : curseScreens["usermain_screen"],
+    "size"          : (4, 3, 4, 18), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_r_pnl"].style,
+    "label"         : "database 1"})
+    # 05-04-..-01T
+    user_scr_panels["usermain_scr_r_pnl"].items["temp_db2"]= CurseItem(**{ 
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : user_scr_panels["usermain_scr_r_pnl"],
+    "parent_screen" : curseScreens["usermain_screen"],
+    "size"          : (5, 3, 4, 18), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_r_pnl"].style,
+    "label"         : "database 2"})
+    # 05-04-..-02T
+    user_scr_panels["usermain_scr_r_pnl"].items["temp_db3"]=CurseItem(**{ 
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : user_scr_panels["usermain_scr_r_pnl"],
+    "parent_screen" : curseScreens["usermain_screen"],
+    "size"          : (6, 3, 4, 18), # y, x, h, w
+    "style"         : user_scr_panels["usermain_scr_r_pnl"].style,
+    "label"         : "database 3"})
+    user_scr_panels["usermain_scr_r_pnl"].item_indexes = [
+        "temp_db1",
+        "temp_db2",
+        "temp_db3"]
+    user_scr_panels["usermain_scr_r_pnl"].item_count = len(
+        user_scr_panels["usermain_scr_r_pnl"].item_indexes)
+
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def init_textboxes(curse_container):
 
-    title_panels   = curse_container["screens"]["title_screen"].panels
-    test_panels    = curse_container["screens"]["test_screen"].panels
-    account_panels = curse_container["screens"]["account_screen"].panels
-    about_panels   = curse_container["screens"]["about_screen"].panels
-    login_panels   = curse_container["screens"]["login_screen"].panels
-    usermain_panels   = curse_container["screens"]["usermain_screen"].panels
+    title_panels   = curse_container.screens["title_screen"].panels
+    #["screens"]["title_screen"].panels
+    test_panels    = curse_container.screens["test_screen"].panels
+    #["screens"]["test_screen"].panels
+    account_panels = curse_container.screens["account_screen"].panels
+    #["screens"]["account_screen"].panels
+    about_panels   = curse_container.screens["about_screen"].panels
+    #["screens"]["about_screen"].panels
+    login_panels   = curse_container.screens["login_screen"].panels
+    #["screens"]["login_screen"].panels
+    usermain_panels   = curse_container.screens["usermain_screen"].panels
+    #["screens"]["usermain_screen"].panels
 
-    curse_styles   = curse_container["styles"]
+    curse_styles   = curse_container.styles #["styles"]
     
     # 00-01-00-..          y, x, h, w  
     title_panels["title_scr_panel"].textbox          = CurseTextbox(**dict(
@@ -1145,8 +1316,8 @@ def init_textboxes(curse_container):
 
 def load_targets(curse_container):
     """ assign item/panel infotars to object references named in infotar_str"""
-    for screen_key in curse_container["screens"]:
-        screen = curse_container["screens"][screen_key]
+    for screen_key in curse_container.screens:  #["screens"]:
+        screen = curse_container.screens[screen_key]   #["screens"][screen_key]
         screen.user_strip = screen.panels[screen.user_strip_str]
         for panel_key in screen.panels:
             panel = screen.panels[panel_key]
@@ -1156,6 +1327,8 @@ def load_targets(curse_container):
                 item = panel.items[item_key]
                 if item.infotar_str != None:
                     item.infotar = screen.panels[item.infotar_str]
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 # key-action map:   ordinal converted keyboard input to action string
 # action map    :   action string to message
@@ -1174,7 +1347,7 @@ def load_targets(curse_container):
 #       recv_args   = ["_previous"])}
 #
 
-def init_act_msg_maps():
+def init_act_msg_maps():    
     act_msg_maps = {
         "screen": {
             "back"      : dict(  msg_status  = "unread", 
@@ -1192,6 +1365,55 @@ def init_act_msg_maps():
                 on_recv     = "call_function",  
                 recv_act    = "nextPanel",
                 recv_args   = None,
+                ret_info    = None),
+            "quit"      : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "main", 
+                recv_name   = "main",   
+                on_recv     = "call_function", 
+                recv_act    = "quitCurses",
+                recv_args   = None,
+                ret_info    = None),
+            "prev_scr"  : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "main", 
+                recv_name   = "main",   
+                on_recv     = "call_function", 
+                recv_act    = "changeScreen", 
+                recv_args   = ["_previous"],
+                ret_info    = None),
+            "user_scr"  : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "main", 
+                recv_name   = "main",   
+                on_recv     = "call_function", 
+                recv_act    = "changeScreen", 
+                recv_args   = ["usermain_screen"],
+                ret_info    = None),
+            "test_scr"  : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "main", 
+                recv_name   = "main",   
+                on_recv     = "call_function", 
+                recv_act    = "changeScreen", 
+                recv_args   = ["test_screen"],
+                ret_info    = None)},
+        "user_screen": {
+            "back"      : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "self", 
+                recv_name   = "self",   
+                on_recv     = "call_function", 
+                recv_act    = "prevItem",
+                recv_args   = None,#["usermain_scr_r_pnl", "viewDB_lnk"],
+                ret_info    = None),
+            "forward"   : dict(  msg_status  = "unread", 
+                send_layer  = "screen", 
+                recv_layer  = "self", 
+                recv_name   = "self",   
+                on_recv     = "call_function",  
+                recv_act    = "nextItem",
+                recv_args   = None, #["usermain_scr_r_pnl", "viewDB_lnk"],
                 ret_info    = None),
             "quit"      : dict(  msg_status  = "unread", 
                 send_layer  = "screen", 
@@ -1269,9 +1491,11 @@ def init_act_msg_maps():
 
     return act_msg_maps
 
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
 def init_funcs(curse_container):
-    curseStyles         = curse_container["styles"]
-    curseScreens        = curse_container["screens"]
+    curseStyles         = curse_container.styles #["styles"]
+    curseScreens        = curse_container.screens #["screens"]
 
     title_panels       = curseScreens["title_screen"].panels
     test_panels        = curseScreens["test_screen"].panels
@@ -1280,103 +1504,62 @@ def init_funcs(curse_container):
     login_screen       = curseScreens["login_screen"]
     login_scr_panels   = login_screen.panels
 
-    # 01-..-..-..       SFUNC_001
-    #def showUserInfo(self, target_panel):
-    #    if "username" in self.global_storage:
-    #        name = copy.copy(self.global_storage["username"])
-    #        target_panel.win.addstr(0, 1, "USERNAME: "+ name, 
-    #            target_panel.style.txt_atr | target_panel.style.txt_clr)
-    #tscreen = curseScreens["title_screen"]
-    #tscreenshowUserInfo = MethodType(showUserInfo,tscreen)
+    def getEntry(self, output_panel_key, out_attr, val_str, val_range, modes,
+                 out_storage, out_storage_key,out_infobox_parent_key,ftr=None):
+        panel =self.container.getPanelByName(output_panel_key)
+        screen=panel.parent_screen
+        entry =self.getUserString(val_str,out_attr,panel,(0,0),val_range,modes)
+        if entry[0] == "OK_DONE":
+            out_storage[out_storage_key] = copy.copy(entry[1])
+            screen.setUserStripInfo()
+            screen.drawUserStripInfo()
+            #DEBUG
+            if ftr != None:
+                ftr_panel = self.container.getPanelByName(ftr)
+                ftr_panel.win.hline(0,0,32,79)
+                ftr_panel.win.addstr(0,1,entry[1])
+                ftr_panel.refreshPanel()
+        else:
+            out_infobox=self.container.getTextboxByName(out_infobox_parent_key)
+            self.showErrorMsg(entry[0], [ val_range[0] ], True, out_infobox)
+            if out_storage_key in out_storage: del out_storage[out_storage_key]
+            #DEBUG
+            if ftr != None:
+                ftr_panel = self.container.getPanelByName(ftr)
+                ftr_panel.win.hline(0,0,32,79)
+                ftr_panel.refreshPanel()
 
-    min = 4
-    max = 18
+    
+    def logSubmit(self):    
+        pass # DBC_001 
+
     # 00-..-..-..
     pass
     # 01-..-..-..
     pass
     # 02-05-..-00       IFUNC_001
-    def createAcctName(self):
-        """ get user password and store it for validation """
-        result = self.getUserString("1100", curses.color_pair(10), 
-                       account_panels["acct_scr_name_strip"],      
-                       (1,0), min, max, True, False, False)
-        if result[0] == "OK_DONE":
-            self.parent_panel.panel_storage[
-                "account_name"] = copy.copy(result[1])
-        else:
-            self.showErrorMsg(result[0], [min], True, 
-                account_panels["acct_scr_infobox"].textbox)
-            if "account_name" in self.parent_panel.panel_storage:
-                del self.parent_panel.panel_storage["account_name"]
-    act_item1          = account_panels["acct_scr_mid_panel"].items["username"]
-    act_item1.createAcctName = MethodType(createAcctName, act_item1, CurseItem)
-    # 02-05-..-01       IFUNC_002
-    def createAcctPW(self):
-        """ get user password and store it for validation """
-        result = self.getUserString("1100", curses.color_pair(10), 
-                       account_panels["acct_scr_pw_strip"],      
-                       (1,0), min, max, True, True, False)
-        if result[0] == "OK_DONE":
-            self.parent_panel.panel_storage["account_pw"] = copy.copy(result[1])
-        else:
-            self.showErrorMsg(result[0], [min], True,
-                account_panels["acct_scr_infobox"].textbox)
-            if "account_pw" in self.parent_panel.panel_storage:
-                del self.parent_panel.panel_storage["account_pw"]
-    act_item2          = account_panels["acct_scr_mid_panel"].items["password"]
-    act_item2.createAcctPW     = MethodType(createAcctPW, act_item2, CurseItem)
-    # 02-05-..-02       IFUNC_003
-    def submitAccount(self):pass
-    act_item3       = account_panels["acct_scr_mid_panel"].items["submit_acct"]
-    act_item3.submitAccount   = MethodType(submitAccount, act_item3, CurseItem)
+    # 02-05-..-01       IFUNC_001
+    # 02-05-..-02       IFUNC_001
+    pass
     # 03-..-..-..
     pass
-    # 04-02-..-00       IFUNC_004
-    def loginName(self):
-        """ get user login name and store it for validation """
-        result = self.getUserString("1100", curses.color_pair(10), 
-                       login_scr_panels["login_scr_name_strip"],       
-                       (0,0), min, max, True, False, False)
-        if result[0] == "OK_DONE":
-            self.global_storage["log_name"] = copy.copy(result[1])
-            login_screen.setUserStripInfo()
-            login_screen.drawUserStripInfo()
-        else:
-            self.showErrorMsg(result[0], [min], True, 
-                login_scr_panels["login_scr_infobox"].textbox)
-            if "log_name" in self.global_storage:
-                del self.global_storage["log_name"]
-    log_item1       = login_scr_panels["login_scr_menu_pnl"].items["logname"]
-    log_item1.loginName       = MethodType(loginName, log_item1, CurseItem)  
-    # 04-02-..-01       IFUNC_005
-    def loginPW(self):
-        """ get user login pw and store it for validation """
-        result = self.getUserString("1100", curses.color_pair(10), 
-                       login_scr_panels["login_scr_pw_strip"],       
-                       (0,0), min, max, True, True, False)
-        if result[0] == "OK_DONE":
-            self.global_storage["log_pw"] = copy.copy(result[1])
-            login_screen.setUserStripInfo()
-            login_screen.drawUserStripInfo()
-        else:
-            self.showErrorMsg(result[0], [min], True, 
-                login_scr_panels["login_scr_infobox"].textbox)
-            if "log_pw" in self.global_storage:
-                del self.global_storage["log_pw"]
-    log_item2       = login_scr_panels["login_scr_menu_pnl"].items["logpw"]
-    log_item2.loginPW       = MethodType(loginPW, log_item2, CurseItem)
+    # 04-02-..-00       IFUNC_001
+    log_item1         = login_scr_panels["login_scr_menu_pnl"].items["logname"]
+    log_item1.getEntry             = MethodType(getEntry, log_item1, CurseItem)
+    # 04-02-..-01       IFUNC_001
+    log_item2           = login_scr_panels["login_scr_menu_pnl"].items["logpw"]
+    log_item2.getEntry             = MethodType(getEntry, log_item2, CurseItem)
+    # 04-02-..-xx       IFUNC_001
+    log_item3           = login_scr_panels["login_scr_menu_pnl"].items["logdb"]
+    log_item3.getEntry             = MethodType(getEntry, log_item3, CurseItem)
     # 04-02-..-02       IFUNC_006
-    def logSubmit(self):pass
-    log_item3     = login_scr_panels["login_scr_menu_pnl"].items["logsubmit"]
-    log_item3.logSubmit       = MethodType(logSubmit, log_item3, CurseItem)
+    log_item4       = login_scr_panels["login_scr_menu_pnl"].items["logsubmit"]
+    log_item4.logSubmit           = MethodType(logSubmit, log_item4, CurseItem)
+
     # 05-..-..-..
 
-
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def load_globals(curse_container):
-    curse_container["global_storage"]["log_name"] = "NONE"
-    curse_container["global_storage"]["log_pw"] = "NONE"
-       
-    
-     
+    curse_container.global_storage["log_name"] = "NONE"
+    curse_container.global_storage["log_pw"] = "NONE"  

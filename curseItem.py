@@ -15,6 +15,7 @@ class CurseItem(object):
     """
 
     def __init__(self, **kwargs):
+        self.container              = kwargs["container"]
         self.global_storage         = kwargs["global_storage"] 
         self.parent_screen          = kwargs["parent_screen"]
         self.parent_panel           = kwargs["parent"]
@@ -47,6 +48,9 @@ class CurseItem(object):
         if "_on_select" in kwargs   : self._on_select   = kwargs["_on_select"]
         else                        : self._on_select   = None
 
+        if "active" in kwargs       : self.is_active = kwargs["active"]
+        else: self.is_active = True
+
         self.style               = kwargs["style"]
 
     #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -60,14 +64,18 @@ class CurseItem(object):
 
     def draw(self):
         """ draws item to screen in parent's window """
-        if self.is_focused == False: 
-            attr  = self.style.txt_atr | self.style.txt_clr
-            battr = self.style.txt_bg_clr
-        else:                      
-            attr = self.style.ftxt_atr | self.style.ftxt_clr
-            battr = self.style.ftxt_bg_clr         
+        if self.is_active == True:
+            if self.is_focused == False: 
+                attr  = self.style.txt_atr | self.style.txt_clr
+                bttr = self.style.txt_bg_clr
+            else:                      
+                attr = self.style.ftxt_atr | self.style.ftxt_clr
+                bttr = self.style.ftxt_bg_clr
+        else:
+            attr  = self.style.itxt_atr | self.style.itxt_clr
+            bttr = self.style.itxt_bg_clr         
 
-        self.drawBgLine(self.parent_panel.win, self.y, self.x, 32, self.width, battr)
+        self.drawBgLine(self.parent_panel.win,self.y,self.x,32,self.width,bttr)
         self.parent_panel.win.addstr(self.y, self.x, self.label, attr)
 
         self.parent_panel.changed = True
@@ -77,6 +85,11 @@ class CurseItem(object):
         self.is_focused = True
         self.draw()
         self.setInfo()
+
+    def activate(self):
+        self.is_active = True
+        self.draw()
+        self.setInfo()
           
     def defocus(self):
         """ clears item focus, redraws item and removes infotex from screen """
@@ -84,6 +97,11 @@ class CurseItem(object):
         self.draw()
         self.setInfo(True)
    
+    def deactivate(self):
+        self.is_active = False
+        self.draw()
+        self.setInfo(True)
+
     def select(self):
         """ function called when curseItem is selected
        
@@ -162,8 +180,7 @@ class CurseItem(object):
 ##################################################################################
     ### HERE THAR BEE DRAGYNS !!! BEWARRR vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-    def getUserString(self, format_str, ch_attr, str_out_pnl, 
-        out_yx, min_len, max_len, echo_mode, pw_mode, cleanup):
+    def getUserString(self,val_str,ch_attr,out_pnl,out_offset,val_range,modes):
         """ gets a string of entered characters from user   
           
         format_str :    a string that indicates what chr types can be input;
@@ -186,65 +203,105 @@ class CurseItem(object):
         cleanup:         boolean for whether to remove echo'd input when done
 
         """
-        input_win       = self.global_storage["input_win"]
-        str_out_win     = str_out_pnl.win
-        input_length    = 0
-        output_str      = ""
-        y = out_yx[0]
-        x = out_yx[1]
+        in_win          = self.global_storage["input_win"]
+        out_win         = out_pnl.win
 
-        orig_bg_ch      = str_out_win.inch(y, x)
-        orig_cursor_pos = str_out_win.getyx()
+        y               = out_offset[0]
+        x               = out_offset[1]
+        min_len         = val_range[0]
+        max_len         = val_range[1]  # max possible length of input string
+        max_strip_len   = val_range[2]  # max length of input strip
+        draw_indices    = [0,1]         # string index start, end, length
+        max_counter     = max_len
+        echo_mode       = modes[0]
+        pw_mode         = modes[1]
+        cleanup_mode    = modes[2]
+      
+        pre_bg_ch       = ord("-")
+        self.drawBgLine(out_win, y, x, 32, max_strip_len + 1, ch_attr)
+        in_bg_ch        = out_win.inch(y, x)
+        out_win.refresh()
 
-        status = "NA"
+        in_len          = 0
+        out_str         = ""
+        status          = "NA"
 
-        self.drawBgLine(str_out_win, y, x, 32, max_len, ch_attr)
-        input_bg_ch     = str_out_win.inch(y, x)
-
-        str_out_win.refresh()
         while True:
-            input_i = input_win.getch()                        # GET INPUT CHAR                             
-            status = self.checkChar(
-                format_str, input_i, input_length, min_len)  # CHECK INPUT CHAR
+            in_i = in_win.getch()  # GET INPUT CHAR                                     
+            status = self.checkChar(val_str, in_i, in_len, min_len) # CHECK CHR  
                       
             if status == "OK":                            
-                output_str += chr(input_i)                  # UPDATE OUTPUT STR
-                if echo_mode == True:                         # DRAW KEY TO WIN
-                    if pw_mode == True:        
-                        str_out_win.addch(y, x + input_length,ord("@")|ch_attr)
-                    else:                      
-                        str_out_win.addch(y, x + input_length, input_i|ch_attr)
-                input_length += 1
-                
+                out_str += chr(in_i)                        # UPDATE OUTPUT STR
+                if echo_mode == True:                       # DRAW KEY TO WIN
+                    self.drawOStr(out_win, out_str, y, x, draw_indices, 
+                        pw_mode, ch_attr)
+                    #if pw_mode==True:out_win.addch(y,x+in_len,ord("@")|ch_attr)
+                    #else:            out_win.addch(y,x+in_len,    in_i|ch_attr)
+                in_len += 1
+                max_counter -= 1
+                if draw_indices[1] < max_len:
+                    draw_indices[1] = draw_indices[1] + 1
+                if in_len >= max_strip_len:
+                    draw_indices[0] = draw_indices[0] + 1                                              
+                        
             elif status == "DELETE":
-                if input_length > 0:
-                    input_length -= 1
-                    str_out_win.addch(y, x + input_length, input_bg_ch)
-                status = "OK"
+                if in_len > 0:
+                    in_len -= 1                   
+                    max_counter += 1
+                    draw_indices[1] = draw_indices[1] - 1 
+                    if draw_indices[0] > 0:
+                        draw_indices[0] = draw_indices[0] - 1
+                        self.drawOStr(out_win, out_str, y, x, draw_indices, 
+                            pw_mode, ch_attr)
+                        if draw_indices[0] == 0:
+                            out_win.addch(y, x + in_len, in_bg_ch)
+                    else:
+                        out_win.addch(y, x + in_len, in_bg_ch)
+                    out_str = out_str[:-1]
+                status = "OK"      
+
             
-            str_out_win.refresh()                          # REFRESH AFTER DRAW
+            out_win.refresh()                               # REFRESH AFTER DRAW
 
-            if input_length == max_len: 
-                status = "OK_DONE"                      
-            if status != "OK":                       
-                break
-        # loop end ---------------------
-        if cleanup == True or status != "OK_DONE":
-            str_out_win.hline(y, x, orig_bg_ch, max_len)
-            str_out_win.refresh()
+            if in_len == max_len:        status = "OK_DONE"                      
+            if status != "OK":                        break
+        
+        if cleanup_mode == True or status != "OK_DONE":
+            out_win.hline(y, x, pre_bg_ch, max_strip_len + 1)
+            out_win.refresh()
         else:
-            str_out_win.hline(y, x, orig_bg_ch, max_len)
+            out_win.hline(y, x, pre_bg_ch, max_strip_len + 1)
             if pw_mode == False:
-                str_out_win.addstr(y, x, output_str, 
-                    str_out_pnl.style.txt_clr | str_out_pnl.style.txt_atr)
+                if len(out_str) <= max_strip_len:
+                     out_win.addstr(y,x, out_str,
+                        out_pnl.style.txt_clr | out_pnl.style.txt_atr)
+                else:
+                    out_win.addstr(y,x, out_str[0:max_strip_len],
+                        out_pnl.style.txt_clr | out_pnl.style.txt_atr)
+                    try:
+                        out_win.addstr(y,x+max_strip_len-2, "...",
+                            out_pnl.style.txt_clr | out_pnl.style.txt_atr)
+                    except:
+                        pass
             else:
-                for i in range(0, len(output_str)):
-                    str_out_win.addch(y, x + i, ord("@"), 
-                        str_out_pnl.style.txt_clr | str_out_pnl.style.txt_atr)
-            str_out_win.refresh()
+                for i in range(0, len(out_str)):
+                    out_win.addch(y, x + i, ord("@"), 
+                        out_pnl.style.txt_clr | out_pnl.style.txt_atr)
+            out_win.refresh()
 
-        return (status, output_str)
+        return (status, out_str)
     
+    def drawOStr(self, win, str, y, x, draw_indices, pw, attr):
+        start_index = draw_indices[0]
+        end_index = draw_indices[1]
+        x_pos = copy.copy(x)
+        for c in range (start_index, end_index):
+            ch = ord(str[c])
+            if pw == False:                win.addch(y, x_pos, ch | attr)
+            else:                        win.addch(y, x_pos, ord("@") | attr)
+            x_pos += 1
+            
+
     def drawBgLine(self, win, y, x, ch, len, battr):
         win.attron(battr)
         win.hline(y, x, ch, len)
@@ -255,13 +312,11 @@ class CurseItem(object):
             if in_len >= min_len:                        status = "OK_DONE"
             else:                                        status = "ERR_MIN"
         elif input_i == curses.KEY_DC:                   status = "DELETE"
-        else: # VALIDATE INPUT  
-            status = self.validate_char(format_str, input_i)    
+        else:             status = self.validate_char(format_str, input_i)    
         return status
 
     # format string: [alpha][digit][whitespace][punctuation]
-    def validate_char(self, format, input_i):
-        
+    def validate_char(self, format, input_i):     
         if format[0] == "0":
             if curses.ascii.isalpha(input_i) != False:
                 return "ERR_ALPHA"

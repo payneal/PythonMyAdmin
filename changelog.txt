@@ -1,6 +1,16 @@
 $$$$$$$$$$$$$$$$$$$$$$ CURSEDB UI CODE CHANGELOG $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 $$$$$$$$$$$$$$$$$$$$$ SCROLL DOWN FOR OLD UPDATES $$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+06AUG15------------------------------------------------------------------------
+1.	User input: can enter up to 64 characters (up from 18) since a mysql
+	database name can be that long. The input strip scrolls accordingly.
+2.	Deactivated the account page :(
+3.	Added direct link to user main page
+4.	Added "nested" item scrolling; i.e. you can scroll through a second list 
+	from an item in a first list- see the user main page for an example. 
+	Tab/back tab are used as the secondary scroll buttons. You can only perform 
+	secondary scrolling when you're on the item that has the nested list.
+
 04AUG15, UPDATE 2--------------------------------------------------------------
 
 1.	Started on "user main" screen. Press "u" to jump to that page, since 

@@ -7,6 +7,7 @@ class CurseScreen(object):
         self.global_storage     = kwargs["global_storage" ]
         self.screen_storage     = {}
         self.user_strip_str     = kwargs["user_strip"]
+        self.screens            = kwargs["screens"]
 
         self.key_action_map     = kwargs["key_action_map"]
         self.act_msg_map        = kwargs["act_msg_map"]
@@ -132,10 +133,16 @@ class CurseScreen(object):
         self.focus_key = panel_key
         self.is_panel_focused = True
 
+        if hasattr(self.focus_panel, "_sec_foc_key"):
+            self.panels[self.focus_panel._sec_foc_key].focus()
+
     def defocusPanel(self, panel_key):
         """ remove focus from screen child panel """
         if panel_key not in self.panels: return 
-                                
+     
+        if hasattr(self.focus_panel, "_sec_foc_key"):
+            self.panels[self.focus_panel._sec_foc_key].defocus()        
+                                   
         self.focus_panel.defocus()
         self.focus_panel = None     
         self.focus_index = -1
@@ -188,3 +195,33 @@ class CurseScreen(object):
         if prev_focus_index >= 0:             
             self.defocusPanel(prev_focus_key)
         self.focusPanel(new_focus_key)
+
+    def prevItem(self):#, target_pnl_key=None, prereq_item_key=None):
+        """ switches focus to previous item in a panel
+        
+        target_pnl_key = the secondary panel that focus is being changed in
+            if this is None, then the item focus in the screen's focused
+            panel is changed
+        prereq_item_key = item key in primary panel that must be focused
+            in order to change the index of the secondary panel 
+
+        """
+        if self.focus_key == None or self.focus_key == "":           return
+
+        focus_panel = self.panels[self.focus_key]
+        if hasattr(focus_panel, "_sec_foc_key"):
+            if focus_panel.focus_key == focus_panel._sec_foc_prereq_key:
+                self.panels[focus_panel._sec_foc_key].prevItem()
+        else:
+            focus_panel.prevItem()
+
+    def nextItem(self, target_pnl_key=None, prereq_item_key=None):
+        if self.focus_key == None or self.focus_key == "":           return
+
+        focus_panel = self.panels[self.focus_key]
+
+        if hasattr(focus_panel, "_sec_foc_key"):
+            if focus_panel.focus_key == focus_panel._sec_foc_prereq_key:
+                self.panels[focus_panel._sec_foc_key].nextItem()
+        else:
+            focus_panel.nextItem()
