@@ -51,6 +51,9 @@ class CurseItem(object):
         if "active" in kwargs       : self.is_active = kwargs["active"]
         else: self.is_active = True
 
+        # _focus_key is key to panel that will be focused when the item is
+        if "_focus_key" in kwargs   : self._focus_key = kwargs["_focus_key"]
+
         self.style               = kwargs["style"]
 
     #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -76,29 +79,44 @@ class CurseItem(object):
             bttr = self.style.itxt_bg_clr         
 
         self.drawBgLine(self.parent_panel.win,self.y,self.x,32,self.width,bttr)
-        self.parent_panel.win.addstr(self.y, self.x, self.label, attr)
+        try:
+            self.parent_panel.win.addstr(self.y, self.x, self.label, attr)
+        except: 
+            # there is a bug in the python curses library where if
+            # addch or addstr is used at the lower right edge of 
+            # the window, the cursor moves off the screen and 
+            # raises an error; this is unintended behavior
+            pass
 
         self.parent_panel.changed = True
 
     def focus(self):
         """ sets item focus, redraws item and any infotex to screen """
         self.is_focused = True
+        if hasattr(self, "_focus_key"):
+            self.parent_screen.getPanelByName(self._focus_key).focus()
         self.draw()
         self.setInfo()
 
     def activate(self):
         self.is_active = True
+        if hasattr(self, "_focus_key"):
+            self.parent_screen.getPanelByName(self._focus_key).activate()
         self.draw()
         self.setInfo()
           
     def defocus(self):
         """ clears item focus, redraws item and removes infotex from screen """
         self.is_focused = False
+        if hasattr(self, "_focus_key"):
+            self.parent_screen.getPanelByName(self._focus_key).defocus()
         self.draw()
         self.setInfo(True)
    
     def deactivate(self):
         self.is_active = False
+        if hasattr(self, "_focus_key"):
+            self.parent_screen.getPanelByName(self._focus_key).deactivate()
         self.draw()
         self.setInfo(True)
 
@@ -231,12 +249,10 @@ class CurseItem(object):
             status = self.checkChar(val_str, in_i, in_len, min_len) # CHECK CHR  
                       
             if status == "OK":                            
-                out_str += chr(in_i)                        # UPDATE OUTPUT STR
-                if echo_mode == True:                       # DRAW KEY TO WIN
+                out_str += chr(in_i)                       # UPDATE OUTPUT STR
+                if echo_mode == True:                      # DRAW KEY TO WIN
                     self.drawOStr(out_win, out_str, y, x, draw_indices, 
                         pw_mode, ch_attr)
-                    #if pw_mode==True:out_win.addch(y,x+in_len,ord("@")|ch_attr)
-                    #else:            out_win.addch(y,x+in_len,    in_i|ch_attr)
                 in_len += 1
                 max_counter -= 1
                 if draw_indices[1] < max_len:
@@ -261,7 +277,7 @@ class CurseItem(object):
                 status = "OK"      
 
             
-            out_win.refresh()                               # REFRESH AFTER DRAW
+            out_win.refresh()                              # REFRESH AFTER DRAW
 
             if in_len == max_len:        status = "OK_DONE"                      
             if status != "OK":                        break
@@ -281,7 +297,11 @@ class CurseItem(object):
                     try:
                         out_win.addstr(y,x+max_strip_len-2, "...",
                             out_pnl.style.txt_clr | out_pnl.style.txt_atr)
-                    except:
+                    except: 
+                        # there is a bug in the python curses library where if
+                        # addch or addstr is used at the lower right edge of 
+                        # the window, the cursor moves off the screen and 
+                        # raises an error; this is unintended behavior
                         pass
             else:
                 for i in range(0, len(out_str)):
@@ -297,11 +317,10 @@ class CurseItem(object):
         x_pos = copy.copy(x)
         for c in range (start_index, end_index):
             ch = ord(str[c])
-            if pw == False:                win.addch(y, x_pos, ch | attr)
-            else:                        win.addch(y, x_pos, ord("@") | attr)
+            if pw == False:     win.addch(y, x_pos, ch | attr)
+            else:               win.addch(y, x_pos, ord("@") | attr)
             x_pos += 1
             
-
     def drawBgLine(self, win, y, x, ch, len, battr):
         win.attron(battr)
         win.hline(y, x, ch, len)
@@ -312,6 +331,7 @@ class CurseItem(object):
             if in_len >= min_len:                        status = "OK_DONE"
             else:                                        status = "ERR_MIN"
         elif input_i == curses.KEY_DC:                   status = "DELETE"
+        elif input_i == curses.KEY_BACKSPACE:            status = "DELETE"
         else:             status = self.validate_char(format_str, input_i)    
         return status
 

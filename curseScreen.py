@@ -47,7 +47,7 @@ class CurseScreen(object):
         self.readMessage(msg)
         return msg
              
-    def updateScreen(self): self.updatePanels()
+    def updateScreen(self):                                 self.updatePanels()
 
     def readMessage(self, msg):
         if msg == None: return
@@ -90,10 +90,14 @@ class CurseScreen(object):
     def setUserStripInfo(self):
         """ shows user info (name, etc...) in infostrip at top of page"""
         if "log_name" in self.global_storage:
+            try:        self.user_strip.win.hline(0,0,32,80)
+            except:     pass
             name = copy.copy(self.global_storage["log_name"])
-            pw = copy.copy(self.global_storage["log_pw"])
-            self.user_strip.title = " USERNAME: "+name.ljust(20)+\
-                "PASSWORD: "+pw.ljust(20) 
+            pw   = copy.copy(self.global_storage["log_pw"])
+            lang = copy.copy(self.global_storage["log_lang"])
+            self.user_strip.title = ""+\
+                " USERNAME: " + name[0:20].ljust(20) +\
+                "PASSWORD: " + pw[0:20].ljust(20) + "QLANG: "+lang[0:10]
 
     def drawUserStripInfo(self):                 self.user_strip.refreshPanel()
          
@@ -133,16 +137,10 @@ class CurseScreen(object):
         self.focus_key = panel_key
         self.is_panel_focused = True
 
-        if hasattr(self.focus_panel, "_sec_foc_key"):
-            self.panels[self.focus_panel._sec_foc_key].focus()
-
     def defocusPanel(self, panel_key):
         """ remove focus from screen child panel """
         if panel_key not in self.panels: return 
-     
-        if hasattr(self.focus_panel, "_sec_foc_key"):
-            self.panels[self.focus_panel._sec_foc_key].defocus()        
-                                   
+                                       
         self.focus_panel.defocus()
         self.focus_panel = None     
         self.focus_index = -1
@@ -196,7 +194,9 @@ class CurseScreen(object):
             self.defocusPanel(prev_focus_key)
         self.focusPanel(new_focus_key)
 
-    def prevItem(self):#, target_pnl_key=None, prereq_item_key=None):
+    #/\ ITEM FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+
+    def prevSecondaryItem(self):
         """ switches focus to previous item in a panel
         
         target_pnl_key = the secondary panel that focus is being changed in
@@ -206,22 +206,15 @@ class CurseScreen(object):
             in order to change the index of the secondary panel 
 
         """
-        if self.focus_key == None or self.focus_key == "":           return
+        if self.focus_key == None or self.focus_key == "":      return
 
         focus_panel = self.panels[self.focus_key]
-        if hasattr(focus_panel, "_sec_foc_key"):
-            if focus_panel.focus_key == focus_panel._sec_foc_prereq_key:
-                self.panels[focus_panel._sec_foc_key].prevItem()
-        else:
-            focus_panel.prevItem()
+        if hasattr(focus_panel.focus_item, "_focus_key"):            
+            self.panels[focus_panel.focus_item._focus_key].prevItem()
 
-    def nextItem(self, target_pnl_key=None, prereq_item_key=None):
-        if self.focus_key == None or self.focus_key == "":           return
+    def nextsecondaryItem(self):
+        if self.focus_key == None or self.focus_key == "":      return
 
         focus_panel = self.panels[self.focus_key]
-
-        if hasattr(focus_panel, "_sec_foc_key"):
-            if focus_panel.focus_key == focus_panel._sec_foc_prereq_key:
-                self.panels[focus_panel._sec_foc_key].nextItem()
-        else:
-            focus_panel.nextItem()
+        if hasattr(focus_panel.focus_item, "_focus_key"):            
+            self.panels[focus_panel.focus_item._focus_key].nextItem()

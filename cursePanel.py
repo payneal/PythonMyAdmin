@@ -8,49 +8,63 @@ class CursePanel(object):
      as functional and visual containers for all other content. The CursePanel
     class wraps the curses library classes curses.window and curses.panel"""   
     def __init__(self, **kwargs):      
-        self.global_storage                             = kwargs["global_storage" ]
-        self.panel_storage                              = {}  
-        self.parent_screen                              = kwargs["parent"]
+        self.global_storage                         = kwargs["global_storage" ]
+        self.panel_storage                          = {}  
+        self.parent_screen                          = kwargs["parent"]
                              
         if "act_msg_map" in kwargs:    self.act_msg_map = kwargs["act_msg_map"]
         else:                          self.act_msg_map = None
 
-        self.y                                          = kwargs["size"][0]
-        self.x                                          = kwargs["size"][1]
-        self.height                                     = kwargs["size"][2]
-        self.width                                      = kwargs["size"][3]
+        self.y                                      = kwargs["size"][0]
+        self.x                                      = kwargs["size"][1]
+        self.height                                 = kwargs["size"][2]
+        self.width                                  = kwargs["size"][3]
 
-        self.win          = curses.newwin(self.height, self.width, self.y, self.x)           
+        # viewport y/x: viewport origin within pad
+        # screen y/x/h/w: panel dimension on screen
+        # refresh(viewport_y,viewport_x,screen_y, screen_x, screen_h, screen_w)
+        if "is_pad" in kwargs:
+            self.is_pad=True
+            self.pad_height = kwargs["psize"][0]
+            self.pad_width  = kwargs["psize"][1]
+            self.win   = curses.newpad(self.pad_height, self.width)
+            self.viewport_y = 0;
+            self.viewport_max_y =self.pad_height-self.height
+            self.viewport_x = 0;
+            self.viewport_max_x =self.pad_width-self.width
+        else:
+            self.is_pad=False
+            self.win   = curses.newwin(self.height, self.width, self.y, self.x)           
         
         self.style = kwargs["style"]
 
         if "title" in kwargs:        
-            self.title                                  = kwargs["title"][0]
-            self.title_y                                = kwargs["title"][1]    
-            self.title_x                                = kwargs["title"][2]
+            self.title                              = kwargs["title"][0]
+            self.title_y                            = kwargs["title"][1]    
+            self.title_x                            = kwargs["title"][2]
         else:
-            self.title                                  = "" 
-            self.title_y                                = 0 
-            self.title_x                                = 0
+            self.title                              = "" 
+            self.title_y                            = 0 
+            self.title_x                            = 0
         
-        if "textbox" in kwargs:            self.textbox = kwargs["textbox"]
-        else:                              self.textbox = None     
+        if "textbox" in kwargs:        self.textbox = kwargs["textbox"]
+        else:                          self.textbox = None     
 
-        if "info" in kwargs:                  self.info = kwargs["info"]
-        else:                                 self.info = None
+        if "info" in kwargs:              self.info = kwargs["info"]
+        else:                             self.info = None
 
-        if "infotar" in kwargs:        self.infotar_str = kwargs["infotar"] 
-        else:                          self.infotar_str = None
+        if "infotar" in kwargs:    self.infotar_str = kwargs["infotar"] 
+        else:                      self.infotar_str = None
 
         self.infotar = None            
                               
-        if "focusable" in kwargs:        self.focusable = kwargs["focusable"]
-        else:                            self.focusable = False     
+        if "focusable" in kwargs:    self.focusable = kwargs["focusable"]
+        else:                        self.focusable = False     
 
-        if "_inner_text" in kwargs:     self._inner_text = kwargs["_inner_text"]
-        if "_secondary_focus" in kwargs:
-            self._sec_foc_key        = kwargs["_secondary_focus"]
-            self._sec_foc_prereq_key = kwargs["_secondary_focus_prereq"]
+        if "_inner_text" in kwargs:    self._inner_text = kwargs["_inner_text"]
+
+        if "_default_focus_item_key" in kwargs:
+            self._default_focus_item_key = kwargs["_default_focus_item_key"]
 
         self.items                  = {} # dict of item name : item object pairs
         self.item_indexes           = [] # list of item names
@@ -64,12 +78,18 @@ class CursePanel(object):
         self.is_focused             = False
         self.changed                = False
 
+        self.is_pad
+
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
                     
     def update(self):
         if self.changed == True:
             self.win.touchwin()
-            self.win.noutrefresh()
+            if self.is_pad == False:
+                self.win.noutrefresh()
+            else:
+                self.win.noutrefresh(self.viewport_y, self.viewport_x, 
+                    self.y, self.x, self.height, self.width)
             self.changed = False
 
     def checkInput(self, act_key):
@@ -145,6 +165,8 @@ class CursePanel(object):
     def focus(self):
         """ sets panel focus, redraws panel, infotex to screen """
         self.is_focused = True
+        if hasattr(self, "_default_focus_item_key"):
+            self.changeFocusItem(self._default_focus_item_key)
         self.draw()
         self.showInfo()
 
@@ -159,7 +181,11 @@ class CursePanel(object):
 
     def refreshPanel(self):
         self.draw()
-        self.win.refresh()
+        if self.is_pad == False:
+            self.win.refresh()
+        else:
+            self.win.refresh(self.viewport_y, self.viewport_x, 
+                    self.y, self.x, self.height, self.width())
 
 #/\/\/  PANEL DRAW FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 
@@ -216,6 +242,9 @@ class CursePanel(object):
         """ draws hidden field _inner_text if set"""
         #     "_inner_text"   : [ (4, 21, "--------------------"),
         #                         (5, 21, "--------------------")]
+        # inner_text: 
+        #   [<inner text line >,<<line t,ycoord>,<linet,xcoord>,<line t,text>>]
+        #   [ line#, [y,x,text] ]
         if hasattr(self, "_inner_text"):
             txt_atr = self.style.txt_atr
             txt_clr = self.style.txt_clr
@@ -257,64 +286,42 @@ class CursePanel(object):
             if item_name in self.items:
                 return self.items[item_name]
 
-    def prevItem(self, target_key=None):
-        """ defocus current item in focus indices and focus item before it"""
-        if target_key == None:  target = self
-
-        if target.item_count == 0:                                       return
+    def prevItem(self):
+        """ defocus current item, focus previous item in focus indices"""
+        if self.item_count == 0:    return
                
-        prev_focus_index = target.focus_index 
+        prev_focus_index = self.focus_index 
         while True:
-            if target.focus_index < 0:                   target.focus_index = 0
-            else:                                       target.focus_index -= 1    
+            if self.focus_index < 0:    self.focus_index = 0
+            else:                       self.focus_index -= 1    
 
-            if target.focus_index == prev_focus_index:                   return                                     
-            elif target.focus_index == -1: 
-                target.focus_index = target.item_count - 1
+            if self.focus_index == prev_focus_index:    return                                     
+            elif self.focus_index == -1: 
+                self.focus_index = self.item_count - 1
             
-            item_key = target.item_indexes[target.focus_index]
-            if target.items[item_key].is_active == True:
-                if target.items[item_key].focusable == True:              break
-
-        # if this panels has a secondary focus and we're changing item
-        # indices, if the next index isn't the prereq item for that
-        # secondary panel, defocus the secondary panel
-        if hasattr(target, "_sec_foc_key"):
-            sec_panel = self.parent_screen.getPanelByName(target._sec_foc_key)
-            if target._sec_foc_prereq_key == item_key:
-                 sec_panel.focus()
-            else:
-                sec_panel.defocus()
+            item_key = self.item_indexes[self.focus_index]
+            if self.items[item_key].is_active == True:
+                if self.items[item_key].focusable == True:  break
+        
         self.changeFocusItem(item_key)
 
-    def nextItem(self, target_key=None):
-        """ defocus current item in focus indices and focus item after it"""
-        if target_key == None:   target = self
-
-        if target.item_count == 0:                                       return
+    def nextItem(self):
+        """ defocus current item, focus next item in focus indices"""
+        if self.item_count == 0:    return
          
-        prev_focus_index = target.focus_index 
+        prev_focus_index = self.focus_index 
         while True:
-            if target.focus_index < 0:                   target.focus_index = 0
-            else:                                       target.focus_index += 1
+            if self.focus_index < 0:    self.focus_index = 0
+            else:                       self.focus_index += 1
 
-            if target.focus_index == prev_focus_index:                   return
-            elif target.focus_index == target.item_count:      
-                target.focus_index = 0
+            if self.focus_index == prev_focus_index:    return
+            elif self.focus_index == self.item_count:      
+                self.focus_index = 0
             
-            item_key = self.item_indexes[target.focus_index]
-            if target.items[item_key].is_active == True:
-                if target.items[item_key].focusable == True:              break
+            item_key = self.item_indexes[self.focus_index]
+            if self.items[item_key].is_active == True:
+                if self.items[item_key].focusable == True:  break
        
-        # if this panels has a secondary focus and we're changing item
-        # indices, if the next index isn't the prereq item for that
-        # secondary panel, defocus the secondary panel
-        if hasattr(target, "_sec_foc_key"):
-            sec_panel = self.parent_screen.getPanelByName(target._sec_foc_key)
-            if target._sec_foc_prereq_key == item_key:
-                 sec_panel.focus()
-            else:
-                sec_panel.defocus()
         self.changeFocusItem(item_key)
         
     def changeFocusItem(self, new_key):

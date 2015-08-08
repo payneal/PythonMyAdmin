@@ -15,3 +15,10 @@
 	change string formatting that uses deprecated python 2 functions:
 		string.center, string.ljust, string.rjust to python 3 compatible
 		functions
+
+
+ADD TO APPENDIX:
+	# 04-10-..-.. lang optbox
+	# 04-02-..-04 login menu loglang
+	# 04-10-..-00 lang optbox option1
+	# 04-10-..-01 lang optbox option2

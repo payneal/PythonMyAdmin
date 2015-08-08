@@ -130,7 +130,7 @@ def init_style():
     #self.init_color_pairs()
 
     panel_styles = {}
-
+    panel_styles["COLORS"] = colors
     panel_styles["default"] = CursePanelStyle({
         #normal						
         "bg_chr"	:	sp	,	#	background	character
@@ -254,7 +254,7 @@ def init_style():
         "br_clr"        : colors["BLK"],
         "ttl_atr"       : 0,
         "ttl_clr"       : colors["CYN"],
-        "txt_atr"       : curses.A_BOLD,
+        "txt_atr"       : 0,#curses.A_BOLD,
         "txt_clr"       : colors["CYN"],
         "txt_bg_clr"    : colors["CYN"],
 
@@ -291,7 +291,7 @@ def init_style():
         "br_clr"        : colors["BLK"],
         "ttl_atr"       : 0,
         "ttl_clr"       : colors["CYN"],
-        "txt_atr"       : curses.A_BOLD,
+        "txt_atr"       : 0,#curses.A_BOLD,
         "txt_clr"       : colors["YLW"],
         "txt_bg_clr"    : colors["YLW"],
 
@@ -303,7 +303,7 @@ def init_style():
         "fbr_clr"       : colors["BLK"],
         "fttl_atr"      : 0,
         "fttl_clr"      : colors["GRN"],
-        "ftxt_atr"      : 0,
+        "ftxt_atr"      : curses.A_BOLD,
         "ftxt_clr"      : colors["RYLW"],
         "ftxt_bg_clr"   : colors["RYLW"],
         #inactive			
@@ -401,7 +401,7 @@ def init_style():
         "br_atr"        : curses.A_BOLD,
         "br_clr"        : colors["BLU"],
         "ttl_atr"       : curses.A_BOLD,
-        "ttl_clr"       : colors["MGA"],
+        "ttl_clr"       : colors["GRN"],
         "txt_atr"       : 0, #curses.A_BOLD,
         "txt_clr"       : colors["YLW"],
         "txt_bg_clr"    : colors["BLK"], 
@@ -544,7 +544,7 @@ def init_style():
     panel_styles["input_strip3"] = CursePanelStyle({
         "bg_chr"        : dsh,
         "bg_atr"        : 0,
-        "bg_clr"        : colors["BLU"],
+        "bg_clr"        : colors["RED"],
         "br_chrs"       : list(borderSets["no_border"]),
         "br_atr"        : 0,
         "br_clr"        : colors["BLU"],
@@ -808,7 +808,7 @@ def init_style():
         "br_atr"        : curses.A_BOLD,
         "br_clr"        : colors["CYN"],
         "ttl_atr"       : curses.A_BOLD,
-        "ttl_clr"       : colors["MGA"],
+        "ttl_clr"       : colors["GRN"],
         "txt_atr"       : curses.A_BOLD,
         "txt_clr"       : colors["CYN"],
         "txt_bg_clr"        : colors["BLK"],
@@ -837,4 +837,118 @@ def init_style():
         "itxt_clr"	    : colors["RED"],
         "itxt_bg_clr"	: colors["RED"]	 
     })
+
+
+    panel_styles["login_entry"] = CursePanelStyle({
+        "bg_chr"        : dsh,
+        "bg_atr"        : 0,
+        "bg_clr"        : colors["RED"],
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : 0,
+        "br_clr"        : colors["BLU"],
+        "ttl_atr"       : 0,
+        "ttl_clr"       : colors["GRN"],
+        "txt_atr"       : 0,
+        "txt_clr"       : colors["GRN"],
+        "txt_bg_clr"    : colors["BLK"],
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : 0,
+        "fbg_clr"       : colors["RRED"],
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : 0,
+        "fbr_clr"       : colors["BLK"],
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["CYN"],
+        "ftxt_atr"      : curses.A_BOLD,
+        "ftxt_clr"      : colors["RRED"],
+        "ftxt_bg_clr"   : colors["RRED"],
+        #inactive			
+        "ibg_chr"	    : sp,
+        "ibg_atr"	    : 0,
+        "ibg_clr"	    : colors["RED"],
+        "ibr_chrs"	    : list(borderSets["no_border"]),
+        "ibr_atr"	    : 0,
+        "ibr_clr"	    : colors["RED"],
+        "ittl_atr"	    : 0,
+        "ittl_clr"	    : colors["RED"],
+        "itxt_atr"	    : 0,
+        "itxt_clr"	    : colors["RED"],
+        "itxt_bg_clr"	: colors["RED"]	
+    })
+    panel_styles["login_entry_OK"] = CursePanelStyle({
+        "bg_chr"        : dsh,
+        "bg_atr"        : 0,
+        "bg_clr"        : colors["BLU"],
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : 0,
+        "br_clr"        : colors["BLU"],
+        "ttl_atr"       : 0,
+        "ttl_clr"       : colors["GRN"],
+        "txt_atr"       : 0,
+        "txt_clr"       : colors["GRN"],
+        "txt_bg_clr"    : colors["BLK"],
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : 0,
+        "fbg_clr"       : colors["RRED"],
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : 0,
+        "fbr_clr"       : colors["BLK"],
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["CYN"],
+        "ftxt_atr"      : curses.A_BOLD,
+        "ftxt_clr"      : colors["RRED"],
+        "ftxt_bg_clr"   : colors["RRED"],
+        #inactive			
+        "ibg_chr"	    : sp,
+        "ibg_atr"	    : 0,
+        "ibg_clr"	    : colors["RED"],
+        "ibr_chrs"	    : list(borderSets["no_border"]),
+        "ibr_atr"	    : 0,
+        "ibr_clr"	    : colors["RED"],
+        "ittl_atr"	    : 0,
+        "ittl_clr"	    : colors["RED"],
+        "itxt_atr"	    : 0,
+        "itxt_clr"	    : colors["RED"],
+        "itxt_bg_clr"	: colors["RED"]	
+    })
+    panel_styles["login_optionbox"] = CursePanelStyle({
+        "bg_chr"        : sp,
+        "bg_atr"        : 0,
+        "bg_clr"        : colors["RED"],
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : 0,
+        "br_clr"        : colors["BLU"],
+        "ttl_atr"       : 0,
+        "ttl_clr"       : colors["GRN"],
+        "txt_atr"       : 0,
+        "txt_clr"       : colors["GRN"],
+        "txt_bg_clr"    : colors["BLK"],
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : 0,
+        "fbg_clr"       : colors["RED"],
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : 0,
+        "fbr_clr"       : colors["RGRN"],
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["RGRN"],
+        "ftxt_atr"      : curses.A_BOLD,
+        "ftxt_clr"      : colors["RGRN"],
+        "ftxt_bg_clr"   : colors["RGRN"],
+        #inactive			
+        "ibg_chr"	    : sp,
+        "ibg_atr"	    : 0,
+        "ibg_clr"	    : colors["RED"],
+        "ibr_chrs"	    : list(borderSets["no_border"]),
+        "ibr_atr"	    : 0,
+        "ibr_clr"	    : colors["RED"],
+        "ittl_atr"	    : 0,
+        "ittl_clr"	    : colors["RED"],
+        "itxt_atr"	    : 0,
+        "itxt_clr"	    : colors["RED"],
+        "itxt_bg_clr"	: colors["RED"]	
+    })
+
     return panel_styles
