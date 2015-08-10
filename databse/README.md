@@ -90,3 +90,17 @@ SELECT * FROM mysql.user; (need a more selective call)
 
 then we can see who are individuals thaat can login 
 
+
+## new issue 
+
+changed os to subprocess so that I can get stdout from command lines but the issue is that 
+
+issue now is : go to photooferror
+
+look ay localconnect in this file or cursemysql in ..
+
+basically i can get mysql password to come up but I think i need to do a while loop on command line  to keep 
+making command line arguments but I wonder if comand line arguments will operate now that we are in mysql 
+
+
+
