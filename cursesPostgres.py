@@ -38,11 +38,12 @@ def queryPostgresDict(json_login_dict, q_str=None):
         con = psycopg2.connect(database =json_login_dict['database'], 
                                user     =json_login_dict['username'], 
                                password =json_login_dict['password'])
-        cur = con.cursor() #cursor can be used to execute SQL
+        #cursor can be used to execute SQL
+        dict_cur = con.cursor(cursor_factory=psycopg2.extras.DictCursor) 
         if q_str == None:
             q_str = "SELECT * FROM COUNTRY LIMIT 3"
-	    cur.execute(q_str) 
-        return { 'True' :cur.fetchall() }       
+	    dict_cur.execute(q_str) 
+        return { 'True' :dict_cur.fetchall() }       
     except psycopg2.DatabaseError, e: 
 	    return { 'False':e }	       
     finally:
