@@ -352,7 +352,7 @@ if __name__ == "__main__":
         exit()
 
     print ('2.)Can we ceate a table in the db')
-    connect to db
+    #connect to db
     test.connectToDB()
     print ("we will add the following table: ")
     table = '''CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20) {}'''.format("DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1");
