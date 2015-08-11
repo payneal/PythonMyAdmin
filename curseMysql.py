@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #http://www.thegeekstuff.com/2008/08/get-quick-info-on-mysql-db-table-column-and-index-using-mysqlshow/
 
@@ -26,7 +26,7 @@ class curseMySqlDB:
     #connects to the database
     def connectToDB(self):
         try:
-            con = MySQLdb.connect(user= self.username, password= self.password, host= self.host, database= self.dbname
+            con = MySQLdb.connect(user= self.username, password= self.password, host= self.host, database= self.dbname)
             self.connection = con
             return {'success': 'connected'}
         except MySQLdb.Error as err:
@@ -156,20 +156,21 @@ def changeMysql(json_login, c_srting):
 #function to call when want to getall dbs for a user
 def getAllUsersTablesMysql(json_login):
     #something like show tables
+    return True
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all rows from table
 def getAllRowsFromTable(json_login, query_statment = None, tablename = None):
 #"Select * FROM `tablename`
-
+    return True
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- drop/add table from database
 def dropOrAddTableMySql(json_loin, delete_statement = None, tableToDelet= None):
-
+    return True
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- drop/add row to table
 def dropOrAddRowMysql (json_loin, delete_statement = None, RowToDelete = None, tableOfRow = None):
-
+    return True
 
 
 ############################################
@@ -244,11 +245,13 @@ def system_output(command):
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all databases that belong to a user (less important, since right now we're logging in to a single database instead of an account)
-
+def mysqlGetAllDBsofUser(user):
+    return True
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all tables from database
-
+def mysqlGetAllTables(users):
+    return True
 
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
