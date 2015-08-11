@@ -1,7 +1,6 @@
-﻿import curses
+﻿import copy
+import curses
 import curses.ascii
-import copy
-#from cursePanel import CursePanel
 
 class CurseItem(object):
     """ a thing 
@@ -47,6 +46,9 @@ class CurseItem(object):
 
         if "_on_select" in kwargs   : self._on_select   = kwargs["_on_select"]
         else                        : self._on_select   = None
+        if "selectable" in kwargs   : self.selectable   = kwargs["selectable"]
+        else                        : self.selectable   = False
+        self.is_selected = False
 
         if "active" in kwargs       : self.is_active = kwargs["active"]
         else: self.is_active = True
@@ -143,7 +145,7 @@ class CurseItem(object):
 
         """
 
-        if self._on_select == None:                                  return None
+        if self._on_select == None:                                 return None
         message = { "msg_status"  : "unread", 
                     "send_layer"  : self._on_select["send_layer"], 
                     "recv_layer"  : self._on_select["recv_layer"], 
@@ -169,16 +171,13 @@ class CurseItem(object):
         if msg == None:                                                  return
         
         if msg["msg_status"] == "unread":
-            if msg["recv_layer"] == "screen" or msg["recv_layer"] == "self":
+            if msg["recv_layer"] == "item" or msg["recv_layer"] == "self":
                 if msg["on_recv"] == "call_function":
-
-                    func = getattr(self, msg["recv_act"])
-                    #if msg["recv_args"] == None:  
-                    #    msg["ret_info"] = func()
-                    #else:        
-                    msg["ret_info"] = func(*msg["recv_args"])
-
-                    msg["msg_status"] = "read"
+                    if hasattr(self, msg["recv_act"]):
+                        func = getattr(self, msg["recv_act"])
+                        if msg["recv_args"] == None:   msg["ret_info"] = func()
+                        else:         msg["ret_info"] = func(*msg["recv_args"])
+                        msg["msg_status"] = "read"
 
         return msg
 
@@ -275,8 +274,7 @@ class CurseItem(object):
                         out_win.addch(y, x + in_len, in_bg_ch)
                     out_str = out_str[:-1]
                 status = "OK"      
-
-            
+           
             out_win.refresh()                              # REFRESH AFTER DRAW
 
             if in_len == max_len:        status = "OK_DONE"                      
@@ -289,7 +287,7 @@ class CurseItem(object):
             out_win.hline(y, x, pre_bg_ch, max_strip_len + 1)
             if pw_mode == False:
                 if len(out_str) <= max_strip_len:
-                     out_win.addstr(y,x, out_str,
+                    out_win.addstr(y,x, out_str,
                         out_pnl.style.txt_clr | out_pnl.style.txt_atr)
                 else:
                     out_win.addstr(y,x, out_str[0:max_strip_len],
@@ -362,6 +360,10 @@ class CurseItem(object):
             msg = "Input cannot contain whitespace characters!"
         elif status == "ERR_PUNCT":
             msg = "Input cannot contain punctuation characters!"
+        elif status == "NOKEY_SUBINFO":
+            msg = "Missing entry \'"+sargs[0]+"\' from submission!"
+        else:
+            msg = "Undefined error!"
 
         if status == "OK_DONE":
             if change_flag == True:

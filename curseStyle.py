@@ -951,4 +951,42 @@ def init_style():
         "itxt_bg_clr"	: colors["RED"]	
     })
 
+    panel_styles["usermain_listbox"] = CursePanelStyle({
+        "bg_chr"        : sp,
+        "bg_atr"        : 0,
+        "bg_clr"        : colors["GRN"],
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : 0,
+        "br_clr"        : colors["BLK"],
+        "ttl_atr"       : curses.A_BOLD,
+        "ttl_clr"       : colors["GRN"],
+        "txt_atr"       : curses.A_BOLD,
+        "txt_clr"       : colors["GRN"],
+        "txt_bg_clr"    : None,
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : curses.A_BOLD,
+        "fbg_clr"       : colors["GRN"],
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : 0,
+        "fbr_clr"       : colors["BLK"],
+        "fttl_atr"      : curses.A_BOLD,
+        "fttl_clr"      : colors["CYN"],
+        "ftxt_atr"      : curses.A_BOLD,
+        "ftxt_clr"      : colors["RED"],
+        "ftxt_bg_clr"   : colors["RMGA"],
+        #inactive			
+        "ibg_chr"	    : sp,
+        "ibg_atr"	    : 0,
+        "ibg_clr"	    : colors["RED"],
+        "ibr_chrs"	    : list(borderSets["no_border"]),
+        "ibr_atr"	    : 0,
+        "ibr_clr"	    : colors["RED"],
+        "ittl_atr"	    : 0,
+        "ittl_clr"	    : colors["RED"],
+        "itxt_atr"	    : 0,
+        "itxt_clr"	    : colors["RED"],
+        "itxt_bg_clr"	: colors["RED"]	
+    })
+
     return panel_styles

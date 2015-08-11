@@ -27,11 +27,26 @@ class CursePanel(object):
             self.is_pad=True
             self.pad_height = kwargs["psize"][0]
             self.pad_width  = kwargs["psize"][1]
-            self.win   = curses.newpad(self.pad_height, self.width)
+
+            self.win   = curses.newpad(self.pad_height, self.pad_width)
+
             self.viewport_y = 0;
             self.viewport_max_y =self.pad_height-self.height
             self.viewport_x = 0;
             self.viewport_max_x =self.pad_width-self.width
+
+            if "_inner_list" in kwargs:
+                self._inner_list = kwargs["_inner_list"]
+                self.row_count = len(self._inner_list)
+            else: 
+                #self._inner_list = None
+                self.row_count = -1
+
+            self.sel_list_indices = []
+            self.list_cursor_index = 0
+            self.cursor_vbuffer = 0
+            self.cursor_hbuffer = 0
+            
         else:
             self.is_pad=False
             self.win   = curses.newwin(self.height, self.width, self.y, self.x)           
@@ -47,21 +62,23 @@ class CursePanel(object):
             self.title_y                            = 0 
             self.title_x                            = 0
         
-        if "textbox" in kwargs:        self.textbox = kwargs["textbox"]
-        else:                          self.textbox = None     
+        if "textbox" in kwargs:      self.textbox = kwargs["textbox"]
+        else:                        self.textbox = None     
 
-        if "info" in kwargs:              self.info = kwargs["info"]
-        else:                             self.info = None
+        if "info" in kwargs:         self.info = kwargs["info"]
+        else:                        self.info = None
 
-        if "infotar" in kwargs:    self.infotar_str = kwargs["infotar"] 
-        else:                      self.infotar_str = None
-
+        if "infotar" in kwargs:      self.infotar_str = kwargs["infotar"] 
+        else:                        self.infotar_str = None
         self.infotar = None            
                               
         if "focusable" in kwargs:    self.focusable = kwargs["focusable"]
         else:                        self.focusable = False     
 
-        if "_inner_text" in kwargs:    self._inner_text = kwargs["_inner_text"]
+        if "is_sec_focus" in kwargs: self.is_sec_focus = kwargs["is_sec_focus"]
+        else:                        self.is_sec_focus = False
+
+        if "_inner_text" in kwargs:  self._inner_text = kwargs["_inner_text"]
 
         if "_default_focus_item_key" in kwargs:
             self._default_focus_item_key = kwargs["_default_focus_item_key"]
@@ -78,8 +95,6 @@ class CursePanel(object):
         self.is_focused             = False
         self.changed                = False
 
-        self.is_pad
-
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
                     
     def update(self):
@@ -89,36 +104,30 @@ class CursePanel(object):
                 self.win.noutrefresh()
             else:
                 self.win.noutrefresh(self.viewport_y, self.viewport_x, 
-                    self.y, self.x, self.height, self.width)
+                    self.y, self.x, self.height+self.y, self.width+self.x-2)
             self.changed = False
 
     def checkInput(self, act_key):
         """ check if action triggers a response in panel or panel items """
         msg = None
         if act_key in self.act_msg_map:
-            if act_key == "select":
-                return self.select()
-            else:             
-                msg = copy.deepcopy(self.act_msg_map[act_key])
-
-        self.readMessage(msg)
-        return msg
+            if act_key == "select":             msg = self.select() 
+            else:    msg = copy.deepcopy(self.act_msg_map[act_key])
+       
+        return self.readMessage(msg)
         
     def readMessage(self, msg):
-        if msg == None:                                                  return
+        if msg == None:     return
         
         if msg["msg_status"] == "unread":
-            if msg["recv_layer"] == "screen" or msg["recv_layer"] == "self":
+            if msg["recv_layer"] == "panel" or msg["recv_layer"] == "self":
                 if msg["on_recv"] == "call_function":
 
                     func = getattr(self, msg["recv_act"])
-                    if msg["recv_args"] == None:  
-                        msg["ret_info"] = func()
-                    else:        
-                        msg["ret_info"] = func(*msg["recv_args"])
+                    if msg["recv_args"] == None:       msg["ret_info"] = func()
+                    else:             msg["ret_info"] = func(*msg["recv_args"])
 
                     msg["msg_status"] = "read"
-
         return msg
 
     def showInfo(self):
@@ -159,33 +168,109 @@ class CursePanel(object):
 
     def select(self):
         """ tells focus item to activate its stored _on_select behavior"""
-        if self.focus_item != None:
-            return self.focus_item.select()
+        if self.focus_item != None:             return self.focus_item.select()
 
     def focus(self):
         """ sets panel focus, redraws panel, infotex to screen """
         self.is_focused = True
         if hasattr(self, "_default_focus_item_key"):
-            self.changeFocusItem(self._default_focus_item_key)
+            if self.focus_item == None:
+                self.changeFocusItem(self._default_focus_item_key)
         self.draw()
         self.showInfo()
 
-    def defocus(self):
+    def defocus(self, keep_i_focus=False):
         """ removes panel focus, redraws panel, hides infotex from screen """
         self.is_focused = False
         self.draw()
         self.hideInfo()
 
         if self.item_count > 0:
-            self._defocusItem()
+            if keep_i_focus == False: self.defocusItem()
+
+        if self.is_pad == True:
+            if keep_i_focus == False:
+                if self._inner_list != None:
+                    if keep_i_focus != True:
+                        self.clearList()
+                        self.list_cursor_index = -1
+                        self.viewport_y = 0
+                        self.viewport_x = 0
 
     def refreshPanel(self):
         self.draw()
-        if self.is_pad == False:
-            self.win.refresh()
+        if self.is_pad == False: self.win.refresh()
         else:
             self.win.refresh(self.viewport_y, self.viewport_x, 
-                    self.y, self.x, self.height, self.width())
+                self.y, self.x, self.height+self.y, self.width+self.x-2)
+
+#/\/\/  PAD FUNCTIONS  \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+
+    def scrollLeft(self):
+        if self.is_pad == True:
+            if self.viewport_x > 0:
+                self.viewport_x -= 1
+                self.refreshPanel()
+
+    def scrollRight(self):
+        if self.is_pad == True:
+            if self.viewport_x < self.viewport_max_x:
+                self.viewport_x += 1
+                self.refreshPanel()
+
+    def scrollUp(self):
+        if self.is_pad == True:
+            if self.viewport_y > 0:
+                self.viewport_y -= 1
+                self.refreshPanel()
+
+    def scrollDown(self):
+        if self.is_pad == True:
+            if self.viewport_y < self.row_count - 1:
+                self.viewport_y += 1
+                self.refreshPanel()
+
+    # used to give a panel a new results list
+    def loadList(self, string_list=None):
+        max_len = 0     
+        if string_list == None:     s_list = self._inner_list
+        else:                             s_list = string_list
+        self.row_count = len(s_list)
+        for l in range(0,  self.row_count):
+            line_len = len(s_list[l])
+            if line_len > max_len:
+                max_len = line_len
+        
+        self.viewport_max_y = self.row_count + 1
+        self.viewport_max_x = max_len + 1 - self.width
+
+        self.viewport_y = 0;
+        self.viewport_x = 0;
+        self.list_cursor_index = 0
+        self.refreshPanel()
+
+    def clearList(self):
+        for l in range(0, len(self._inner_list)):
+            self.win.hline(l,0,32,self.width - 1)
+        self._inner_list = None
+
+    def prevListItem(self, defocus_prev=True):
+        if self.list_cursor_index > 0:
+            self.list_cursor_index -= 1
+            if self.cursor_vbuffer > 0:
+                self.cursor_vbuffer -= 1
+                self.refreshPanel()
+            elif self.cursor_vbuffer == 0:
+                self.scrollUp()
+
+    def nextListItem(self, defocus_prev=True):
+        if self.list_cursor_index < self.row_count - 1:
+            self.list_cursor_index += 1
+            if self.cursor_vbuffer < self.height - 2:
+                self.cursor_vbuffer += 1
+                self.refreshPanel()
+            elif self.cursor_vbuffer == self.height - 2:
+                self.scrollDown()
 
 #/\/\/  PANEL DRAW FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 
@@ -215,6 +300,7 @@ class CursePanel(object):
         self._setBg(bg_chtype)                
         self._setBorder(br_chrs, br_atr, br_clr)
         self.drawTitle()
+        self.drawInnerList()
         self.drawInnerText()
 
     def drawPanelContents(self):
@@ -224,10 +310,11 @@ class CursePanel(object):
 
     def clearPanel(self):
         """ clears everything inside panel from screen """
+        self.defocus(True)       
         self.win.move(0,0)
         self.win.clrtobot()
         self.changed = True
-
+        
     def drawTitle(self):
         """ draws panel title to screen """
         if self.title == "" or self.title == None:                       return
@@ -251,6 +338,57 @@ class CursePanel(object):
             for t in range (0, len(self._inner_text)):
                 self.win.addstr(self._inner_text[t][0], self._inner_text[t][1],
                                 self._inner_text[t][2], txt_atr | txt_clr)
+
+    def drawInnerList(self):
+        """ draws field _inner_list if set """
+        if hasattr(self, "_inner_list"):
+            # draw list in pad
+            #for l in range(0,len(self._inner_list)):
+            for l in range(self.viewport_y, self.viewport_y + self.height-1):
+                self.win.hline(l,0,32,self.width)
+                if self.viewport_y + self.height -1 <= self.row_count:
+                    self.win.addstr(l,0,self._inner_list[l])
+            # highlight selected rows
+            if len(self.sel_list_indices) > 0:
+                for i in range(0, len(self.sel_list_indices)):
+                    self.win.addstr(self.sel_list_indices[i],1,
+                        self._inner_list[self.sel_list_indices[i]] 
+                            | curses.A_REVERSE)
+            # focus row cursor is on
+            if self.list_cursor_index >= 0:
+                self.win.attron(self.style.ftxt_atr | self.style.ftxt_clr)
+                self.win.addstr(self.list_cursor_index, 0,
+                    self._inner_list[self.list_cursor_index])
+                self.win.attroff(self.style.ftxt_atr | self.style.ftxt_clr)
+
+            #self.win.hline(self.height+self.viewport_y,
+            #               self.viewport_x,32,self.width-1)
+            self.win.hline(self.height+self.viewport_y-1,
+                           self.viewport_x,32,self.width)
+            self.win.hline(self.height+self.viewport_y,
+                           self.viewport_x,32,self.width)
+            # draw vertical axis "MORE"
+            if self.row_count > self.height:
+                try:
+                    if self.viewport_y + self.height < self.row_count:
+                        self.win.attron(
+                            self.style.ftxt_atr | self.style.ftxt_clr)
+                        self.win.addstr(self.height+self.viewport_y,
+                            self.viewport_x, "VVV MORE VVV")
+                        self.win.attroff(
+                            self.style.ftxt_atr | self.style.ftxt_clr)
+                except: pass
+            # draw horizontal axis "MORE"
+            if self.viewport_max_x > self.width:
+                try:
+                    if self.viewport_x < self.viewport_max_x:
+                        self.win.attron(
+                            self.style.ftxt_atr | self.style.ftxt_clr)
+                        self.win.addstr(self.height+self.viewport_y,
+                            4+self.viewport_x, "MORE >>>")
+                        self.win.attroff(
+                            self.style.ftxt_atr | self.style.ftxt_clr)
+                except: pass
 
     def _setBg(self, bg_chtype=0):
         """ sets panel background color and attributes """
@@ -326,10 +464,10 @@ class CursePanel(object):
         
     def changeFocusItem(self, new_key):
         """ switches focus from current focused item to new item """
-        self._defocusItem()
-        self._focusItem(new_key)
+        self.defocusItem()
+        self.focusItem(new_key)
 
-    def _focusItem(self, item_key):
+    def focusItem(self, item_key):
         """ apply focus to panel child item """
         self.is_item_focused     = True
         self.focus_key           = item_key
@@ -337,7 +475,7 @@ class CursePanel(object):
         self.focus_item          = self.items[item_key]
         self.focus_item.focus()
         
-    def _defocusItem(self):
+    def defocusItem(self):
         """ remove focus from panel child item """
         if self.focus_item != None:
             self.focus_item.defocus()  
@@ -345,11 +483,20 @@ class CursePanel(object):
             self.focus_key       = ""
             self.focus_index     = -1
             self.focus_item      = None
+
+    def selectItem(self, item_key=None):
+        i_key = None
+        if item_key == None:
+            if self.focus_item != None:     i_key = self.focus_key
+        elif item_key in self.items:    i_key = item_key
+        if i_key == None:    return
+        item = self.items[i_key]
+        return item.select()
                      
 #/\/  TEXTBOX FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
     def loadTextbox(self):
-        if self.textbox != None:                            self.textbox.load()
+        if self.textbox != None:        self.textbox.load()
 
     def drawTextbox(self):
         """ draws textbox data to physical screen """

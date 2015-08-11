@@ -74,8 +74,13 @@ def init_action_map():
     key_action_map[str(ord("d"))]            = "next"
     key_action_map[str(ord(" "))]            = "select"
     key_action_map[str(ord("\n"))]           = "return"
+
+    key_action_map[str(ord("["))]            = "scrl_left"
+    key_action_map[str(ord("]"))]            = "scrl_right"
+    key_action_map[str(ord("z"))]            = "cancel"
+
     key_action_map[str(ord("q"))]            = "quit"
-    key_action_map[str(ord("z"))]            = "prev_scr"
+    key_action_map[str(ord("v"))]            = "prev_scr"
     key_action_map[str(ord("u"))]            = "user_scr"
     key_action_map[str(ord("t"))]            = "test_scr"
 
@@ -86,7 +91,7 @@ def init_action_map():
     key_action_map[str(curses.KEY_UP)]       = "up"
     key_action_map[str(curses.KEY_DOWN)]     = "down"
 
-    key_action_map[str(curses.KEY_DC)]           = "delete"
+    key_action_map[str(curses.KEY_DC)]       = "delete"
 
     return key_action_map
 

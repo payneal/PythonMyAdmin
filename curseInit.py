@@ -12,7 +12,7 @@ from types import MethodType
 import asciiart
 import curseItem
 
-layers = { "main": 0, "screen": 1, "panel": 2, "item":3 }
+#layers = { "main": 0, "screen": 1, "panel": 2, "item":3 }
 
 teststr1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "\
           "eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut "\
@@ -21,7 +21,6 @@ teststr1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "\
           "reprehenderit in voluptate velit esse cillum dolore eu fugiat "\
           "nulla pariatur. Excepteur sint occaecat cupidatat non proident, "\
           "sunt in culpa qui officia deserunt mollit anim id est laborum."
-
 teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
            "accusantium doloremque laudantium, totam rem aperiam, eaque ipsa "\
            "quae ab illo inventore veritatis et quasi architecto beatae "\
@@ -38,6 +37,8 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
            "molestiae consequatur, vel illum qui dolorem eum fugiat quo "\
            "voluptas nulla pariatur?"
 
+def appendix():
+    pass
 #   SEARCH INDEX: USE UNIQUE XX-XX-XX-XX CODE WITH CTRL-F TO FIND WHERE
 #                       COMPONENT IS CREATED
 #                                                                       FUNCS 
@@ -129,7 +130,7 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #---------------|---------------------------|-|mngDBS--------05-03-..-02
 #---------------|---------------------------|-|cfgAcct-------05-03-..-03
 #---------------|---------------------------|-|logout--------05-03-..-04
-#---------------|usermain_scr_r_pnl---------|-|--------------05-04-..-..
+#---------------|usermain_scr_m_pnl---------|-|--------------05-04-..-..
 #---------------|---------------------------|-|hdr-----------05-04-..-00T
 #---------------|---------------------------|-|viewDB--------05-04-..-01T
 #---------------|---------------------------|-|mngDBS--------05-04-..-02T
@@ -147,14 +148,9 @@ teststr2 = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem "\
 #---------------|cfgAcct_scr_bg-------------|-|--------------08-00-..-..
 #---------------|cfgAcct_scr_ustrip---------|-|--------------08-01-..-..
 #---------------|cfgAcct_scr_menu_pnl-------|-|--------------08-02-..-..
+    pass
 
-
-
-#--- TITLE SCREEN: "title_screen"-----------------------------------00-..-..-..
-#--- TEST SCREEN: "test_screen"-------------------------------------01-..-..-..
-#--- ACCOUNT SCREEN: "account_screen"-------------------------------02-..-..-..
-#--- ABOUT SCREEN: "about_screen"-----------------------------------03-..-..-..
-#--- LOGIN SCREEN --------------------------------------------------04-..-..-..
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 class CurseContainer(object):
     def __init__(self, *args):
@@ -197,17 +193,14 @@ class CurseContainer(object):
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def init_screens(curse_container):
-    global layers
-    key_action_map      = curse_container.key_action_map #["key_action_map"]
-    curseStyles         = curse_container.styles         #["styles"]
-    curseScreens        = curse_container.screens        #["screens"]
+    key_action_map      = curse_container.key_action_map 
+    curseStyles         = curse_container.styles        
+    curseScreens        = curse_container.screens       
 
     default_msg_map     = curse_container.act_msg_maps["screen"]  
-    #["act_msg_maps"]["screen"]
     usermain_msg_map    = curse_container.act_msg_maps["user_screen"] 
     login_msg_map       = curse_container.act_msg_maps["login_screen"] 
-    #["act_msg_maps"]["user_screen"]
-    global_storage      = curse_container.global_storage #["global_storage"]
+    global_storage      = curse_container.global_storage 
 
     # 00-..-..-..                     
     curseScreens["title_screen"]    = CurseScreen(**{
@@ -218,7 +211,8 @@ def init_screens(curse_container):
     "act_msg_map"       : default_msg_map,
     "default_focus_key" : "title_scr_panel",
     "can_panel_change"  : True,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
     # 01-..-..-..
     curseScreens["test_screen"]     = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -228,7 +222,8 @@ def init_screens(curse_container):
     "act_msg_map"       : default_msg_map,
     "default_focus_key" : "test_scr_left_mid_panel",
     "can_panel_change"  : True,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
     # 02-..-..-..
     curseScreens["account_screen"]  = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -238,7 +233,8 @@ def init_screens(curse_container):
     "act_msg_map"       : default_msg_map,
     "default_focus_key" : "acct_scr_mid_panel",
     "can_panel_change"  : False,
-    "style"             : curseStyles["dashscrbg"]})  
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
     # 03-..-..-..
     curseScreens["about_screen"]    = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -248,29 +244,32 @@ def init_screens(curse_container):
     "act_msg_map"       : default_msg_map,
     "default_focus_key" : None,
     "can_panel_change"  : False,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
     # 04-..-..-..
     curseScreens["login_screen"]    = CurseScreen(**{
     "global_storage"    : global_storage,
     "screens"           : curseScreens,
     "user_strip"        : "login_scr_user_strip",
     "key_action_map"    : key_action_map,
-    "act_msg_map"       : login_msg_map,
+    "act_msg_map"       : default_msg_map,
     "default_focus_key" : "login_scr_menu_pnl",
     "can_panel_change"  : False,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
     # 05-..-..-..
     curseScreens["usermain_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
     "screens"           : curseScreens,
     "user_strip"        : "usermain_scr_ustrip",
     "key_action_map"    : key_action_map,
-    "act_msg_map"       : usermain_msg_map,
+    "act_msg_map"       : default_msg_map,
     "default_focus_key" : "user_scr_menu_pnl",
     "can_panel_change"  : True,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : "user_scr_footer"})
     # 06-..-..-..
-    curseScreens["viewDB_screen"] = CurseScreen(**{
+    curseScreens["viewDB_screen"]   = CurseScreen(**{
     "global_storage"    : global_storage,
     "screens"           : curseScreens,
     "user_strip"        : "viewDB_scr_ustrip",
@@ -278,7 +277,8 @@ def init_screens(curse_container):
     "act_msg_map"       : default_msg_map,
     "default_focus_key" : "viewDB_scr_menu_pnl",
     "can_panel_change"  : False,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
     # 07-..-..-..
     curseScreens["manageDB_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -288,7 +288,8 @@ def init_screens(curse_container):
     "act_msg_map"       : default_msg_map,
     "default_focus_key" : "mngDBS_scr_menu_pnl",
     "can_panel_change"  : False,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
     # 08-..-..-..
     curseScreens["cfg_acct_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -298,7 +299,8 @@ def init_screens(curse_container):
     "act_msg_map"       : default_msg_map,
     "default_focus_key" : "cfgAcct_scr_menu_pnl",
     "can_panel_change"  : False,
-    "style"             : curseStyles["dashscrbg"]})
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : None})
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -312,8 +314,8 @@ def init_panels(curse_container):
         panel.infotar           (set in load_targets)  
     """
 
-    curseScreens = curse_container.screens      #["screens"]
-    curseStyles = curse_container.styles        #["styles"]
+    curseScreens = curse_container.screens      
+    curseStyles = curse_container.styles       
 
     title_screen    = curseScreens["title_screen"]
     test_screen     = curseScreens["test_screen"]
@@ -325,9 +327,10 @@ def init_panels(curse_container):
     mngDBS_screen   = curseScreens["manageDB_screen"]  
     cfgAcct_screen  = curseScreens["cfg_acct_screen"]    
 
-    panel_msg_map = curse_container.act_msg_maps["panel_msg_map"]
-    #["act_msg_maps"]["panel_msg_map"]
-    global_storage = curse_container.global_storage #["global_storage"]
+    panel_msg_map = curse_container.act_msg_maps["panel_msg_map2"]
+    list_msg_map = curse_container.act_msg_maps["list_msg_map"]
+    #panel_msg_map2 = curse_container.act_msg_maps["panel_msg_map2"]
+    global_storage = curse_container.global_storage 
                                                                                
     # 00-03-..-..      y, x, h, w
     title_screen.panels["title_scr_background"]            = CursePanel(**{
@@ -600,10 +603,12 @@ def init_panels(curse_container):
     # 04-08-..-..
     login_screen.panels["login_scr_lang_optbox"]           = CursePanel(**{
     "global_storage": global_storage,
+    "act_msg_map"   : panel_msg_map,
     "parent"        : login_screen,
     "size"          : (13, 31, 1, 18),
     "style"         : curseStyles["login_optionbox"],
-    "_default_focus_item_key" : "OmySQL"})
+    "_default_focus_item_key" : "OmySQL",
+    "is_sec_focus"  : True})
     # 04-09
     login_screen.panels["login_scr_title_panel"]           = CursePanel(**{
     "global_storage": global_storage,
@@ -661,10 +666,12 @@ def init_panels(curse_container):
     "size"          : (6, 0, 12, 26 ),
     "style"         : curseStyles["middlepanes"],   
     "focusable"     : True,
-    "info"          : "press SPACE to select menu option".center(72),
-    "infotar"       : "usermain_scr_u_info"})
+    "info"          : "press SPACE to select item, q to quit, "\
+                      "z to cancel, v to return to previous screen",
+    "infotar"       : "usermain_scr_u_info",
+    "_default_focus_item_key" : "viewDB_lnk"})
     # 05-04-..-..
-    user_screen.panels["usermain_scr_r_pnl"]               = CursePanel(**{
+    user_screen.panels["usermain_scr_m_pnl"]               = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : user_screen,
     "title"         : ("ACCOUNT DATABASES".center(19), 0, 2),
@@ -672,7 +679,9 @@ def init_panels(curse_container):
     "size"          : (6, 26, 12, 24), 
     "style"         : curseStyles["middlepanes"],    
     "focusable"     : True,
-    "info"          : "use SHIFT+TAB / TAB to select list item".center(72),
+    "_default_focus_item_key" : "temp_db1",
+    "info"          : "press SPACE to select item, q to quit, "\
+                      "z to cancel, v to return to previous screen",
     "infotar"       : "usermain_scr_u_info"})
     # 05-05-..-..
     user_screen.panels["usermain_scr_l_info"]              = CursePanel(**{
@@ -680,12 +689,32 @@ def init_panels(curse_container):
     "parent"        : user_screen,
     "size"          : (18, 0, 5, 80),
     "style"         : curseStyles["infobox2"]})
+    # 05-06-..-..
+    user_screen.panels["usermain_scr_r_pnl"]               = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,
+    "act_msg_map"   : list_msg_map,
+    "size"          : (7, 51, 10, 29), 
+    "style"         : curseStyles["usermain_listbox"],    
+    "info"          : "use ARROW KEYS to browse list, q to quit, "\
+                      "z to cancel, v to return to previous screen",
+    "infotar"       : "usermain_scr_u_info",
+    "is_pad"        : True,
+    "psize"         : (1000, 1000)})
+    # 05-07-..-..
+    user_screen.panels["user_scr_footer"]                   = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : login_screen,
+    "size"          : (23, 0, 1, 80),
+    "style"         : curseStyles["input_strip"]})
     # panels are updated/ drawn in the order below- this affects
     # overlapping panels so pay attention to this!
     user_screen.panel_indexes = [
         "usermain_scr_bg",
+        "user_scr_footer",
         "usermain_scr_u_info",
         "user_scr_menu_pnl",
+        "usermain_scr_m_pnl",
         "usermain_scr_r_pnl",
         "usermain_scr_l_info",
         "usermain_scr_ustrip"]
@@ -800,10 +829,11 @@ def init_items(curse_container):
     login_scr_panels    = curseScreens["login_screen"].panels
     user_scr_panels     = curseScreens["usermain_screen"].panels
     
+
     # 00-01-..-00
     title_panels["title_scr_panel"].items["login_link"]    = CurseItem(**{ 
-    "container" : curse_container,
-    "global_storage" : global_storage,
+    "container"     : curse_container,
+    "global_storage": global_storage,
     "parent"        : title_panels["title_scr_panel"],
     "parent_screen" : curseScreens["title_screen"],
     "size"          : (15, 30, 1, 20), # y, x, h, w
@@ -1079,14 +1109,14 @@ def init_items(curse_container):
                       "................. "\
                       "press SPACE to select language",
     "infotar"       : "login_scr_infobox",
-    "_focus_key"    : "login_scr_lang_optbox",
+    #"_focus_key"    : "login_scr_lang_optbox",
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item",
-        recv_layer  = "self", 
-        recv_name   = "self",   
+        recv_layer  = "screen", 
+        recv_name   = "login_screen",   
         on_recv     = "call_function", 
-        recv_act    = "getOption",
-        recv_args   = ["login_scr_lang_optbox", global_storage, "log_lang"],
+        recv_act    = "openNestedPanel",
+        recv_args   = ["login_scr_lang_optbox"],
         ret_info    = None)})
     # 04-03-..-04       IFUNC_003 (logSubmit)
     login_scr_panels["login_scr_menu_pnl"].items["logsubmit"]=CurseItem(**{
@@ -1106,10 +1136,12 @@ def init_items(curse_container):
         on_recv     = "call_function", 
         recv_act    = "submitInfo",
         recv_args   = [
-                        ['database','username','password'], 
+                        ['language','database','username','password'],
+                        [None, None, None, ""], 
                         global_storage,
-                        ['log_db','log_name','log_pw'], 
-                        cursesPostgres.queryPostgresDict],
+                        ['log_lang','log_db','log_name','log_pw'], 
+                        (None, cursesPostgres.queryPostgresDict),
+                        "login_scr_infobox"],
         ret_info    = None)})
     login_scr_panels["login_scr_menu_pnl"].item_indexes = [
         "logname", 
@@ -1130,7 +1162,21 @@ def init_items(curse_container):
     "style"         : curseStyles["login_optionbox"],
     "label"         : "mySQL",
     "info"          : "login database uses mySQL",
-    "infotar"       : "login_scr_infobox"})
+    "infotar"       : "login_scr_infobox",    
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item",
+        recv_layer  = "self", 
+        recv_name   = "self",   
+        on_recv     = "call_function", 
+        recv_act    = "setOption",
+        recv_args   = [
+                        login_scr_panels["login_scr_lang_optbox"],
+                        global_storage, 
+                        "log_lang",
+                        True ],
+        #recv_act    = "getOption",
+        #recv_args   = ["login_scr_lang_optbox", global_storage, "log_lang"],
+        ret_info    = None)})
     # 04-08-..-01
     login_scr_panels["login_scr_lang_optbox"].items["Opostgre"]=CurseItem(**{
     "container"     : curse_container,
@@ -1141,7 +1187,21 @@ def init_items(curse_container):
     "style"         : curseStyles["login_optionbox"],
     "label"         : "postgresql",
     "info"          : "login database uses postgresql",
-    "infotar"       : "login_scr_infobox"})
+    "infotar"       : "login_scr_infobox",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item",
+        recv_layer  = "self", 
+        recv_name   = "self",   
+        on_recv     = "call_function", 
+        recv_act    = "setOption",
+        recv_args   = [
+                        login_scr_panels["login_scr_lang_optbox"],
+                        global_storage, 
+                        "log_lang",
+                        True ],
+        #recv_act    = "getOption",
+        #recv_args   = ["login_scr_lang_optbox", global_storage, "log_lang"],
+        ret_info    = None)    })
     login_scr_panels["login_scr_lang_optbox"].item_indexes = [
         "OmySQL", 
         "Opostgre"]
@@ -1150,7 +1210,7 @@ def init_items(curse_container):
 
 
     # 05-03-..-00
-    user_scr_panels["user_scr_menu_pnl"].items["hdr"]  = CurseItem(**{ 
+    user_scr_panels["user_scr_menu_pnl"].items["hdr"]      = CurseItem(**{ 
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["user_scr_menu_pnl"],
@@ -1161,24 +1221,27 @@ def init_items(curse_container):
     "focusable"     : False })
     # 05-03-..-01
     user_scr_panels["user_scr_menu_pnl"].items["viewDB_lnk"]=CurseItem(**{
-        "container" : curse_container,
+    "container"     : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["user_scr_menu_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (4, 3, 4, 20), # y, x, h, w
     "style"         : user_scr_panels["user_scr_menu_pnl"].style,
     "label"         : "view database",
-    "_focus_key"    : "usermain_scr_r_pnl"})#,
-    #"_on_select"    : dict(  msg_status  = "unread", 
-    #    send_layer  = "item", 
-    #    recv_layer  = "main", 
-    #    recv_name   = "main",   
-    #    on_recv     = "call_function", 
-    #    recv_act    = "changeScreen",
-    #    recv_args   = ["viewDB_screen"],
-    #    ret_info    = None)})
+    "info"          : ""\
+        "view all databases that you can access with current privileges",
+    "infotar"       : "usermain_scr_l_info", 
+    #"_focus_key"    : "usermain_scr_m_pnl",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item",
+        recv_layer  = "screen", 
+        recv_name   = "login_screen",   
+        on_recv     = "call_function", 
+        recv_act    = "openNestedPanel",
+        recv_args   = ["usermain_scr_m_pnl"],
+        ret_info    = None)})
     # 05-03-..-02
-    user_scr_panels["user_scr_menu_pnl"].items["mngDBS_lnk"]=CurseItem(**{ 
+    user_scr_panels["user_scr_menu_pnl"].items["mngDBS_lnk"]= CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["user_scr_menu_pnl"],
@@ -1212,7 +1275,7 @@ def init_items(curse_container):
         recv_args   = ["cfg_acct_screen"],
         ret_info    = None)})
     # 05-03-..-04
-    user_scr_panels["user_scr_menu_pnl"].items["logout"]= CurseItem(**{ 
+    user_scr_panels["user_scr_menu_pnl"].items["logout"]    = CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["user_scr_menu_pnl"],
@@ -1230,38 +1293,71 @@ def init_items(curse_container):
         user_scr_panels["user_scr_menu_pnl"].item_indexes)
 
     # 05-04-..-00T
-    user_scr_panels["usermain_scr_r_pnl"].items["temp_db1"]= CurseItem(**{ 
-        "container" : curse_container,
+    user_scr_panels["usermain_scr_m_pnl"].items["temp_db1"] = CurseItem(**{ 
+    "container"     : curse_container,
     "global_storage": global_storage,
-    "parent"        : user_scr_panels["usermain_scr_r_pnl"],
+    "parent"        : user_scr_panels["usermain_scr_m_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (4, 3, 4, 18), # y, x, h, w
-    "style"         : user_scr_panels["usermain_scr_r_pnl"].style,
-    "label"         : "database 1"})
+    "style"         : user_scr_panels["usermain_scr_m_pnl"].style,
+    "label"         : "database 1",
+    "selectable"    : True,
+    "info"          : "select database to view tables",
+    "infotar"       : "usermain_scr_l_info", 
+    #"_focus_key"    : "usermain_scr_r_pnl",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "self", 
+        recv_name   = "self",   
+        on_recv     = "call_function", 
+        recv_act    = "loadResult",
+        recv_args   = [
+            ["dinner dog loves a hog fallen in the winter bog-"\
+             "though he's broken all his wheels and cogs",
+             "while like a ghastly rapid river, through the pale door, "\
+             "a hideous throng rush out forever, and laugh- but smile no more",
+             "And all our yesterdays have lighted fools the way "\
+             "to dusty death. Out, out, brief candle! Life's but a walking "\
+             "shadow, a poor player, That struts and frets his hour upon the "\
+             "stage, and then is heard no more. It is a tale told by an "\
+             "idiot, full of sound and fury, Signifying nothing",
+             "`My name is Ozymandias, King of Kings: Look on my works, ye "\
+             "mighty, and despair!' Nothing beside remains. Round the decay "\
+             "that colossal wreck, boundless and bare,"\
+             "The lone and level sands stretch far away",
+             "LINE #5", "LINE #6", "LINE #7",
+             "LINE #8", "LINE #9", "LINE #10",
+             "LINE #11","LINE #12","LINE #13",
+             "LINE #14","LINE #15","LINE #16",
+             "17", "18", "19"],
+             "usermain_scr_r_pnl", True],
+        ret_info    = None)})
     # 05-04-..-01T
-    user_scr_panels["usermain_scr_r_pnl"].items["temp_db2"]= CurseItem(**{ 
+    user_scr_panels["usermain_scr_m_pnl"].items["temp_db2"] = CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
-    "parent"        : user_scr_panels["usermain_scr_r_pnl"],
+    "parent"        : user_scr_panels["usermain_scr_m_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (5, 3, 4, 18), # y, x, h, w
-    "style"         : user_scr_panels["usermain_scr_r_pnl"].style,
-    "label"         : "database 2"})
+    "style"         : user_scr_panels["usermain_scr_m_pnl"].style,
+    "label"         : "database 2",
+    "selectable"    : True})
     # 05-04-..-02T
-    user_scr_panels["usermain_scr_r_pnl"].items["temp_db3"]=CurseItem(**{ 
+    user_scr_panels["usermain_scr_m_pnl"].items["temp_db3"] = CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
-    "parent"        : user_scr_panels["usermain_scr_r_pnl"],
+    "parent"        : user_scr_panels["usermain_scr_m_pnl"],
     "parent_screen" : curseScreens["usermain_screen"],
     "size"          : (6, 3, 4, 18), # y, x, h, w
-    "style"         : user_scr_panels["usermain_scr_r_pnl"].style,
-    "label"         : "database 3"})
-    user_scr_panels["usermain_scr_r_pnl"].item_indexes = [
+    "style"         : user_scr_panels["usermain_scr_m_pnl"].style,
+    "label"         : "database 3",
+    "selectable"    : True})
+    user_scr_panels["usermain_scr_m_pnl"].item_indexes = [
         "temp_db1",
         "temp_db2",
         "temp_db3"]
-    user_scr_panels["usermain_scr_r_pnl"].item_count = len(
-        user_scr_panels["usermain_scr_r_pnl"].item_indexes)
+    user_scr_panels["usermain_scr_m_pnl"].item_count = len(
+        user_scr_panels["usermain_scr_m_pnl"].item_indexes)
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -1396,6 +1492,9 @@ def load_targets(curse_container):
     for screen_key in curse_container.screens:  #["screens"]:
         screen = curse_container.screens[screen_key]   #["screens"][screen_key]
         screen.user_strip = screen.panels[screen.user_strip_str]
+        if screen.ftr_strip_str != None:
+            screen.ftr_strip = screen.panels[screen.ftr_strip_str]
+        else:       screen.ftr_strip = None
         for panel_key in screen.panels:
             panel = screen.panels[panel_key]
             if panel.infotar_str != None:
@@ -1407,213 +1506,277 @@ def load_targets(curse_container):
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
+def init_act_msg_maps():
 # key-action map:   ordinal converted keyboard input to action string
 # action map    :   action string to message
 #           key:    action string
 #           value:  a "message" as defined below
 #
 # readMessage() :   message to command execution / function call
-#
-# message = {   
-#       msg_status  = "unread", 
-#       send_layer  = "screen", 
-#       recv_layer  = "main", 
-#       recv_name   = "main",   
-#       on_recv     = "call_function", 
-#       recv_act    = "changeScreen", 
-#       recv_args   = ["_previous"])}
-#
-
-def init_act_msg_maps():    
+#    
     act_msg_maps = {
-        "screen": {
-            "back"      : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function", 
-                recv_act    = "prevPanel",
-                recv_args   = None,
-                ret_info    = None),
-            "forward"   : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function",  
-                recv_act    = "nextPanel",
-                recv_args   = None,
-                ret_info    = None),
-            "quit"      : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "quitCurses",
-                recv_args   = None,
-                ret_info    = None),
-            "prev_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["_previous"],
-                ret_info    = None),
-            "user_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["usermain_screen"],
-                ret_info    = None),
-            "test_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["test_screen"],
-                ret_info    = None)},
-        "user_screen": {
-            "back"      : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function", 
-                recv_act    = "prevSecondaryItem",
-                recv_args   = None,
-                ret_info    = None),
-            "forward"   : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function",  
-                recv_act    = "nextsecondaryItem",
-                recv_args   = None,
-                ret_info    = None),
-            "quit"      : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "quitCurses",
-                recv_args   = None,
-                ret_info    = None),
-            "prev_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["_previous"],
-                ret_info    = None),
-            "user_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["usermain_screen"],
-                ret_info    = None),
-            "test_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["test_screen"],
-                ret_info    = None)},
-        "login_screen": {
-            "back"      : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function", 
-                recv_act    = "prevSecondaryItem",
-                recv_args   = None,
-                ret_info    = None),
-            "forward"   : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function",  
-                recv_act    = "nextsecondaryItem",
-                recv_args   = None,
-                ret_info    = None),
-            "quit"      : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "quitCurses",
-                recv_args   = None,
-                ret_info    = None),
-            "prev_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["_previous"],
-                ret_info    = None),
-            "user_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["usermain_screen"],
-                ret_info    = None),
-            "test_scr"  : dict(  msg_status  = "unread", 
-                send_layer  = "screen", 
-                recv_layer  = "main", 
-                recv_name   = "main",   
-                on_recv     = "call_function", 
-                recv_act    = "changeScreen", 
-                recv_args   = ["test_screen"],
-                ret_info    = None)},
+        "screen"        : {
+                "forward"   : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "nextPanel",
+                    recv_args   = None,
+                    ret_info    = None),
+                "quit"      : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "quitCurses",
+                    recv_args   = None,
+                    ret_info    = None),
+                "prev_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["_previous"],
+                    ret_info    = None),
+                "user_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["usermain_screen"],
+                    ret_info    = None),
+                "test_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["test_screen"],
+                    ret_info    = None)},
+        "user_screen"   : {
+                "quit"      : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "quitCurses",
+                    recv_args   = None,
+                    ret_info    = None),
+                "prev_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["_previous"],
+                    ret_info    = None),
+                "user_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["usermain_screen"],
+                    ret_info    = None),
+                "test_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["test_screen"],
+                    ret_info    = None)},
+        "login_screen"  : {
+                "back"      : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function", 
+                    recv_act    = "prevSecondaryItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "forward"   : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "nextsecondaryItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "quit"      : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "quitCurses",
+                    recv_args   = None,
+                    ret_info    = None),
+                "prev_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["_previous"],
+                    ret_info    = None),
+                "user_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["usermain_screen"],
+                    ret_info    = None),
+                "test_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["test_screen"],
+                    ret_info    = None)},
         "panel_msg_map" : {
-            "left"      : dict(  msg_status  = "unread", 
-                send_layer  = "panel", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function", 
-                recv_act    = "turnPage",
-                recv_args   = ["prev", "infotar"],
-                ret_info    = None),
-            "right"      : dict(  msg_status  = "unread", 
-                send_layer  = "panel", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function",  
-                recv_act    = "turnPage",
-                recv_args   = ["next", "infotar"],
-                ret_info    = None),
-            "up"      : dict(  msg_status  = "unread", 
-                send_layer  = "panel", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function",  
-                recv_act    = "prevItem",
-                recv_args   = None,
-                ret_info    = None),
-            "down"      : dict(  msg_status  = "unread", 
-                send_layer  = "panel", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function",  
-                recv_act    = "nextItem",
-                recv_args   = None,
-                ret_info    = None),
-            "select"      : dict(  msg_status  = "unread", 
-                send_layer  = "panel", 
-                recv_layer  = "self", 
-                recv_name   = "self",   
-                on_recv     = "call_function",  
-                recv_act    = "select",
-                recv_args   = None,
-                ret_info    = None)}}
+                "left"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function", 
+                    recv_act    = "turnPage",
+                    recv_args   = ["prev", "infotar"],
+                    ret_info    = None),
+                "right"     : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "turnPage",
+                    recv_args   = ["next", "infotar"],
+                    ret_info    = None),
+                "up"        : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "prevItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "down"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "nextItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "select"    : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "select",
+                    recv_args   = None,
+                    ret_info    = None)},
+        "panel_msg_map2": {
+                "left"        : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "prevItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "right"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "nextItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "up"        : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "prevItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "down"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "nextItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "select"    : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "selectItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "cancel"    : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "screen", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "closeNestedPanel",
+                    recv_args   = [False],
+                    ret_info    = None)},
+        "list_msg_map"  : {
+                "left"        : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "scrollLeft",
+                    recv_args   = None,
+                    ret_info    = None),
+                "right"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "scrollRight",
+                    recv_args   = None,
+                    ret_info    = None),
+                "up"        : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "prevListItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "down"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "nextListItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "select"    : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "selectItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "cancel"    : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "screen", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "closeNestedPanel",
+                    recv_args   = [False],
+                    ret_info    = None)} }
 
     return act_msg_maps
 
@@ -1628,8 +1791,9 @@ def init_funcs(curse_container):
     test_panels        = curseScreens["test_screen"].panels
     account_panels     = curseScreens["account_screen"].panels
     about_scr_panels   = curseScreens["about_screen"].panels
-    login_screen       = curseScreens["login_screen"]
-    login_panels       = login_screen.panels
+    login_panels       = curseScreens["login_screen"].panels
+    user_panels        = curseScreens["usermain_screen"].panels
+
     
     #------------------ FUNCTION DEFINITIONS ----------------------------------
     # IFUNC_001
@@ -1674,32 +1838,113 @@ def init_funcs(curse_container):
     # IFUNC_002
     def getOption(self, optbox_key, out_storage, out_storage_key):
         panel =self.container.getPanelByName(optbox_key)
+        # set the item to be the panel's "selected option"
+        if not hasattr(panel, "opt_selected"):
+            setattr(panel, "opt_selected", panel.focus_key)
+        else:
+            panel.opt_selected = panel.focus_key
+
+        # defocus other items
+        for i in panel.items:
+            if i != panel.focus_key:
+                panel.items[i].defocus()
+
+        # store label
         screen=panel.parent_screen
         option = panel.focus_item.label
         out_storage[out_storage_key] = copy.copy(option)      
+        #DEBUG
         screen.setUserStripInfo()
         screen.drawUserStripInfo()
   
+    def setOption(self, parent_panel, out_storage, out_storage_key, go_back):
+        out_storage[out_storage_key] = self.label
+        screen=parent_panel.parent_screen
+        #INSERT CODE TO SET SELECT STATUS
+        if go_back == True:
+            parent_panel.parent_screen.closeNestedPanel(True)
+        screen.setUserStripInfo()
+        screen.drawUserStripInfo()
+
     # IFUNC_003
-    def submitInfo(self, json_keys, storage, storage_keys, db_func):
-        q_dict = {}
-        for k in range(0, len(json_keys)):
-            if storage_keys[k] in storage:
-                q_dict[json_keys[k]] = storage[storage_keys[k]]
-            #else: return
-        db_func(q_dict)
+    def submitInfo(self, query_keys, req_keys, storage, storage_keys, 
+            db_funcs, infobox_parent_key):
+        """ takes stored input and submits to database   
+        
+        query_keys <list>   : fields needed to compose database query string
+        req_keys <list>     : if the element at a list index is None, then the
+            relative query key VALUE is required, if it is not None, then that
+            element is the default value for that query key
+        storage <dict>      : where the input is stored
+        storage_keys <str>  : keys to storage dictionary for values that will
+            fill values for analogous query keys
+        db_funcs<func>      : tuple for (mysql, postgresql) db IntrF functions
+        infobox_parent_key  : used to get textbox that shows info/error msg
+        """
+        q_dict      = {}
+        err         = False
+        err_key     = None
+        out_infobox = self.container.getTextboxByName(infobox_parent_key)
+        # check if each key need for the query is in storage
+        # if it's not, check if it's required
+        # if it is required, abort submission and report error
+        # if it isn't required, use default value and continue
+        for k in range(0, len(query_keys)):
+            # if there's not a key/value pair, is there a default value?
+            if storage_keys[k] not in storage:
+                if req_keys[k] != None:
+                    q_dict[query_keys[k]] = req_keys[k]
+                else:
+                    return self.showErrorMsg("NOKEY_SUBINFO", 
+                        [storage_keys[k]],  True, out_infobox)
+            else:
+                q_dict[query_keys[k]] = storage[storage_keys[k]]
+            
+        # lang should exist if you made it this far   
+        lang = storage["log_lang"]
+
+        ##  
+        ##      DB / UI INTERFACE CODE
+        ##
+        if lang == "mySQL":
+            if db_funcs[0] != None:
+                results = db_funcs[0](q_dict) 
+                #out_infobox.resetText(db_funcs[0](q_dict))
+                out_infobox.drawText()
+                out_infobox.parent.win.refresh()
+        elif lang == "postgresql":
+            if db_funcs[1] != None:
+                out_infobox.resetText(db_funcs[1](q_dict))
+                out_infobox.drawText()
+                out_infobox.parent.win.refresh()
+
+    # IFUNC_004
+    def loadResult(self, result_list, out_panel_key, focus_nested_panel=False):
+        panel =self.container.getPanelByName(out_panel_key)
+        #
+        if hasattr(panel, "_inner_list"):
+            setattr(panel,"_inner_list", list(result_list))
+        else:         panel._inner_list = list(result_list)
+        panel.loadList()
+        if focus_nested_panel == True:
+            self.parent_screen.openNestedPanel(out_panel_key)
 
     #------------------ FUNCTION ASSIGNMENT -----------------------------------
+    
     # 00-..-..-..
     pass
+    
     # 01-..-..-..
     pass
+    
     # 02-05-..-00       IFUNC_001
     # 02-05-..-01       IFUNC_001
     # 02-05-..-02       IFUNC_001
     pass
+    
     # 03-..-..-..
     pass
+    
     # 04-03-..-00 IFUNC_001
     log_item1           = login_panels["login_scr_menu_pnl"].items["logname"]
     log_item1.getEntry  = MethodType(getEntry, log_item1, CurseItem)
@@ -1710,19 +1955,24 @@ def init_funcs(curse_container):
     log_item3           = login_panels["login_scr_menu_pnl"].items["logdb"]
     log_item3.getEntry  = MethodType(getEntry, log_item3, CurseItem)
     # 04-03-..-03 IFUNC_002
-    log_item4           = login_panels["login_scr_menu_pnl"].items["loglang"]
-    log_item4.getOption = MethodType(getOption, log_item4, CurseItem)
+    log_item4           = login_panels["login_scr_lang_optbox"].items["OmySQL"]
+    log_item4.setOption = MethodType(setOption, log_item4, CurseItem)
+    log_item4b           = login_panels["login_scr_lang_optbox"].items["Opostgre"]
+    log_item4b.setOption = MethodType(setOption, log_item4b, CurseItem)
     # 04-03-..-04 IFUNC_003
     log_item5           = login_panels["login_scr_menu_pnl"].items["logsubmit"]
     log_item5.submitInfo = MethodType(submitInfo, log_item5, CurseItem)
-
-    # 05-..-..-..
+    
+    # 05-04-..-00T IFUNC_004
+    user_item1          = user_panels["usermain_scr_m_pnl"].items["temp_db1"]
+    user_item1.loadResult = MethodType(loadResult, user_item1, CurseItem)
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def load_globals(curse_container):
-    curse_container.global_storage["log_name"] = ""
-    curse_container.global_storage["log_pw"]   = ""
-    curse_container.global_storage["log_db"]   = ""  
-    curse_container.global_storage["log_lang"] = ""
-
+    pass
+    #curse_container.global_storage["log_name"] = ""
+    #curse_container.global_storage["log_pw"]   = ""
+    #curse_container.global_storage["log_db"]   = ""  
+    #curse_container.global_storage["log_lang"] = ""
+    pass
