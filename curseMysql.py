@@ -1,60 +1,192 @@
-#this is used to loginto root so that you can create a user
+#!/usr/bin/env python
 
-#I worote this to run on my mac computer 
-#I state this because I cannot run terminal call 'mysql' to get to mysql to run 
-#instead I must use "/usr/local/mysql/bin/mysql " now all of this can be temporaryly changed on a mac 
-#with the following terminal call '/usr/local/mysql/bin/mysql ' but even if this takes place on the 
-#python call I still must use "/usr/local/mysql/bin/mysql" rather than 'mysql' so if you are testing this on
-#your machine adjust the machine accordingly 
+#http://www.thegeekstuff.com/2008/08/get-quick-info-on-mysql-db-table-column-and-index-using-mysqlshow/
 
-# for operating system calls 
+# for operating system calls
 import subprocess
+#for mysql db
+import MySQLdb
+#used to return json data
+import json
 
-#for mysql db 
-import mysql.connector
-from mysql.connector import errorcode
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
+############################################
+# connects to mysql database
 #once establed a user in system we can use this
-class users:
-    def __init__(self, dbname, username , password , host , connection = None ):
+############################################
+class curseMySqlDB:
+    def __init__(self, dbname, username , password, host, connection = None):
         self.dbname = dbname
         self.username = username
         self.password = password
         self.host = host
         self.connection= connection
 
-
+    #connects to the database
     def connectToDB(self):
         try:
-            cnx = mysql.connector.connect(user= self.username, password= self.password, host= self.host, database= self.dbname )
-            self.connection = cnx
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print("Something is wrong with your user name or password")
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                print("Database does not exist")
-            else:
-                print(err)
+            con = MySQLdb.connect(user= self.username, password= self.password, host= self.host, database= self.dbname
+            self.connection = con
+            return {'success': 'connected'}
+        except MySQLdb.Error as err:
+            conn.rollback()
+            return {'fail': err}
 
+    #return database results in a dictionary
+    def queryMysql(self, query):
+        if self.connection:
+            c= self.connection.cursor()
+            try:
+                c.execute(query)
+                results = self.dictfetchall(cursor)
+                #json the results
+                json_results = json.dumps(results)
+                return {'success': json_results}
+            except:
+                return {'error':"unable to fetch data"}
+        else:
+            return {'error':'must be connect to db to query'}
+
+    #"""Returns all rows from a cursor as a list of dicts"""
+    def dictfetchall(self, cursor):
+        desc = cursor.description
+        return [dict(itertools.izip([col[0] for col in desc], row))
+            for row in cursor.fetchall()]
+
+    #used to create db, delete, update, or insert
+    def insertDeleteUpdateMysql(self, info):
+        if self.connection:
+            c= self.connection.cursor()
+            try:
+                c.execute(info)
+                self.connection.commit()
+                return {'true':'insert, delete, or update worked'}
+            except:
+                self.connection.rollback()
+                return {'false':"unable insert, delete, update"}
+        else:
+            return {'error':'must be connect to db to query'}
+
+    #dont know if this is really needed I think Insert or delete would work
+    def createOrDeleteTableMysql(self, table):
+        if self.connection:
+            c= self.connection.cursor()
+            try:
+                #might have to check if table exist
+
+                #then drop if table does exist
+                c.execute(table)
+
+                return {'true':'created new table or deleted table'}
+            except:
+                self.connection.rollback()
+                return {'false':"unable to create this table"}
+        else:
+            return {'error':'must be connect to db to query'}
+
+    #closes the database
     def closeDB(self):
         if self.connection == None:
-            print "you are not connecte dto databse"
+            #print "you are not connecte dto databse"
+            return{'fail':'you are not connected to any db to close'}
         else:
             self.connection.close()
-            print "the connection has been closed"
+            #print "the connection has been closed"
+            return{'success':'db was closed'}
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+#function to call when what to query the database
+def queryMysql(json_login, q_string):
+    con = None
+    loginInfo =  json.loads(json_login)
+
+    database= loginInfo['database']
+    user = loginInfo['user']
+    host = '127.0.0.1'
+    password = ''
+    query = loginInfo['user']
+    if loginInfo['password']:
+        password = loginInfo['password']
+
+    con = users(database, user, pasword, host)
+    result = con.connectToDB()
+    result =  json.loads(result)
+    if result['success']:
+        #start the query
+        feedback = con.insertDeleteUpdateMysql(q_string)
+        feedback =  json.loads(result)
+        #close the
+        check = con.closeDB()
+        check =  json.loads(check)
+        return feedback
+    else:
+        return result
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#function to call when you want to change mysql database
+def changeMysql(json_login, c_srting):
+    con = None
+    loginInfo =  json.loads(json_login)
+
+    database= loginInfo['database']
+    user = loginInfo['user']
+    host = '127.0.0.1'
+    password = ''
+    query = loginInfo['user']
+    if loginInfo['password']:
+        password = loginInfo['password']
+
+    con = users(database, user, pasword, host)
+    result = con.connectToDB()
+    result =  json.loads(result)
+    if result['success']:
+        #start the query
+        feedback = con.Mysql(q_string)
+        feedback =  json.loads(result)
+        #close the
+        check = con.closeDB()
+        check =  json.loads(check)
+        return feedback
+    else:
+        return result
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#function to call when want to getall dbs for a user
+def getAllUsersTablesMysql(json_login):
+    #something like show tables
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- get all rows from table
+def getAllRowsFromTable(json_login, query_statment = None, tablename = None):
+#"Select * FROM `tablename`
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- drop/add table from database
+def dropOrAddTableMySql(json_loin, delete_statement = None, tableToDelet= None):
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- drop/add row to table
+def dropOrAddRowMysql (json_loin, delete_statement = None, RowToDelete = None, tableOfRow = None):
 
 
 
-#used this not the comment line below fell free to ignore windows warning
-#https://docs.python.org/2/library/subprocess.html
-def system_output(command):
-	p = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True)
-	return p
-
-#used to connect to local mysql host
+############################################
+# this is used to loginto root so that you can create a user
+# which allows us to create new user on local server
+# also can grant priovilages to user
+#
+# mac cannot run terminal call 'mysql' to get to mysql to
+# run instead w/ "/usr/local/mysql/bin/mysql "
+# can temporialy be changed with the following terminal call
+# '/usr/local/mysql/bin/mysql'
+# but still for this progam must enter "/usr/local/mysql/bin/mysql"
+#
+##################################################
 class connectAsRoot:
     def __init__(self, howYouCallTerminalMysql=None, username= None, port=None, password=None, host=None):
-        
+
     	self.howYouCallTerminalMysql = None
         #if your on windows and termical call for accesing mysql is 'mysql' just enter as s
         #but check this out 'http://stackoverflow.com/questions/13752424/how-to-connect-from-windows-command-prompt-to-mysql-command-line'
@@ -76,19 +208,19 @@ class connectAsRoot:
         self.password = None
         #Windows = think there may also be a password not 100%
 		#linux At the Enter password: prompt, well, enter root's password :)
-		#macs root has no password set so '' is fine  
-      	
-      	#changing passowrd in mysql = 
+		#macs root has no password set so '' is fine
+
+      	#changing passowrd in mysql =
       	#https://dev.mysql.com/doc/refman/5.0/en/set-password.html
-      	
-      	#once loged in as root show host root password for all users= 
+
+      	#once loged in as root show host root password for all users=
       	# 'select host, user, password from mysql.user;'
 
-      	#once logged in so all info: 
+      	#once logged in so all info:
       	#'select * from mysql.user;'
 
       	self.host = "localhost"
-      	#local host works on mac 
+      	#local host works on mac
       	# if this doesnt work check out '127.0.0.1'
 
 
@@ -101,22 +233,45 @@ class connectAsRoot:
     	self.howYouCallTerminalMysql = usersCall
 
 
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
-# when ran as main test will test to see if this program is valid, with your entered setting can run
-# on your system, and or if the information you input is correcct
+#This is used to make system calls
+#https://docs.python.org/2/library/subprocess.html
+def system_output(command):
+	p = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True)
+	return p
+
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- get all databases that belong to a user (less important, since right now we're logging in to a single database instead of an account)
+
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- get all tables from database
+
+
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+############################################
+# when ran as main test will test to see if this program is valid
+# allows one to enter there own testing settings
+#
+#
+#
+############################################
 if __name__ == "__main__":
-	
-	#test the command line first; 
+
+	#test the command line first;
 	testsys= 'ps'
 	check = system_output(testsys)
-	if "PID TTY" not in  check: 
+	if "PID TTY" not in  check:
 		print "terminal call: fail"
 		exit()
 	else:
 		print "termail call: success"
 		#contine
 
-	#establish the objetct 
+	#establish the objetct
 	tester = connectAsRoot()
 	#set the password
 	tester.setPassword()
@@ -141,28 +296,17 @@ if __name__ == "__main__":
 
 	check = system_output(command)
 
-	#stuck here you can log into console if you just go to python interperter and entere 
+	#stuck here you can log into console if you just go to python interperter and entere
 	#what command is (keep in mind 'myslq' for windows '/usr/local/mysql/bin/mysql' or mac)
 
-	#stuck because you  get an error im thinking, need to go back to: 
+	#stuck because you  get an error im thinking, need to go back to:
 	#https://docs.python.org/2/library/subprocess.html
 
-	#and find out how to instead return standard out message I need to communicate 
-	# I say this because "enter password: " come up which your prompted to do on mysql 
-	#root acces but I prolly have to write back  command line but then again im now in mysql 
-	# so im not %100%  that is what writing to command line will do ??? 
+	#and find out how to instead return standard out message I need to communicate
+	# I say this because "enter password: " come up which your prompted to do on mysql
+	#root acces but I prolly have to write back  command line but then again im now in mysql
+	# so im not %100%  that is what writing to command line will do ???
 
 
-	# after under stand how to create a new user then easy to connect with db useing 
+	# after under stand how to create a new user then easy to connect with db useing
 	# the user Object
-
-	
-
-
-
-
-
-
-
-
-
