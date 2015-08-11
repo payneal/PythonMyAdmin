@@ -9,6 +9,8 @@ import MySQLdb
 #used to return json data
 import json
 
+import itertools
+
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 ############################################
@@ -26,9 +28,9 @@ class curseMySqlDB:
     #connects to the database
     def connectToDB(self):
         try:
-            con = MySQLdb.connect(user= self.username, password= self.password, host= self.host, database= self.dbname)
+            con = MySQLdb.connect(user= self.username, passwd= self.password, host= self.host, db= self.dbname)
             self.connection = con
-            return {'success': 'connected'}
+            return {'success': 'db was connected'}
         except MySQLdb.Error as err:
             conn.rollback()
             return {'fail': err}
@@ -40,8 +42,9 @@ class curseMySqlDB:
             try:
                 c.execute(query)
                 results = self.dictfetchall(cursor)
+
                 #json the results
-                json_results = json.dumps(results)
+                #json_results = json.dumps(results)
                 return {'success': json_results}
             except:
                 return {'error':"unable to fetch data"}
@@ -73,15 +76,34 @@ class curseMySqlDB:
         if self.connection:
             c= self.connection.cursor()
             try:
+
+                print "thi sis the table var: {}".format(table)
                 #might have to check if table exist
 
                 #then drop if table does exist
                 c.execute(table)
 
                 return {'true':'created new table or deleted table'}
-            except:
+            except MySQLdb.Error as err:
                 self.connection.rollback()
-                return {'false':"unable to create this table"}
+                return {'false':err}
+        else:
+            return {'error':'must be connect to db to query'}
+
+    def MySQLshowTables(self):
+        if self.connection:
+            c= self.connection.cursor()
+            try:
+                c.execute("Use {}".format(self.dbname))
+                c.execute("SHOW TABLES")
+                results = self.dictfetchall(c)
+                #json the results
+                json_results = json.dumps(results)
+                return {'success': results}
+                #return (results, json_results)
+            except MySQLdb.Error as err:
+                self.connection.rollback()
+                return {'false':err}
         else:
             return {'error':'must be connect to db to query'}
 
@@ -173,75 +195,23 @@ def dropOrAddRowMysql (json_loin, delete_statement = None, RowToDelete = None, t
     return True
 
 
-############################################
-# this is used to loginto root so that you can create a user
-# which allows us to create new user on local server
-# also can grant priovilages to user
-#
-# mac cannot run terminal call 'mysql' to get to mysql to
-# run instead w/ "/usr/local/mysql/bin/mysql "
-# can temporialy be changed with the following terminal call
-# '/usr/local/mysql/bin/mysql'
-# but still for this progam must enter "/usr/local/mysql/bin/mysql"
-#
-##################################################
-class connectAsRoot:
-    def __init__(self, howYouCallTerminalMysql=None, username= None, port=None, password=None, host=None):
-
-    	self.howYouCallTerminalMysql = None
-        #if your on windows and termical call for accesing mysql is 'mysql' just enter as s
-        #but check this out 'http://stackoverflow.com/questions/13752424/how-to-connect-from-windows-command-prompt-to-mysql-command-line'
-
-        #if linux see: http://stackoverflow.com/questions/6200215/how-to-log-in-to-mysql-and-query-the-database-from-linux-terminal
-        #but for most part works same as windows so 'mysql'
-
-         #keep in mine created on the system type below
-        #for mac (OS X 10.10 (Yosemite)) => '/usr/local/mysql/bin/mysql
-        # http://stackoverflow.com/questions/14235362/mac-install-and-open-mysql-using-terminal
-
-        self.username= 'root'
-        #we are login in at root which is the defealt administrated with all grant provilage
-
-        self.port= '3306'
-        #https://dev.mysql.com/doc/refman/5.1/en/connecting.html
-        #ocnnections to remote servers always use TCP/IP. This command connects to the server running on remote.example.com using the default port number (3306)
-
-        self.password = None
-        #Windows = think there may also be a password not 100%
-		#linux At the Enter password: prompt, well, enter root's password :)
-		#macs root has no password set so '' is fine
-
-      	#changing passowrd in mysql =
-      	#https://dev.mysql.com/doc/refman/5.0/en/set-password.html
-
-      	#once loged in as root show host root password for all users=
-      	# 'select host, user, password from mysql.user;'
-
-      	#once logged in so all info:
-      	#'select * from mysql.user;'
-
-      	self.host = "localhost"
-      	#local host works on mac
-      	# if this doesnt work check out '127.0.0.1'
-
-
-    def setPassword(self):
-    	password  = raw_input("what is password?\n")
-    	self.password = password
-
-    def setSysCall(self):
-    	usersCall = raw_input("how do you call mysql?\n")
-    	self.howYouCallTerminalMysql = usersCall
-
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- get all databases that belong to a user (less important, since right now we're logging in to a single database instead of an account)
+def mysqlGetAllDBsofUser(user):
+    return True
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-
-#This is used to make system calls
-#https://docs.python.org/2/library/subprocess.html
-def system_output(command):
-	p = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True)
-	return p
-
+#-for testing program
+def getmysqlDBLoginInfo():
+    host = raw_input("what is the Hostname? ")
+    host = host.strip()
+    dbname = raw_input("what is the DatabaseName? ")
+    dbname = dbname.strip()
+    username = raw_input("what is the username? ")
+    username = username.strip()
+    password= raw_input("what is the password? ")
+    password= password.strip()
+    return (host, dbname, username, password)
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all databases that belong to a user (less important, since right now we're logging in to a single database instead of an account)
@@ -249,67 +219,162 @@ def mysqlGetAllDBsofUser(user):
     return True
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#- get all tables from database
-def mysqlGetAllTables(users):
+#- create A db
+def mysqlCreateADb(host, user, passw):
+    return True
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- create A db
+#http://stackoverflow.com/questions/8932261/create-mysqldb-database-using-python-script
+def grantPrivsToMySqlDB(host, user, passw):
     return True
 
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 ############################################
-# when ran as main test will test to see if this program is valid
-# allows one to enter there own testing settings
+# steps on how to set up prorgam and test as well
+#
 #
 #
 #
 ############################################
 if __name__ == "__main__":
+    #1. we need to Create a user in mysql
 
-	#test the command line first;
-	testsys= 'ps'
-	check = system_output(testsys)
-	if "PID TTY" not in  check:
-		print "terminal call: fail"
-		exit()
-	else:
-		print "termail call: success"
-		#contine
+        #download mysql: https://dev.mysql.com/downloads/mysql/
+        #install it
+        #go to setting and make sure local server is up and running
+        #go to command line
+            #for mac
+                # terminal call => "/usr/local/mysql/bin/mysql"
+            #for windows
+                #terminal call => 'mysql'
+            #for linux
+                #terminal call => 'mysql'
 
-	#establish the objetct
-	tester = connectAsRoot()
-	#set the password
-	tester.setPassword()
-	#set how you make terminal Mysql call
-	tester.setSysCall()
+        #once mysql is up and running in the terminal ex 'mysql>'
+        #we want to acces admin so exit mysql with exit ex. 'mysql>exit'
 
-	#personal error check to make sure we have correcty inputs
-	#print "this is the password {}".format(tester.password)
-	#print "this is the call that needs to be made {}".format(tester.howYouCallTerminalMysql)
+        #now we want to log in as a user that can make changes to localhost
+        #to do this go again to the comman line and enter:
+        #mac ex.
+        # /usr/local/mysql/bin/mysql -u root -p -h localhost -P 3306
+        # to quickly explain this string:
+            #we are login in at root which is the defealt administrated with all grant provilage
 
-	mysqlLocation = tester.howYouCallTerminalMysql
-	username = tester.username
-	password = tester.password
-	host = tester.host
-	port = tester.port
+            # local host is where we are running the program if this doesnt work check out '127.0.0.1'
+
+            #connection to local host server run on port(3306)
+
+        # you will then be asked for the password
+        #ex. 'Enter password:'
+            #the defealt password is ''
+            #http://forums.mysql.com/read.php?34,140320,140324
+
+        #now that we are loged in a root user we can create a new user in the db
+
+        #https://dev.mysql.com/doc/refman/5.1/en/adding-users.html
+        #ex.
+        # creates user with password
+        # mysql> CREATE USER 'fake'@'localhost' IDENTIFIED BY 'admin_pass';
+        # create a user without a password (not recommended)
+        # mysql> CREATE USER 'dummy'@'localhost';
+
+    #2.) create a Database
+        #ex. => mysql> CREATE DATABASE menagerie;
+
+        #verify databse was creaded with:
+        #ex. => mysql> show databases;
+
+    #3.) give the created user acces to this db
+        #ex. =>  mysql> GRANT ALL PRIVILEGES ON menagerie.* To 'fake'@'localhost'
 
 
-	#creat command to root acces mysql
-	command = mysqlLocation + " -u " + username + " -p " + password + " -h " + host + " -P " + port
+    #4.) Now that we have a user = 'fake' , password= 'admin_pass' host = 'localhost' , and databse = 'menagerie'
+        #we can finiially use the created command line
 
-	print "this is the command we will be sending to command line: {}".format(command)
+    print "Now that you have completed steps 1-4 and have a username, host, and database we can now move on!"
 
-	check = system_output(command)
+    #host, dbname, username, password = getmysqlDBLoginInfo()
 
-	#stuck here you can log into console if you just go to python interperter and entere
-	#what command is (keep in mind 'myslq' for windows '/usr/local/mysql/bin/mysql' or mac)
+    answer = None
 
-	#stuck because you  get an error im thinking, need to go back to:
-	#https://docs.python.org/2/library/subprocess.html
+    answer= raw_input('have you created the test steps exactly as walkthrough states meaning \nuser = fake , password= admin_pass host = localhost , and databse = menagerie:\n y/n => ')
 
-	#and find out how to instead return standard out message I need to communicate
-	# I say this because "enter password: " come up which your prompted to do on mysql
-	#root acces but I prolly have to write back  command line but then again im now in mysql
-	# so im not %100%  that is what writing to command line will do ???
+    if answer != 'y':
+        print ('test is set up for this information please use forresults')
+        answer= raw_input('would you like to enter your already established connection\ny/n: ')
+        if answer == 'y':
+            host, dbname, username, password = getmysqlDBLoginInfo()
+        else:
+            print("set up test and come back, good bye")
+            exit()
 
 
-	# after under stand how to create a new user then easy to connect with db useing
-	# the user Object
+    host = 'localhost'
+    dbname = 'menagerie'
+    username = 'fake'
+    password = 'admin_pass'
+
+    #create a json string
+    data = {'database': dbname, 'user': username, 'host': 'localhost', 'password': password}
+    json_logInfo = json.dumps(data)
+
+    if isinstance(data, str) == False:
+        print "data is python dictionary"
+        print data['user']
+
+    print "\n"
+
+    if isinstance(json_logInfo, str):
+        print "json_logInfo is a string"
+        print json_logInfo
+
+    print("now that we have a python dictionary lets start testing")
+    #create a mysql db
+    test = curseMySqlDB(data['database'],data['user'], data['password'], data['host'])
+
+    print('1.) can we connect to and close db')
+    result = test.connectToDB()
+    if result['success']:
+        print result['success']
+        result = test.closeDB()
+        if result['success']:
+            print result['success']
+            print "test#1 - passed"
+        else:
+            print result['fail']
+            print "test#1 - failed"
+            exit()
+    else:
+        print result['fail']
+        print "test#1 - failed"
+        exit()
+
+    print ('2.)Can we ceate a table in the db')
+    connect to db
+    test.connectToDB()
+    print ("we will add the following table: ")
+    table = '''CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20) {}'''.format("DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1");
+    print table
+    result = test.createOrDeleteTableMysql(table)
+    test.closeDB()
+    if result['success'];
+        print result['success']
+        print "test#2 - passed"
+    else:
+        print results['fail']
+        exit()
+
+    print ('3. show tables to see if last table was created')
+    test.connectToDB()
+    result = test.MySQLshowTables()
+    test.closeDB()
+    if result['success']:
+        intable = result['success'][0]
+        if intable['Tables_in_menagerie'] == 'pet':
+            print "tables in db= {}".format(intable['Tables_in_menagerie'])
+            print "test#2 - passed"
+    else:
+        print results['fail']
+        exit()
