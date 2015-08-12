@@ -1934,7 +1934,8 @@ def init_funcs(curse_container):
                 if type(q_res) is str:  out_str = q_res
                 else:
                     out_str = ""
-                    for k in q_dict.keys():  out_str += q_dict[k] + " "
+                    for k in q_res['success'].keys():  
+                        out_str += q_res['success'][k] + " "
             elif lang == "postgresql":
                 """ CALL POSTGRESQL QUERY """
                 try:
