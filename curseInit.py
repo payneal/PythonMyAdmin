@@ -1,6 +1,6 @@
 ﻿import copy
 import curses
-import cursesPostgres
+import cursesPostgresTemp
 
 from curseScreen import CurseScreen
 from cursePanel import CursePanel
@@ -1140,7 +1140,7 @@ def init_items(curse_container):
                         [None, None, None, ""], 
                         global_storage,
                         ['log_lang','log_db','log_name','log_pw'], 
-                        (None, cursesPostgres.queryPostgresDict),
+                        (None, cursesPostgresTemp.queryPostgresDict),
                         "login_scr_infobox"],
         ret_info    = None)})
     login_scr_panels["login_scr_menu_pnl"].item_indexes = [
@@ -1908,13 +1908,22 @@ def init_funcs(curse_container):
         ##
         if lang == "mySQL":
             if db_funcs[0] != None:
-                results = db_funcs[0](q_dict) 
-                #out_infobox.resetText(db_funcs[0](q_dict))
+                results = db_funcs[0](q_dict)                 
+                out_str = ""
+                results_keys = results.keys()
+                for r in range(0, len(results_keys)):
+                    out_str+results_keys[r]+":"+results[results_keys[r]]+" "
+                out_infobox.resetText(out_str)
                 out_infobox.drawText()
                 out_infobox.parent.win.refresh()
         elif lang == "postgresql":
             if db_funcs[1] != None:
-                out_infobox.resetText(db_funcs[1](q_dict))
+                results = db_funcs[1](q_dict)                 
+                out_str = ""
+                results_keys = results.keys()
+                for r in range(0, len(results_keys)):
+                    out_str+results_keys[r]+":"+results[results_keys[r]]+" "
+                out_infobox.resetText(out_str)
                 out_infobox.drawText()
                 out_infobox.parent.win.refresh()
 
