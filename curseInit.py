@@ -1073,7 +1073,7 @@ def init_items(curse_container):
         on_recv     = "call_function", 
         recv_act    = "getEntry",
         recv_args   = [
-            "login_scr_pw_strip", curses.color_pair(10), "1100", (4,64,17), 
+            "login_scr_pw_strip", curses.color_pair(10), "1101", (4,64,17), 
             (True,True,False),global_storage,"log_pw","login_scr_infobox"],
         ret_info    = None)})
     # 04-03-..-02       IFUNC_001 (getEntry)
