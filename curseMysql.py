@@ -76,19 +76,18 @@ class curseMySqlDB:
         if self.connection:
             c= self.connection.cursor()
             try:
-
-                print "thi sis the table var: {}".format(table)
+                print "this is the table var: {}".format(table)
                 #might have to check if table exist
-
                 #then drop if table does exist
                 c.execute(table)
+                self.connection.commit()
 
-                return {'true':'created new table or deleted table'}
+                return {'success':'created new table or deleted {}'.format(table)}
             except MySQLdb.Error as err:
                 self.connection.rollback()
-                return {'false':err}
+                return {'fail':err}
         else:
-            return {'error':'must be connect to db to query'}
+            return {'fail':'must be connect to db to query'}
 
     def MySQLshowTables(self):
         if self.connection:
@@ -359,14 +358,14 @@ if __name__ == "__main__":
     print table
     result = test.createOrDeleteTableMysql(table)
     test.closeDB()
-    if result['success'];
+    if result['success']:
         print result['success']
         print "test#2 - passed"
     else:
         print results['fail']
         exit()
 
-    print ('3. show tables to see if last table was created')
+    print ('3.) show tables to see if last table was created')
     test.connectToDB()
     result = test.MySQLshowTables()
     test.closeDB()
@@ -374,7 +373,23 @@ if __name__ == "__main__":
         intable = result['success'][0]
         if intable['Tables_in_menagerie'] == 'pet':
             print "tables in db= {}".format(intable['Tables_in_menagerie'])
-            print "test#2 - passed"
+            print "test#3 - passed"
     else:
         print results['fail']
         exit()
+
+    print('4.) delete table and see if table still exist')
+    test.connectToDB()
+    print ("we will now delete the table pet with this call: ")
+    table = "DROP TABLE pet"
+    print table
+    result = test.createOrDeleteTableMysql(table)
+    test.closeDB()
+    if result['success']:
+        print result['success']
+        print "test#4 - passed"
+    else:
+        print results['fail']
+        exit()
+
+    
