@@ -12,7 +12,9 @@ from types import MethodType
 import asciiart
 import curseItem
 
+import psycopg2 
 import json
+import decimal
 import cursesPostgresTemp
 import curseMysqlTemp
 
@@ -1936,14 +1938,14 @@ def init_funcs(curse_container):
 
     def databaseLoginTest(self, infobox_pkey):
         gs = self.global_storage
-        if hasattr(gs, "log_lang"):
+        if "log_lang" in gs:
             lang = gs["log_lang"] # get qlang
             if lang == "mySQL" or lang == "postgresql":
                 # get login arguments from global storage
                 l_args = dict(
                         database = gs["log_db"],
                         user     = gs["log_name"],
-                        host     = gs["log_host"],
+                        host     = 'localhost',
                         password = gs["log_pw"])
                         
                 # execute DB interface functions
@@ -1952,13 +1954,18 @@ def init_funcs(curse_container):
 
                 if 'success' in l_result: status = { "status": "OK" }
                 elif 'fail' in l_result: 
-                    status = {"status":"ERR", "info": l_result['fail'] }
+                    if lang == "mySQL":
+                        status = {
+                            "status":"ERR", 
+                            "info": str(l_result['fail'])}
+                    else:
+                        status={"status":"ERR","info":l_result['fail'].pgerror}
             else: status = { "status": "ERR", "info": "bad language value" }
         else: status = { "status": "ERR", "info": "language field not set" }
 
         # draw results
         i_box = self.container.getTextboxByName(infobox_pkey)
-        i_box.resetText(json.dumps(status))
+        i_box.resetText(json.dumps(status["info"]))
         i_box.drawText()
         i_box.parent.win.refresh()
 

@@ -83,12 +83,13 @@ class curseMySqlDB:
 
     #connects to the database
     def connectToDB(self):
+        con = None
         try:
             con = MySQLdb.connect(user= self.username, passwd= self.password, host= self.host, db= self.dbname)
             self.connection = con
             return {'success': 'db was connected'}
         except MySQLdb.Error as err:
-            conn.rollback()
+            if con != None:  con.rollback()
             return {'fail': err}
 
     #return database results in a dictionary
