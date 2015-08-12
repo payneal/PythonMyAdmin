@@ -180,7 +180,7 @@ def loginMysql(pythonDic):
     query = pythonDic['query']
     if loginInfo['password']:
         password = loginInfo['password']
-    con = users(database, user, pasword, host)
+    con = loginMysql(database, user, pasword, host)
     result = con.connectToDB()
     con.closeDB
     return result
