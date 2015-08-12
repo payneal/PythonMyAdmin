@@ -36,7 +36,7 @@
 #
 #   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
 #
-#   returns =>      on succes =  {'success': [{'table1': 'table2', 'table3': 'table4'}]}
+#   returns =>      on succes ex =  {'success': [{'Tables_in_menagerie': 'pet'}, {'Tables_in_menagerie': 'state'}]}
 #
 #   returns =>      on failure = {'false':mysql error message}
 #
@@ -48,8 +48,15 @@
 #
 #   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
 #
+#   iData => <string>
+#   ex.
+#       INSERT INTO pet(name, owner) Values('buddy', 'jack')
 #
-
+#   returns =>      on succes =  {'success': 'created new table or deleted {callmade}}
+#
+#   returns =>      on failure = {'false':mysql error message}
+#
+#
 #------------------------------------------------------------------------------
 #                      *RETURN PYTHON DICTIONARY FROM QUERY*
 #
@@ -184,13 +191,47 @@ def loginMysql(pythonDic):
     return result
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #function to add or delete a table as user
-def addOrDeleteMydqlTable(pythonDic, table):
-    return False
+def addOrDeleteMydqlTable(pythonDic, theTable):
+    con = None
+    database= pythonDic['database']
+    user = pythonDic['user']
+    host = pythonDic['host']
+    password = pythonDic['password']
+    table = theTable
+    con = curseMySqlDB(database, user, password, host)
+    con.connectToDB()
+    result = con.createOrDeleteTableMysql(table)
+    con.closeDB()
+    return result
+
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #function to call when what to query the database
 def showAllTablesInAMysqlDB(pythonDic):
-    return False
+    con = None
+    database= pythonDic['database']
+    user = pythonDic['user']
+    host = pythonDic['host']
+    password = pythonDic['password']
+    con = curseMySqlDB(database, user, password, host)
+    con.connectToDB()
+    result = con.MySQLshowTables()
+    con.closeDB()
+    return result
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#function to call when what to query the database
+def deleteInsertDataToTable(pythonDic, iData):
+    con = None
+    database= pythonDic['database']
+    user = pythonDic['user']
+    host = pythonDic['host']
+    password = pythonDic['password']
+    con = curseMySqlDB(database, user, password, host)
+    con.connectToDB()
+    result = con.insertDeleteUpdateMysql(iData)
+    con.closeDB()
+    return result
 
 
 
@@ -491,6 +532,51 @@ if __name__ == "__main__":
         print results['fail']
         exit()
 
-    print ("8.) test login function")
+    print ("8.) test all functions that program will use")
     check = loginMysql(data)
-    print check
+    print "Testing function loginMysql(pythondic)"
+    if check['success']:
+        print check
+        print "function loginMysql(pythondic) - passed"
+    else:
+        print check['fail']
+        print "function loginMysql(pythondic) - failed"
+        exit()
+
+    print "Testing function addOrDeleteMydqlTable(pythondic, table)"
+    table = '''CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20) {}'''.format("DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1");
+    check = addOrDeleteMydqlTable(data, table)
+    if check['success']:
+        print check
+        print "function addOrDeleteMydqlTable(pythondic, table) - passed for add"
+    else:
+        print check['fail']
+        print "function addOrDeleteMydqlTable(pythondic, table)) - failed for add"
+        exit()
+
+    print "Testing function showAllTablesInAMysqlDB(pythonDic):"
+    #adding additional table
+    table = '''CREATE TABLE state (name VARCHAR(20), id VARCHAR(20) {}'''.format("DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1");
+    addOrDeleteMydqlTable(data, table)
+    #now calling function
+    check = showAllTablesInAMysqlDB(data)
+    if check['success']:
+        print check
+        print "function showAllTablesInAMysqlDB(pythonDic)) - passed"
+    else:
+        print check['fail']
+        print "function showAllTablesInAMysqlDB(pythonDic)) - failed"
+        exit()
+
+    print "Testing function: deleteInsertDataToTable(pythonDic, iData):"
+    insert = "INSERT INTO pet(name, owner) Values('buddy', 'jack')"
+    check = deleteInsertDataToTable(data, insert)
+    if check['success']:
+        print check
+        print "function: deleteInsertDataToTable(pythonDic, iData) - passed"
+    else:
+        print check['fail']
+        print "function: deleteInsertDataToTable(pythonDic, iData) - failed"
+        exit()
+
+    print "Testing function: deleteInsertDataToTable(pythonDic, iData):"
