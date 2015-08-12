@@ -64,19 +64,19 @@ class curseMySqlDB:
             try:
                 c.execute(info)
                 self.connection.commit()
-                return {'success':'insert, delete, or update worked: {}'.format(info)}
-            except MySQLdb.Error as err:
+                return {'true':'insert, delete, or update worked'}
+            except:
                 self.connection.rollback()
-                return {'fail':err }
+                return {'false':"unable insert, delete, update"}
         else:
-            return {'fail':'must be connect to db to query'}
+            return {'error':'must be connect to db to query'}
 
     #dont know if this is really needed I think Insert or delete would work
     def createOrDeleteTableMysql(self, table):
         if self.connection:
             c= self.connection.cursor()
             try:
-                #print "this is the table var: {}".format(table)
+                print "this is the table var: {}".format(table)
                 #might have to check if table exist
                 #then drop if table does exist
                 c.execute(table)
@@ -97,14 +97,14 @@ class curseMySqlDB:
                 c.execute("SHOW TABLES")
                 results = self.dictfetchall(c)
                 #json the results
-                #json_results = json.dumps(results)
+                json_results = json.dumps(results)
                 return {'success': results}
                 #return (results, json_results)
             except MySQLdb.Error as err:
                 self.connection.rollback()
                 return {'false':err}
         else:
-            return {'false':'must be connect to db to query'}
+            return {'error':'must be connect to db to query'}
 
     #closes the database
     def closeDB(self):
@@ -115,22 +115,6 @@ class curseMySqlDB:
             self.connection.close()
             #print "the connection has been closed"
             return{'success':'db was closed'}
-#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#function to log into mysql
-def loginMysql(json_Login):
-    con = None
-    loginInfo =  json.loads(json_login)
-    database= loginInfo['database']
-    user = loginInfo['user']
-    host = 'localhost'
-    password = ''
-    query = loginInfo['user']
-    if loginInfo['password']:
-        password = loginInfo['password']
-    con = users(database, user, pasword, host)
-    result = con.connectToDB()
-    con.closeDB
-    return result
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -201,7 +185,21 @@ def getAllRowsFromTable(json_login, query_statment = None, tablename = None):
 #"Select * FROM `tablename`
     return True
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- drop/add table from database
+def dropOrAddTableMySql(json_loin, delete_statement = None, tableToDelet= None):
+    return True
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- drop/add row to table
+def dropOrAddRowMysql (json_loin, delete_statement = None, RowToDelete = None, tableOfRow = None):
+    return True
 
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+#- get all databases that belong to a user (less important, since right now we're logging in to a single database instead of an account)
+def mysqlGetAllDBsofUser(user):
+    return True
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #-for testing program
 def getmysqlDBLoginInfo():
     host = raw_input("what is the Hostname? ")
@@ -380,13 +378,12 @@ if __name__ == "__main__":
         print results['fail']
         exit()
 
-    print("4.) Insert data to a table")
+    print('4.) delete table and see if table still exist')
     test.connectToDB()
-    print("lets insert data to the pet table")
-    insert = "INSERT INTO pet(name, owner) Values('buddy', 'jack')"
-    print "here is the statement"
-    print insert
-    result = test.insertDeleteUpdateMysql(insert)
+    print ("we will now delete the table pet with this call: ")
+    table = "DROP TABLE pet"
+    print table
+    result = test.createOrDeleteTableMysql(table)
     test.closeDB()
     if result['success']:
         print result['success']
@@ -395,32 +392,4 @@ if __name__ == "__main__":
         print results['fail']
         exit()
 
-    print ("5.) delete data from table")
-    test.connectToDB()
-    delete = "DELETE FROM pet WHERE name='buddy'"
-    print("lets delete row from the pet db")
-    print "here is the statement"
-    print delete
-    result = test.insertDeleteUpdateMysql(delete)
-    test.closeDB()
-    if result['success']:
-        print result['success']
-        print "test#5 - passed"
-    else:
-        print results['fail']
-        exit()
-
-    print('6.) delete table')
-    test.connectToDB()
-    print ("we will now delete the table pet with this call: ")
-    table = "DROP TABLE pet"
-    print "here is the statement"
-    print table
-    result = test.createOrDeleteTableMysql(table)
-    test.closeDB()
-    if result['success']:
-        print result['success']
-        print "test#6 - passed"
-    else:
-        print results['fail']
-        exit()
+    
