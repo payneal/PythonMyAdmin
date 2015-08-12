@@ -2,6 +2,8 @@
 ################################################################################
 #                           Instructions                                       #
 #       Include this file to do the following with a local mysql Databse:      #
+#                                                                              #
+#                                                                              #
 ################################################################################
 #                      *LOGIN/CHECK MYSQL CREDIENTIALS*
 #   function: loginMysql(pythonDic):
@@ -36,7 +38,7 @@
 #
 #   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
 #
-#   returns =>      on succes ex =  {'success': [{'Tables_in_menagerie': 'pet'}, {'Tables_in_menagerie': 'state'}]}
+#   returns =>      on succes ex =  {'success': [{'Tables_in_[nameoftable]': [nameoftable1]}, {'Tables_in_[nameoftable]': [nameoftable2]}]}
 #
 #   returns =>      on failure = {'false':mysql error message}
 #
@@ -60,11 +62,34 @@
 #------------------------------------------------------------------------------
 #                      *RETURN PYTHON DICTIONARY FROM QUERY*
 #
-#   function:
-#-----------------------------------------------------------------------------
+#   function: pythonDicFromQuery(pythonDic, query):
+#
+#   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
+#
+#   query => <string>
+#
+#   ex.
+#       select name, owner from pet
+#
+#   returns =>      on succes =  [{'owner': 'jack', 'name': 'buddy'}, {'owner': 'jack', 'name': 'buddy'}]
+#
+#   returns =>      on failure = {'false':mysql error message}
+#
 ################################################################################
+#RESOURCES:
+#   1.) http://www.thegeekstuff.com/2008/08/get-quick-info-on-mysql-db-table-column-and-index-using-mysqlshow/
+#   2.) http://mysql-python.sourceforge.net/MySQLdb.html#using-and-extending
+#   3.) https://dev.mysql.com/doc/refman/5.1/en/index.html
+#   4.) http://zetcode.com/db/mysqlpython/
+#   5.) http://stackoverflow.com/questions/1451782/python-mysql-selects-work-but-not-deletes
+#        *used alot of various stackover flow articles
+#   6.) http://www.tutorialspoint.com/python/python_database_access.htm
+#   7.) http://www.mikusa.com/python-mysql-docs/index.html
+#   8.) https://media.readthedocs.org/pdf/mysqldb/latest/mysqldb.pdf
+#   9.) http://www.cs.columbia.edu/~hgs/teaching/ap/examples/scripts_python_dbapi.pdf
+#
 
-#http://www.thegeekstuff.com/2008/08/get-quick-info-on-mysql-db-table-column-and-index-using-mysqlshow/
+
 
 # for operating system calls
 import subprocess
@@ -233,53 +258,18 @@ def deleteInsertDataToTable(pythonDic, iData):
     con.closeDB()
     return result
 
-
-
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #function to call when what to query the database
-def queryMysql(json_login, q_string):
+def pythonDicFromQuery(pythonDic, query):
     con = None
-    loginInfo =  json.loads(json_login)
-
-    database= loginInfo['database']
-    user = loginInfo['user']
-    host = '127.0.0.1'
-    password = ''
-    query = loginInfo['user']
-    if loginInfo['password']:
-        password = loginInfo['password']
-
-    con = curseMySqlDB(database, user, pasword, host)
-    result = con.connectToDB()
-    #result =  json.loads(result)
-    if result['success']:
-        #start the query
-        feedback = con.insertDeleteUpdateMysql(q_string)
-        #feedback =  json.loads(result)
-        #close the
-        check = con.closeDB()
-        check =  json.loads(check)
-        return feedback
-    else:
-        return result
-
-#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#function to call when you want to change mysql database
-def changeMysql(json_login, c_srting):
-    return True
-#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#function to call when want to getall dbs for a user
-def getAllUsersTablesMysql(json_login):
-    #something like show tables
-    return True
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all rows from table
 def getAllRowsFromTable(json_login, query_statment = None, tablename = None):
 #"Select * FROM `tablename`
     return True
-#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #-for testing program
 def getmysqlDBLoginInfo():
     host = raw_input("what is the Hostname? ")
@@ -292,29 +282,41 @@ def getmysqlDBLoginInfo():
     password= password.strip()
     return (host, dbname, username, password)
 
+
+###############################################################################
+# for the three calls below one woudl need to access admin in
+# mysql but the closes I coudl get scrit wish was the following:
+
+# for operating system calls
+#import subprocess
+#system_output('mysql -u root -p -h localhost -P 3306')
+
+#did find way to talk to command like ex:
+#def system_output(command):
+#	p = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True)
+#	return p
+
+#but coudldnt get pass 'Enter Password:'
+
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all databases that belong to a user (less important, since right now we're logging in to a single database instead of an account)
 def mysqlGetAllDBsofUser(user):
-    return True
+    return False
+
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- create A db
 def mysqlCreateADb(host, user, passw):
-    return True
+    return False
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- create A db
 #http://stackoverflow.com/questions/8932261/create-mysqldb-database-using-python-script
 def grantPrivsToMySqlDB(host, user, passw):
-    return True
+    return False
 
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#Josh is passing { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
-
-
-
-
 ############################################
 # steps on how to set up prorgam and test as well
 #
@@ -532,7 +534,7 @@ if __name__ == "__main__":
         print results['fail']
         exit()
 
-    print ("8.) test all functions that program will use")
+    print ("8.)\ntest all functions that program will use")
     check = loginMysql(data)
     print "Testing function loginMysql(pythondic)"
     if check['success']:
@@ -543,7 +545,7 @@ if __name__ == "__main__":
         print "function loginMysql(pythondic) - failed"
         exit()
 
-    print "Testing function addOrDeleteMydqlTable(pythondic, table)"
+    print "\nTesting function addOrDeleteMydqlTable(pythondic, table)"
     table = '''CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20) {}'''.format("DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1");
     check = addOrDeleteMydqlTable(data, table)
     if check['success']:
@@ -554,7 +556,7 @@ if __name__ == "__main__":
         print "function addOrDeleteMydqlTable(pythondic, table)) - failed for add"
         exit()
 
-    print "Testing function showAllTablesInAMysqlDB(pythonDic):"
+    print "\nTesting function showAllTablesInAMysqlDB(pythonDic):"
     #adding additional table
     table = '''CREATE TABLE state (name VARCHAR(20), id VARCHAR(20) {}'''.format("DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1");
     addOrDeleteMydqlTable(data, table)
@@ -568,7 +570,7 @@ if __name__ == "__main__":
         print "function showAllTablesInAMysqlDB(pythonDic)) - failed"
         exit()
 
-    print "Testing function: deleteInsertDataToTable(pythonDic, iData):"
+    print "\nTesting function: deleteInsertDataToTable(pythonDic, iData):"
     insert = "INSERT INTO pet(name, owner) Values('buddy', 'jack')"
     check = deleteInsertDataToTable(data, insert)
     if check['success']:
@@ -579,4 +581,4 @@ if __name__ == "__main__":
         print "function: deleteInsertDataToTable(pythonDic, iData) - failed"
         exit()
 
-    print "Testing function: deleteInsertDataToTable(pythonDic, iData):"
+    print "\nTesting function: deleteInsertDataToTable(pythonDic, iData):"
