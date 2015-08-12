@@ -1952,7 +1952,8 @@ def init_funcs(curse_container):
                 if lang=="mySQL":l_result=curseMysqlTemp.loginMysqlTest(l_args)
                 else: l_result=cursesPostgresTemp.loginPostgresqlTest(l_args)
 
-                if 'success' in l_result: status = { "status": "OK" }
+                if 'success' in l_result: status = { 
+                    "status": "OK", "info": "connected to database!"}
                 elif 'fail' in l_result: 
                     if lang == "mySQL":
                         status = {
