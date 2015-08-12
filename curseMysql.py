@@ -115,12 +115,13 @@ class curseMySqlDB:
 
     #connects to the database
     def connectToDB(self):
+        con= None
         try:
             con = MySQLdb.connect(user= self.username, passwd= self.password, host= self.host, db= self.dbname)
             self.connection = con
             return {'success': 'db was connected'}
         except MySQLdb.Error as err:
-            conn.rollback()
+            con.rollback()
             return {'fail': err}
 
     #return database results in a dictionary
@@ -262,12 +263,25 @@ def deleteInsertDataToTable(pythonDic, iData):
 #function to call when what to query the database
 def pythonDicFromQuery(pythonDic, query):
     con = None
+    database= pythonDic['database']
+    user = pythonDic['user']
+    host = pythonDic['host']
+    password = pythonDic['password']
+    con = curseMySqlDB(database, user, password, host)
+    con.connectToDB()
+    query = query
+    result= con.queryMysql(query)
+    con.closeDB()
+    return result
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all rows from table
-def getAllRowsFromTable(json_login, query_statment = None, tablename = None):
-#"Select * FROM `tablename`
-    return True
+def getAllRowsFromTable(pythonDic, tablename):
+    #"Select * FROM `tablename`
+
+    #already have query, so idk if this is needed
+
+    return False
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #-for testing program
@@ -285,18 +299,22 @@ def getmysqlDBLoginInfo():
 
 ###############################################################################
 # for the three calls below one woudl need to access admin in
-# mysql but the closes I coudl get scrit wish was the following:
+# mysql but the closest I could get with scrit was the following:
 
 # for operating system calls
 #import subprocess
 #system_output('mysql -u root -p -h localhost -P 3306')
+
+#hit enter for password
 
 #did find way to talk to command like ex:
 #def system_output(command):
 #	p = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True)
 #	return p
 
-#but coudldnt get pass 'Enter Password:'
+#but coudldnt get pass 'Enter Password:' in python script to work
+
+#if one can, from there the functions below are easy ... see steps in main
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #- get all databases that belong to a user (less important, since right now we're logging in to a single database instead of an account)
@@ -318,9 +336,7 @@ def grantPrivsToMySqlDB(host, user, passw):
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 ############################################
-# steps on how to set up prorgam and test as well
-#
-#
+# steps on how to set up mysql and settings to trst program as well
 #
 #
 ############################################
@@ -581,4 +597,18 @@ if __name__ == "__main__":
         print "function: deleteInsertDataToTable(pythonDic, iData) - failed"
         exit()
 
-    print "\nTesting function: deleteInsertDataToTable(pythonDic, iData):"
+    print "\nTesting function: pythonDicFromQuery(pythonDic, query):"
+    query = "select name, owner from pet"
+    #adding a couple more queries
+    insert = "INSERT INTO pet(name, owner) Values('duke', 'sandy')"
+    deleteInsertDataToTable(data, insert)
+    insert = "INSERT INTO pet(name, owner) Values('paul', 'mj')"
+    deleteInsertDataToTable(data, insert)
+    result = pythonDicFromQuery(data, query)
+    if check['success']:
+        print result
+        print "function: pythonDicFromQuery(pythonDic, query) - passed"
+    else:
+        print check['fail']
+        print "function: pythonDicFromQuery(pythonDic, query) - failed"
+        exit()
