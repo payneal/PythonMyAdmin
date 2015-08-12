@@ -1,61 +1,4 @@
 #!/usr/bin/env python3
-################################################################################
-#                           Instructions                                       #
-#       Include this file to do the following with a local mysql Databse:      #
-################################################################################
-#                      *LOGIN/CHECK MYSQL CREDIENTIALS*
-#   function: loginMysql(pythonDic):
-#
-#   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
-#
-#   returns =>     on succes = {'success': 'db was connected'}
-#
-#   returns=>       on failure = {'fail': mysql error message}
-#
-#------------------------------------------------------------------------------
-#                       *ADD OR DELETE MYSQLDB TABLE*
-#   function: addOrDeleteMydqlTable(pythonDic, table):
-#
-#   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
-#
-#   table => <string>
-#
-#   ex. Delete
-#   DROP TABLE pet
-#
-#   ex. Add
-#   CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20) DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1
-#
-#   returns =>      on succes = {'success':'created new table or deleted {table}}
-#
-#   returns=>       on failure = {'fail':'mysql error message}'}
-#
-#------------------------------------------------------------------------------
-#                      *SHOW ALL TABLES IN A DATABASE*
-#   function: showAllTablesInAMysqlDB(pythonDic):
-#
-#   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
-#
-#   returns =>      on succes =  {'success': [{'table1': 'table2', 'table3': 'table4'}]}
-#
-#   returns =>      on failure = {'false':mysql error message}
-#
-#
-#------------------------------------------------------------------------------
-#                      *DELETE/INSERT DATA IN TABLE*
-#
-#   function: deleteInsertDataToTable(pythonDic, iData):
-#
-#   pythonDic => { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
-#
-#
-
-#------------------------------------------------------------------------------
-#                      *RETURN PYTHON DICTIONARY FROM QUERY*
-#
-#   function:
-#-----------------------------------------------------------------------------
-################################################################################
 
 #http://www.thegeekstuff.com/2008/08/get-quick-info-on-mysql-db-table-column-and-index-using-mysqlshow/
 
@@ -65,13 +8,14 @@ import subprocess
 import MySQLdb
 #used to return json data
 import json
-#used to create dictionaty
+
 import itertools
+
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
 ############################################
-# connects to mysql database and does basically everything
-#
-# user in system uses this
+# connects to mysql database
+#once establed a user in system we can use this
 ############################################
 class curseMySqlDB:
     def __init__(self, dbname, username , password, host, connection = None):
@@ -99,6 +43,20 @@ class curseMySqlDB:
                 #c.execute("Use {}".format(self.dbname))
                 c.execute(query)
                 results = self.dictfetchall(c)
+                #json the results
+                #results = c.fetchall()
+                #for r in results:
+                #    print r
+
+                #json_results = json.dumps(results)
+
+                #print 'this is what is retuened'
+                #print "json = {}".format(json_results)
+
+
+
+                #print "dic seconttry = {}".format(results[0])
+
                 return {'success': results}
             except MySQLdb.Error as err:
                 return {'fail':err}
@@ -171,32 +129,23 @@ class curseMySqlDB:
             return{'success':'db was closed'}
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #function to log into mysql
-def loginMysql(pythonDic):
+def loginMysql(json_Login):
     con = None
-    database= pythonDic['database']
-    user = pythonDic['user']
-    host = pythonDic['host']
+    loginInfo =  json.loads(json_login)
+    database= loginInfo['database']
+    user = loginInfo['user']
+    host = 'localhost'
     password = ''
-    query = pythonDic['query']
+    query = loginInfo['user']
     if loginInfo['password']:
         password = loginInfo['password']
     con = users(database, user, pasword, host)
     result = con.connectToDB()
     con.closeDB
     return result
-#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#function to add or delete a table as user
-def addOrDeleteMydqlTable(pythonDic, table):
-    return False
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#function to call when what to query the database
-def showAllTablesInAMysqlDB(pythonDic):
-    return False
 
-
-
-#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #function to call when what to query the database
 def queryMysql(json_login, q_string):
     con = None
@@ -227,7 +176,31 @@ def queryMysql(json_login, q_string):
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #function to call when you want to change mysql database
 def changeMysql(json_login, c_srting):
-    return True
+    con = None
+    loginInfo =  json.loads(json_login)
+
+    database= loginInfo['database']
+    user = loginInfo['user']
+    host = '127.0.0.1'
+    password = ''
+    query = loginInfo['user']
+    if loginInfo['password']:
+        password = loginInfo['password']
+
+    con = users(database, user, pasword, host)
+    result = con.connectToDB()
+    result =  json.loads(result)
+    if result['success']:
+        #start the query
+        feedback = con.Mysql(q_string)
+        feedback =  json.loads(result)
+        #close the
+        check = con.closeDB()
+        check =  json.loads(check)
+        return feedback
+    else:
+        return result
+
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #function to call when want to getall dbs for a user
 def getAllUsersTablesMysql(json_login):
@@ -301,7 +274,7 @@ if __name__ == "__main__":
         #we want to acces admin so exit mysql with exit ex. 'mysql>exit'
 
         #now we want to log in as a user that can make changes to localhost
-        #to do this go again go to the command line and enter:
+        #to do this go again to the comman line and enter:
         #mac ex.
         # /usr/local/mysql/bin/mysql -u root -p -h localhost -P 3306
         # to quickly explain this string:
@@ -471,14 +444,9 @@ if __name__ == "__main__":
     results = test.queryMysql(query)
     test.closeDB()
     print("now we will return a python dictionary")
-    if results['success']:
-        print results['success']
-        print "test#6 - passed"
-    else:
-        print results['fail']
-        exit()
+    print results
 
-    print('7.) delete table')
+    print('6.) delete table')
     test.connectToDB()
     print ("we will now delete the table pet with this call: ")
     table = "DROP TABLE pet"
@@ -488,7 +456,7 @@ if __name__ == "__main__":
     test.closeDB()
     if result['success']:
         print result['success']
-        print "test#7 - passed"
+        print "test#6 - passed"
     else:
         print results['fail']
         exit()
