@@ -52,6 +52,17 @@ def queryPostgresDict(json_login_dict, q_str=None):
 	    if con:
 		    con.close()
 
+def loginPostgresqlTest(pyDict):
+    con = None
+    try:
+        con = psycopg2.connect(database =pyDict['database'], 
+                               user     =pyDict['user'], 
+                               password =pyDict['password'])
+        pyDict['connection'] = con
+        return {'success': 'db was connected'}
+    except psycopg2.Error as err: 
+	    return { 'fail':err }	      
+
 # JAM (DEBUG): moved these into function since they were getting called
 #   automatically when importing module
 def tests():

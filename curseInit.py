@@ -1,7 +1,6 @@
-﻿import copy
+﻿#!/usr/bin/env python3
+import copy
 import curses
-import psycopg2
-from psycopg2 import OperationalError
 
 from curseScreen import CurseScreen
 from cursePanel import CursePanel
@@ -13,8 +12,9 @@ from types import MethodType
 import asciiart
 import curseItem
 
+import json
 import cursesPostgresTemp
-import oldercurseMysqlTemp
+import curseMysqlTemp
 
 #layers = { "main": 0, "screen": 1, "panel": 2, "item":3 }
 
@@ -1138,26 +1138,8 @@ def init_items(curse_container):
         recv_layer  = "self", 
         recv_name   = "self",   
         on_recv     = "call_function", 
-        recv_act    = "submitInfo",
-        recv_args   = [
-            [ 
-                ['language','dbname','username','password','host'],
-                ['language','database','username','password']
-            ],
-            [
-                [None, None, None, '', '127.0.0.1'],
-                [None, None, None, '']
-            ], 
-            global_storage,
-            [
-                ['log_lang','log_db','log_name','log_pw','log_host'],
-                ['log_lang','log_db','log_name','log_pw']
-            ], 
-            (
-                oldercurseMysqlTemp.testLoginQuery, 
-                cursesPostgresTemp.queryPostgresDict
-            ),
-            "login_scr_infobox"],
+        recv_act    = "databaseLoginTest",
+        recv_args   = ["login_scr_infobox"],
         ret_info    = None)})
     login_scr_panels["login_scr_menu_pnl"].item_indexes = [
         "logname", 
@@ -1883,76 +1865,107 @@ def init_funcs(curse_container):
         screen.drawUserStripInfo()
 
     # IFUNC_003
-    def submitInfo(self, query_keys_pair, req_keys_pair, storage, s_keys, 
-            db_funcs, infobox_parent_key):
-        """ takes stored input and submits to database   
+    #def submitInfo(self, query_keys_pair, req_keys_pair, storage, s_keys, 
+    #        db_funcs, infobox_parent_key):
+    #    """ takes stored input and submits to database   
         
-        query_keys <list>   : fields needed to compose database query string
-        req_keys <list>     : if the element at a list index is None, then the
-            relative query key VALUE is required, if it is not None, then that
-            element is the default value for that query key
-        storage <dict>      : where the input is stored
-        storage_keys <str>  : keys to storage dictionary for values that will
-            fill values for analogous query keys
-        db_funcs<func>      : tuple for (mysql, postgresql) db IntrF functions
-        infobox_parent_key  : used to get textbox that shows info/error msg
-        """
-        q_dict      = {}
-        err         = False
-        err_key     = None
-        i_box = self.container.getTextboxByName(infobox_parent_key)
+    #    query_keys <list>   : fields needed to compose database query string
+    #    req_keys <list>     : if the element at a list index is None, then the
+    #        relative query key VALUE is required, if it is not None, then that
+    #        element is the default value for that query key
+    #    storage <dict>      : where the input is stored
+    #    storage_keys <str>  : keys to storage dictionary for values that will
+    #        fill values for analogous query keys
+    #    db_funcs<func>      : tuple for (mysql, postgresql) db IntrF functions
+    #    infobox_parent_key  : used to get textbox that shows info/error msg
+    #    """
+    #    q_dict      = {}
+    #    err         = False
+    #    err_key     = None
+    #    i_box = self.container.getTextboxByName(infobox_parent_key)
 
-        lang = storage["log_lang"]
+    #    lang = storage["log_lang"]
 
-        # check if each key need for the query is in storage
-        # if it's not, check if it's required
-        # if it is required, abort submission and report error
-        # if it isn't required, use default value and continue
+    #    # check if each key need for the query is in storage
+    #    # if it's not, check if it's required
+    #    # if it is required, abort submission and report error
+    #    # if it isn't required, use default value and continue
             
-        # lang should exist if you made it this far   
-        lang = storage["log_lang"]
-        if lang=="mySQL":        i = 0
-        elif lang=="postgresql": i = 1
-        """  
-            makes a dictionary from the passed query keys and global storage
-            values that is in turn given to the database interface function
-        """
-        for k in range(0, len(query_keys_pair[i])):
-            # if there's not a key/value pair, is there a default value?
-            if s_keys[i][k] not in storage:
-                if req_keys_pair[i][k] != None:     
-                    q_dict[query_keys_pair[i][k]] = req_keys_pair[i][k]
-                else: 
-                    return self.showErrorMsg("NOKEY",[s_keys[i][k]],True,i_box)
-            else:   q_dict[query_keys_pair[i][k]] = storage[s_keys[i][k]]
-        db_func = db_funcs[i]
-        # ~ ~ ~ DB / UI INTERFACE CODE ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-        if db_func != None:
-            if lang == "mySQL":
-                """ CALL MYSQL QUERY """
-                q_res = db_func(q_dict, "SELECT * FROM COUNTRY LIMIT 3")
-                if type(q_res) is str:  out_str = q_res
-                else:
-                    out_str = ""
-                    for k in q_res['success'].keys():  
-                        out_str += q_res['success'][k] + " "
-            elif lang == "postgresql":
-                """ CALL POSTGRESQL QUERY """
-                try:
-                    results = db_func(q_dict)
-                    if isinstance(results, OperationalError):
-                        out_str = results.pgerror
-                    else:
-                        out_str = ""
-                        results_keys = results.keys()
-                        for r in range(0, len(results_keys)):
-                            out_str+results_keys[r]+":"\
-                                +results[results_keys[r]]+" "
-                except OperationalError as e:     out_str = e.pgerror
-        else:   out_str = "NO LANGUAGE SPECIFIED! HOW DID THIS HAPPEN?!"
-        i_box.resetText(out_str)
+    #    # lang should exist if you made it this far   
+    #    lang = storage["log_lang"]
+    #    if lang=="mySQL":        i = 0
+    #    elif lang=="postgresql": i = 1
+    #    """  
+    #        makes a dictionary from the passed query keys and global storage
+    #        values that is in turn given to the database interface function
+    #    """
+    #    for k in range(0, len(query_keys_pair[i])):
+    #        # if there's not a key/value pair, is there a default value?
+    #        if s_keys[i][k] not in storage:
+    #            if req_keys_pair[i][k] != None:     
+    #                q_dict[query_keys_pair[i][k]] = req_keys_pair[i][k]
+    #            else: 
+    #                return self.showErrorMsg("NOKEY",[s_keys[i][k]],True,i_box)
+    #        else:   q_dict[query_keys_pair[i][k]] = storage[s_keys[i][k]]
+    #    db_func = db_funcs[i]
+    #    # ~ ~ ~ DB / UI INTERFACE CODE ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+    #    if db_func != None:
+    #        if lang == "mySQL":
+    #            """ CALL MYSQL QUERY """
+    #            q_dict['query'] = "placeholder"
+    #            q_res = db_func(q_dict)#, "SELECT * FROM COUNTRY LIMIT 3")
+    #            if type(q_res) is str:  out_str = q_res
+    #            else:  out_str = q_res['fail'].pgerror
+    #        elif lang == "postgresql":
+    #            """ CALL POSTGRESQL QUERY """
+    #            try:
+    #                results = db_func(q_dict)
+    #                if isinstance(results, OperationalError):
+    #                    out_str = results.pgerror
+    #                else:
+    #                    out_str = ""
+    #                    results_keys = results.keys()
+    #                    for r in range(0, len(results_keys)):
+    #                        out_str+results_keys[r]+":"\
+    #                            +results[results_keys[r]]+" "
+    #            except OperationalError as e:     out_str = e.pgerror
+    #    else:   out_str = "NO LANGUAGE SPECIFIED! HOW DID THIS HAPPEN?!"
+    #    i_box.resetText(out_str)
+    #    i_box.drawText()
+    #    i_box.parent.win.refresh()
+
+    def databaseLoginTest(self, infobox_pkey):
+        gs = self.global_storage
+        if hasattr(gs, "log_lang"):
+            lang = gs["log_lang"] # get qlang
+            if lang == "mySQL" or lang == "postgresql":
+                # get login arguments from global storage
+                l_args = dict(
+                        database = gs["log_db"],
+                        user     = gs["log_name"],
+                        host     = gs["log_host"],
+                        password = gs["log_pw"])
+                        
+                # execute DB interface functions
+                if lang=="mySQL":l_result=curseMysqlTemp.loginMysqlTest(l_args)
+                else: l_result=cursesPostgresTemp.loginPostgresqlTest(l_args)
+
+                if 'success' in l_result: status = { "status": "OK" }
+                elif 'fail' in l_result: 
+                    status = {"status":"ERR", "info": l_result['fail'] }
+            else: status = { "status": "ERR", "info": "bad language value" }
+        else: status = { "status": "ERR", "info": "language field not set" }
+
+        # draw results
+        i_box = self.container.getTextboxByName(infobox_pkey)
+        i_box.resetText(json.dumps(status))
         i_box.drawText()
         i_box.parent.win.refresh()
+
+        # close connection
+        if hasattr(gs, "connection"):
+            gs["connection"].close()
+        
 
     # IFUNC_004
     def loadResult(self, result_list, out_panel_key, focus_nested_panel=False):
@@ -1993,11 +2006,11 @@ def init_funcs(curse_container):
     # 04-03-..-03 IFUNC_002
     log_item4           = login_panels["login_scr_lang_optbox"].items["OmySQL"]
     log_item4.setOption = MethodType(setOption, log_item4, CurseItem)
-    log_item4b           = login_panels["login_scr_lang_optbox"].items["Opostgre"]
+    log_item4b        = login_panels["login_scr_lang_optbox"].items["Opostgre"]
     log_item4b.setOption = MethodType(setOption, log_item4b, CurseItem)
     # 04-03-..-04 IFUNC_003
-    log_item5           = login_panels["login_scr_menu_pnl"].items["logsubmit"]
-    log_item5.submitInfo = MethodType(submitInfo, log_item5, CurseItem)
+    log_item5   = login_panels["login_scr_menu_pnl"].items["logsubmit"]
+    log_item5.databaseLoginTest=MethodType(databaseLoginTest,log_item5,CurseItem)
     
     # 05-04-..-00T IFUNC_004
     user_item1          = user_panels["usermain_scr_m_pnl"].items["temp_db1"]
