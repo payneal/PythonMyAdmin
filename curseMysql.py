@@ -176,11 +176,9 @@ def loginMysql(pythonDic):
     database= pythonDic['database']
     user = pythonDic['user']
     host = pythonDic['host']
-    password = ''
-    query = pythonDic['query']
-    if loginInfo['password']:
-        password = loginInfo['password']
-    con = loginMysql(database, user, pasword, host)
+    password = pythonDic['password']
+
+    con = curseMySqlDB(database, user, password, host)
     result = con.connectToDB()
     con.closeDB
     return result
@@ -210,13 +208,13 @@ def queryMysql(json_login, q_string):
     if loginInfo['password']:
         password = loginInfo['password']
 
-    con = users(database, user, pasword, host)
+    con = curseMySqlDB(database, user, pasword, host)
     result = con.connectToDB()
-    result =  json.loads(result)
+    #result =  json.loads(result)
     if result['success']:
         #start the query
         feedback = con.insertDeleteUpdateMysql(q_string)
-        feedback =  json.loads(result)
+        #feedback =  json.loads(result)
         #close the
         check = con.closeDB()
         check =  json.loads(check)
@@ -492,3 +490,7 @@ if __name__ == "__main__":
     else:
         print results['fail']
         exit()
+
+    print ("8.) test login function")
+    check = loginMysql(data)
+    print check
