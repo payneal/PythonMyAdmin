@@ -40,28 +40,16 @@ class curseMySqlDB:
         if self.connection:
             c= self.connection.cursor()
             try:
-                #c.execute("Use {}".format(self.dbname))
                 c.execute(query)
-                results = self.dictfetchall(c)
+                results = self.dictfetchall(cursor)
+
                 #json the results
-                #results = c.fetchall()
-                #for r in results:
-                #    print r
-
                 #json_results = json.dumps(results)
-
-                #print 'this is what is retuened'
-                #print "json = {}".format(json_results)
-
-
-
-                #print "dic seconttry = {}".format(results[0])
-
-                return {'success': results}
-            except MySQLdb.Error as err:
-                return {'fail':err}
+                return {'success': json_results}
+            except:
+                return {'error':"unable to fetch data"}
         else:
-            return {'fail':'must be connect to db to query'}
+            return {'error':'must be connect to db to query'}
 
     #"""Returns all rows from a cursor as a list of dicts"""
     def dictfetchall(self, cursor):
@@ -244,11 +232,6 @@ def grantPrivsToMySqlDB(host, user, passw):
 
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-#Josh is passing { "database": <string>, "user": <string>, "host": '127.0.0.1', "password": '', "query":<string> }
-
-
-
-
 ############################################
 # steps on how to set up prorgam and test as well
 #
@@ -426,25 +409,6 @@ if __name__ == "__main__":
     else:
         print results['fail']
         exit()
-
-    print('6.) return python dic of query')
-    test.connectToDB()
-    print("to check if query works lets input two rows to pet")
-    insert1 = "INSERT INTO pet(name, owner) Values('buddy', 'jack')"
-    insert2 = "INSERT INTO pet(name, owner) Values('ron', 'smalls')"
-    print("here is insert one: ")
-    print insert1
-    test.insertDeleteUpdateMysql(insert1)
-    print("here is insert 2: ")
-    print insert2
-    test.insertDeleteUpdateMysql(insert1)
-    query = "select name, owner from pet"
-    print("this is the query")
-    print query
-    results = test.queryMysql(query)
-    test.closeDB()
-    print("now we will return a python dictionary")
-    print results
 
     print('6.) delete table')
     test.connectToDB()
