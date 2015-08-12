@@ -19,7 +19,9 @@ def queryPostgres(json_login):
 	json_login_parsed = json.loads(json_login)
 
 	try:
-	    	con = psycopg2.connect(database=json_login_parsed['database'], user=json_login_parsed['username'], password=json_login_parsed['password']) 
+	    	con = psycopg2.connect(database=json_login_parsed['database'], 
+                    user=json_login_parsed['username'], 
+                    password=json_login_parsed['password']) 
 	    	cur = con.cursor() #cursor can be used to execute SQL
 	        if json_login_parsed['query_string']:
 			cur.execute(json_login_parsed['query_string'])

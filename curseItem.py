@@ -360,7 +360,7 @@ class CurseItem(object):
             msg = "Input cannot contain whitespace characters!"
         elif status == "ERR_PUNCT":
             msg = "Input cannot contain punctuation characters!"
-        elif status == "NOKEY_SUBINFO":
+        elif status == "NOKEY":
             msg = "Missing entry \'"+sargs[0]+"\' from submission!"
         else:
             msg = "Undefined error!"

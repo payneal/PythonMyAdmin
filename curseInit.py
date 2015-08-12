@@ -1,6 +1,7 @@
 ﻿import copy
 import curses
-import cursesPostgresTemp
+import psycopg2
+from psycopg2 import OperationalError
 
 from curseScreen import CurseScreen
 from cursePanel import CursePanel
@@ -11,6 +12,9 @@ from types import MethodType
 
 import asciiart
 import curseItem
+
+import cursesPostgresTemp
+import oldercurseMysqlTemp
 
 #layers = { "main": 0, "screen": 1, "panel": 2, "item":3 }
 
@@ -1136,12 +1140,24 @@ def init_items(curse_container):
         on_recv     = "call_function", 
         recv_act    = "submitInfo",
         recv_args   = [
-                        ['language','database','username','password'],
-                        [None, None, None, ""], 
-                        global_storage,
-                        ['log_lang','log_db','log_name','log_pw'], 
-                        (None, cursesPostgresTemp.queryPostgresDict),
-                        "login_scr_infobox"],
+            [ 
+                ['language','dbname','username','password','host'],
+                ['language','database','username','password']
+            ],
+            [
+                [None, None, None, '', '127.0.0.1'],
+                [None, None, None, '']
+            ], 
+            global_storage,
+            [
+                ['log_lang','log_db','log_name','log_pw','log_host'],
+                ['log_lang','log_db','log_name','log_pw']
+            ], 
+            (
+                oldercurseMysqlTemp.testLoginQuery, 
+                cursesPostgresTemp.queryPostgresDict
+            ),
+            "login_scr_infobox"],
         ret_info    = None)})
     login_scr_panels["login_scr_menu_pnl"].item_indexes = [
         "logname", 
@@ -1867,7 +1883,7 @@ def init_funcs(curse_container):
         screen.drawUserStripInfo()
 
     # IFUNC_003
-    def submitInfo(self, query_keys, req_keys, storage, storage_keys, 
+    def submitInfo(self, query_keys_pair, req_keys_pair, storage, s_keys, 
             db_funcs, infobox_parent_key):
         """ takes stored input and submits to database   
         
@@ -1884,48 +1900,58 @@ def init_funcs(curse_container):
         q_dict      = {}
         err         = False
         err_key     = None
-        out_infobox = self.container.getTextboxByName(infobox_parent_key)
+        i_box = self.container.getTextboxByName(infobox_parent_key)
+
+        lang = storage["log_lang"]
+
         # check if each key need for the query is in storage
         # if it's not, check if it's required
         # if it is required, abort submission and report error
         # if it isn't required, use default value and continue
-        for k in range(0, len(query_keys)):
-            # if there's not a key/value pair, is there a default value?
-            if storage_keys[k] not in storage:
-                if req_keys[k] != None:
-                    q_dict[query_keys[k]] = req_keys[k]
-                else:
-                    return self.showErrorMsg("NOKEY_SUBINFO", 
-                        [storage_keys[k]],  True, out_infobox)
-            else:
-                q_dict[query_keys[k]] = storage[storage_keys[k]]
             
         # lang should exist if you made it this far   
         lang = storage["log_lang"]
-
-        ##  
-        ##      DB / UI INTERFACE CODE
-        ##
-        if lang == "mySQL":
-            if db_funcs[0] != None:
-                results = db_funcs[0](q_dict)                 
-                out_str = ""
-                results_keys = results.keys()
-                for r in range(0, len(results_keys)):
-                    out_str+results_keys[r]+":"+results[results_keys[r]]+" "
-                out_infobox.resetText(out_str)
-                out_infobox.drawText()
-                out_infobox.parent.win.refresh()
-        elif lang == "postgresql":
-            if db_funcs[1] != None:
-                results = db_funcs[1](q_dict)                 
-                out_str = ""
-                results_keys = results.keys()
-                for r in range(0, len(results_keys)):
-                    out_str+results_keys[r]+":"+results[results_keys[r]]+" "
-                out_infobox.resetText(out_str)
-                out_infobox.drawText()
-                out_infobox.parent.win.refresh()
+        if lang=="mySQL":        i = 0
+        elif lang=="postgresql": i = 1
+        """  
+            makes a dictionary from the passed query keys and global storage
+            values that is in turn given to the database interface function
+        """
+        for k in range(0, len(query_keys_pair[i])):
+            # if there's not a key/value pair, is there a default value?
+            if s_keys[i][k] not in storage:
+                if req_keys_pair[i][k] != None:     
+                    q_dict[query_keys_pair[i][k]] = req_keys_pair[i][k]
+                else: 
+                    return self.showErrorMsg("NOKEY",[s_keys[i][k]],True,i_box)
+            else:   q_dict[query_keys_pair[i][k]] = storage[s_keys[i][k]]
+        db_func = db_funcs[i]
+        # ~ ~ ~ DB / UI INTERFACE CODE ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+        if db_func != None:
+            if lang == "mySQL":
+                """ CALL MYSQL QUERY """
+                q_res = db_func(q_dict, "SELECT * FROM COUNTRY LIMIT 3")
+                if type(q_res) is str:  out_str = q_res
+                else:
+                    out_str = ""
+                    for k in q_dict.keys():  out_str += q_dict[k] + " "
+            elif lang == "postgresql":
+                """ CALL POSTGRESQL QUERY """
+                try:
+                    results = db_func(q_dict)
+                    if isinstance(results, OperationalError):
+                        out_str = results.pgerror
+                    else:
+                        out_str = ""
+                        results_keys = results.keys()
+                        for r in range(0, len(results_keys)):
+                            out_str+results_keys[r]+":"\
+                                +results[results_keys[r]]+" "
+                except OperationalError as e:     out_str = e.pgerror
+        else:   out_str = "NO LANGUAGE SPECIFIED! HOW DID THIS HAPPEN?!"
+        i_box.resetText(out_str)
+        i_box.drawText()
+        i_box.parent.win.refresh()
 
     # IFUNC_004
     def loadResult(self, result_list, out_panel_key, focus_nested_panel=False):
