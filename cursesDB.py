@@ -70,8 +70,8 @@ def init_action_map():
     """ the key-action map converts raw user input into action strings"""
 
     key_action_map = {}
-    key_action_map[str(ord("a"))]            = "prev"
-    key_action_map[str(ord("d"))]            = "next"
+    #key_action_map[str(ord("a"))]            = "prev"
+    #key_action_map[str(ord("d"))]            = "next"
     key_action_map[str(ord(" "))]            = "select"
     key_action_map[str(ord("\n"))]           = "return"
 
@@ -81,8 +81,8 @@ def init_action_map():
 
     key_action_map[str(ord("q"))]            = "quit"
     key_action_map[str(ord("v"))]            = "prev_scr"
-    key_action_map[str(ord("u"))]            = "user_scr"
-    key_action_map[str(ord("t"))]            = "test_scr"
+    #key_action_map[str(ord("u"))]            = "user_scr"
+    #key_action_map[str(ord("t"))]            = "test_scr"
 
     key_action_map[str(curses.KEY_BTAB)]     = "back"
     key_action_map[str(ord("\t"))]           = "forward"
@@ -111,7 +111,12 @@ def readMessage(msg):
 
 def quitCurses():
     global loop
+    global curse_container
+
     loop = False
+
+    if "db_cxn" in curse_container.global_storage:
+        curse_container.global_storage["db_cxn"].close()
 
 def changeScreen(new_key_str, change_delay=0, infobox_key=None,change_msg=""):
     """ changes current view to new screen """

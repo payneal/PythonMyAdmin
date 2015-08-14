@@ -65,7 +65,7 @@ def appendix():
 #---------------|---------------------------|-|login_link----00-01-..-00
 #---------------|---------------------------|-|act_create_lk-00-01-..-01
 #---------------|---------------------------|-|about_DB_link-00-01-..-02
-#---------------|title_scr_infopanel--------|-|--------------00-02-..-..
+#---------------|title_scr_footer--------|-|--------------00-02-..-..
 #---------------|---------------------------|X|--------------00-02-00-..
 #---------------|title_scr_background-------|-|--------------00-03-..-..
 #test_screen----|---------------------------|-|--------------01-..-..-..
@@ -209,6 +209,7 @@ def init_screens(curse_container):
     default_msg_map     = curse_container.act_msg_maps["screen"]  
     usermain_msg_map    = curse_container.act_msg_maps["user_screen"] 
     login_msg_map       = curse_container.act_msg_maps["login_screen"]
+    viewDB_msg_map      = curse_container.act_msg_maps["viewDB_screen"]
     global_storage      = curse_container.global_storage 
 
     # 00-..-..-..                     
@@ -221,7 +222,7 @@ def init_screens(curse_container):
     "default_focus_key" : "title_scr_panel",
     "can_panel_change"  : True,
     "style"             : curseStyles["dashscrbg"],
-    "ftr_strip"         : None})
+    "ftr_strip"         : "title_scr_footer"})
     # 01-..-..-..
     curseScreens["test_screen"]     = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -254,7 +255,7 @@ def init_screens(curse_container):
     "default_focus_key" : None,
     "can_panel_change"  : False,
     "style"             : curseStyles["dashscrbg"],
-    "ftr_strip"         : None})
+    "ftr_strip"         : "about_scr_footer"})
     # 04-..-..-..
     curseScreens["login_screen"]    = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -265,7 +266,7 @@ def init_screens(curse_container):
     "default_focus_key" : "login_scr_menu_pnl",
     "can_panel_change"  : False,
     "style"             : curseStyles["dashscrbg"],
-    "ftr_strip"         : None})
+    "ftr_strip"         : "login_scr_footer"})
     # 05-..-..-..
     curseScreens["usermain_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -283,20 +284,63 @@ def init_screens(curse_container):
     "screens"           : curseScreens,
     "user_strip"        : "viewDB_scr_ustrip",
     "key_action_map"    : key_action_map,
-    "act_msg_map"       : default_msg_map,
+    "act_msg_map"       : viewDB_msg_map,
     "default_focus_key" : "viewDB_scr_out_pnl",
     "can_panel_change"  : False,
     "style"             : curseStyles["dashscrbg"],
-    "ftr_strip"         : None,
+    "ftr_strip"         : "viewDB_scr_footer",
     "_on_load"          : dict(  
         action       = "call_function", 
-        action_name  = "loginToViewDB", 
-        action_args  = [{
-              "sel_xp":'table_name,table_rows,create_time,update_time,engine',
-              "tbl_refs":  'information_schema.tables',
-              "w_cond": "table_schema='world'"
-            },"viewDB_scr_out_pnl",
-            ['table_name','table_rows','create_time','update_time','engine']
+        action_name  = "runQueryOnLoad", 
+        action_args  = [
+            { # argument strings for makeQuery
+              "sel_xp"  :
+                  'table_name,table_rows,create_time,update_time,engine',
+              "tbl_refs":  
+                  'information_schema.tables',
+              "w_cond"  : 
+                  "table_schema='@'" 
+             },
+            { # variables that need to be fetched from global storage at rt
+                "w_cond": ["log_db"]
+            },
+            # panel we'll output the query
+            "viewDB_scr_out_pnl",
+            # the order in which we want the returned columns
+            ['table_name','table_rows','create_time','update_time','engine'],
+            ])})
+
+    curseScreens["viewTbl_screen"]= CurseScreen(**{
+    "global_storage"    : global_storage,
+    "screens"           : curseScreens,
+    "user_strip"        : "viewTbl_scr_ustrip",
+    "key_action_map"    : key_action_map,
+    "act_msg_map"       : viewDB_msg_map,
+    "default_focus_key" : "viewTbl_meta_pnl",
+    "can_panel_change"  : False,
+    "style"             : curseStyles["dashscrbg"],
+    "ftr_strip"         : "viewTbl_scr_footer",
+    "_on_load"          : dict(  
+        action       = "call_function", 
+        action_name  = "runQueryOnLoad", 
+        action_args  = [
+            {
+              "sel_xp"  :
+                  'column_name,ordinal_position,data_type,'\
+                  'column_default,is_nullable,character_maximum_length,'\
+                  'column_type,column_key,privileges',
+              "tbl_refs":  
+                  'information_schema.columns',
+              "w_cond"  : 
+                  "table_name='@' AND table_schema='@'"
+            },
+            { # variables that need to be fetched from global storage at rt
+                "w_cond": ["view_tbl", "log_db"]
+            },
+            "viewTbl_meta_pnl",
+            ['column_name','ordinal_position','data_type','column_default',
+             'is_nullable','character_maximum_length','column_type', 
+             'column_key', 'privileges'],
             ])})
     # 07-..-..-..
     curseScreens["manageDB_screen"] = CurseScreen(**{
@@ -342,7 +386,8 @@ def init_panels(curse_container):
     about_screen    = curseScreens["about_screen"]
     login_screen    = curseScreens["login_screen"]
     user_screen     = curseScreens["usermain_screen"]
-    viewDB_screen   = curseScreens["viewDB_screen"]  
+    viewDB_screen   = curseScreens["viewDB_screen"] 
+    viewTbl_screen  = curseScreens["viewTbl_screen"] 
     mngDBS_screen   = curseScreens["manageDB_screen"]  
     cfgAcct_screen  = curseScreens["cfg_acct_screen"]    
 
@@ -373,7 +418,7 @@ def init_panels(curse_container):
     "focusable"               : True,
     "_default_focus_item_key" : "login_link"})
     # 00-02-..-..
-    title_screen.panels["title_scr_infopanel"]             = CursePanel(**{
+    title_screen.panels["title_scr_footer"]                 = CursePanel(**{
     "global_storage"          : global_storage,
     "parent"                  : title_screen,
     "size"                    : (23, 0, 1, 80),   
@@ -384,7 +429,7 @@ def init_panels(curse_container):
         "title_scr_background",
         "title_scr_user_strip", 
         "title_scr_panel",
-        "title_scr_infopanel"]
+        "title_scr_footer"]
     title_screen.panel_count = len(title_screen.panel_indexes)
 
     # 01-00-..-..      y, x, h, w
@@ -558,7 +603,7 @@ def init_panels(curse_container):
     "size"          : (23, 0, 1, 80), # x. 23->22
     "style"         : curseStyles["infobox2"],
     "title"         : (
-        "Press Z to return to Title Screen, if you dare...".center(79), 0, 0)})
+        "Press Z to return to Title Screen, if you dare...".center(80), 0, 0)})
     # panels are updated/ drawn in the order below- this affects
     # overlapping panels so pay attention to this! 
     about_screen.panel_indexes = [
@@ -640,7 +685,7 @@ def init_panels(curse_container):
     "global_storage": global_storage,
     "parent"        : login_screen,
     "size"          : (23, 0, 1, 80),
-    "style"         : curseStyles["input_strip"]})
+    "style"         : curseStyles["infobox2"]})
                                 
     # panels are updated/ drawn in the order below- this affects
     # overlapping panels so pay attention to this!
@@ -764,8 +809,8 @@ def init_panels(curse_container):
     "parent"        : viewDB_screen,
     #"title"         : ("VIEW DATABASE".center(18), 2, 1),
     "act_msg_map"   : panel_msg_map,
-    "size"          : (6, 0, 3, 80 ),
-    "style"         : curseStyles["middlepanes"]})
+    "size"          : (7, 0, 1, 80 ),
+    "style"         : curseStyles["key_menu"]})
 
     viewDB_screen.panels["viewDB_scr_out_pnl"]            = CursePanel(**{
     "global_storage": global_storage,
@@ -778,6 +823,18 @@ def init_panels(curse_container):
     "is_pad"        : True,
     "psize"         : (500, 500)})
 
+    viewDB_screen.panels["viewDB_scr_l_info"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : user_screen,
+    "size"          : (18, 0, 5, 80),
+    "style"         : curseStyles["infobox2"]})
+
+    viewDB_screen.panels["viewDB_scr_footer"]                   = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewDB_screen,
+    "size"          : (23, 0, 1, 80),
+    "style"         : curseStyles["infobox2"]})
+
     # panels are updated/ drawn in the order below- this affects
     # overlapping panels so pay attention to this!
     viewDB_screen.panel_indexes = [
@@ -785,8 +842,44 @@ def init_panels(curse_container):
         "viewDB_scr_ustrip",
         "viewDB_scr_menu_pnl",
         "viewDB_scr_u_info",
-        "viewDB_scr_out_pnl"]
+        "viewDB_scr_out_pnl",
+        "viewDB_scr_footer"]
     viewDB_screen.panel_count = len(viewDB_screen.panel_indexes)
+
+    # 06-00-..-..      y, x, h, w
+    viewTbl_screen.panels["viewTbl_scr_bg"]                  = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewTbl_screen,
+    "size"          : (0, 0, 24, 80),
+    "style"         : curseStyles["title_panel"]})
+    # 06-01-..-.. 
+    viewTbl_screen.panels["viewTbl_scr_ustrip"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewTbl_screen,
+    "size"          : (0, 0, 1, 80),
+    "style"         : curseStyles["user_strip"]})
+
+    viewTbl_screen.panels["viewTbl_meta_pnl"]                = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewTbl_screen,
+    #"title"         : ("VIEW DATABASE".center(18), 2, 1),
+    "act_msg_map"   : list_msg_map,
+    "size"          : (1, 0, 6, 80 ),
+    "style"         : curseStyles["usermain_listbox"],   
+    "focusable"     : True,
+    "is_pad"        : True,
+    "psize"         : (500, 500)})
+    viewTbl_screen.panels["viewTbl_scr_footer"]                   = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewTbl_screen,
+    "size"          : (23, 0, 1, 80),
+    "style"         : curseStyles["infobox2"]})
+    viewTbl_screen.panel_indexes = [
+        "viewTbl_scr_bg",    
+        "viewTbl_scr_ustrip",
+        "viewTbl_meta_pnl",
+        "viewTbl_scr_footer"]
+    viewTbl_screen.panel_count = len(viewTbl_screen.panel_indexes)
 
     # 07-00-..-..      y, x, h, w
     mngDBS_screen.panels["mngDBS_scr_bg"]                  = CursePanel(**{
@@ -1173,7 +1266,7 @@ def init_items(curse_container):
         recv_layer  = "self", 
         recv_name   = "self",   
         on_recv     = "call_function", 
-        recv_act    = "dbLogin",
+        recv_act    = "dbLoginToViewDB",
         recv_args   = ["viewDB_screen", "login_scr_infobox",
                        "redirecting to database management screen"],
         ret_info    = None,
@@ -1394,32 +1487,35 @@ def init_items(curse_container):
     user_scr_panels["usermain_scr_m_pnl"].item_count = len(
         user_scr_panels["usermain_scr_m_pnl"].item_indexes)
 
-
+    h_attr = colors["MGAYLW"] | curses.A_BOLD
     viewDB_scr_panels["viewDB_scr_menu_pnl"].items["view_tbl"]= CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
     "parent_screen" : curseScreens["viewDB_screen"],
-    "size"          : (1,5, 1, 10), # y, x, h, w
+    "size"          : (0,5, 1, 10), # y, x, h, w
     "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
-    "label"         : "view rows",
+    "label"         : "view table",
+    "hotkey"       : {"h_key": ord("T"), "labl_index": 5, "attr":h_attr},
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
-        recv_layer  = "main", 
-        recv_name   = "main",   
+        recv_layer  = "self", 
+        recv_name   = "self",   
         on_recv     = "call_function", 
-        recv_act    = "changeScreen",
-        recv_args   = ["manageDB_screen"],
-        ret_info    = None)})
+        recv_act    = "viewDbToViewTbl",
+        recv_args   = ["viewDB_scr_out_pnl"],
+        ret_info    = None,
+        replace_msg = True)})
 
     viewDB_scr_panels["viewDB_scr_menu_pnl"].items["drop_tbl"]= CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
     "parent_screen" : curseScreens["viewDB_screen"],
-    "size"          : (1, 23, 1, 10), # y, x, h, w
+    "size"          : (0, 23, 1, 10), # y, x, h, w
     "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
     "label"         : "drop table",
+    "hotkey"       : {"h_key": ord("D"), "labl_index":0 , "attr":h_attr},
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
         recv_layer  = "main", 
@@ -1434,9 +1530,10 @@ def init_items(curse_container):
     "global_storage": global_storage,
     "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
     "parent_screen" : curseScreens["viewDB_screen"],
-    "size"          : (1, 43, 1, 10), # y, x, h, w
+    "size"          : (0, 43, 1, 10), # y, x, h, w
     "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
     "label"         : "add table",
+    "hotkey"       : {"h_key": ord("A"), "labl_index": 0, "attr":h_attr},
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
         recv_layer  = "main", 
@@ -1446,14 +1543,15 @@ def init_items(curse_container):
         recv_args   = ["manageDB_screen"],
         ret_info    = None)})
 
-    viewDB_scr_panels["viewDB_scr_menu_pnl"].items["qry_tbl"]= CurseItem(**{
+    viewDB_scr_panels["viewDB_scr_menu_pnl"].items["r_qry"]= CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
     "parent_screen" : curseScreens["viewDB_screen"],
-    "size"          : (1, 61, 1, 10), # y, x, h, w
+    "size"          : (0, 61, 1, 10), # y, x, h, w
     "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
-    "label"         : "query table",
+    "label"         : "raw query",
+    "hotkey"       : {"h_key": ord("Y"), "labl_index": 8, "attr":h_attr},
     "_on_select"    : dict(  msg_status  = "unread", 
         send_layer  = "item", 
         recv_layer  = "main", 
@@ -1467,7 +1565,7 @@ def init_items(curse_container):
         "view_tbl",
         "drop_tbl",
         "new_tbl",
-        "qry_tbl"]
+        "r_qry"]
     viewDB_scr_panels["viewDB_scr_menu_pnl"].item_count = len(
         viewDB_scr_panels["viewDB_scr_menu_pnl"].item_indexes)
 
@@ -1497,8 +1595,8 @@ def init_textboxes(curse_container):
     size        = (3, 9, 10, 63), 
     style       = curse_styles["title_panel"]))
     # 00-02-00-..
-    title_panels["title_scr_infopanel"].textbox      = CurseTextbox(**dict(
-            parent      = title_panels["title_scr_infopanel"],
+    title_panels["title_scr_footer"].textbox      = CurseTextbox(**dict(
+            parent      = title_panels["title_scr_footer"],
             base_text    = "  Use keys.up and keys.down to navigate , "\
                           "space to select action, q to quit ",
             size        =  (0, 0, 1, 78),
@@ -1750,6 +1848,59 @@ def init_act_msg_maps():
                     recv_act    = "changeScreen", 
                     recv_args   = ["test_screen"],
                     ret_info    = None)},
+        "viewDB_screen"  : {
+                "quit"      : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "quitCurses",
+                    recv_args   = None,
+                    ret_info    = None),
+                "prev_scr"  : dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "main", 
+                    recv_name   = "main",   
+                    on_recv     = "call_function", 
+                    recv_act    = "changeScreen", 
+                    recv_args   = ["title_screen"],
+                    ret_info    = None),
+                "HOTKEY_t"  :  dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function", 
+                    recv_act    = "directItemSelect", 
+                    recv_args   = ["view_tbl"],
+                    ret_info    = None,
+                    replace_msg = True),
+                "HOTKEY_d"  :  dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function", 
+                    recv_act    = "directItemSelect", 
+                    recv_args   = ["drop_tbl"],
+                    ret_info    = None,
+                    replace_msg = True),
+                "HOTKEY_a"  :  dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function", 
+                    recv_act    = "directItemSelect", 
+                    recv_args   = ["new_tbl"],
+                    ret_info    = None,
+                    replace_msg = True),
+                "HOTKEY_y"  :  dict(  msg_status  = "unread", 
+                    send_layer  = "screen", 
+                    recv_layer  = "self", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function", 
+                    recv_act    = "directItemSelect", 
+                    recv_args   = ["r_qry"],
+                    ret_info    = None,
+                    replace_msg = True)},
         "panel_msg_map" : {
                 "left"      : dict(  msg_status  = "unread", 
                     send_layer  = "panel", 
@@ -1841,7 +1992,7 @@ def init_act_msg_maps():
                     recv_args   = [False],
                     ret_info    = None)},
         "list_msg_map"  : {
-                "left"        : dict(  msg_status  = "unread", 
+                "left"      : dict(  msg_status  = "unread", 
                     send_layer  = "panel", 
                     recv_layer  = "panel", 
                     recv_name   = "self",   
@@ -1849,7 +2000,7 @@ def init_act_msg_maps():
                     recv_act    = "scrollLeft",
                     recv_args   = None,
                     ret_info    = None),
-                "right"      : dict(  msg_status  = "unread", 
+                "right"     : dict(  msg_status  = "unread", 
                     send_layer  = "panel", 
                     recv_layer  = "panel", 
                     recv_name   = "self",   
@@ -1888,7 +2039,56 @@ def init_act_msg_maps():
                     on_recv     = "call_function",  
                     recv_act    = "closeNestedPanel",
                     recv_args   = [False],
-                    ret_info    = None)} }
+                    ret_info    = None)},
+        "query_list_msg_map"  : {
+                "left"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "scrollLeft",
+                    recv_args   = None,
+                    ret_info    = None),
+                "right"     : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "scrollRight",
+                    recv_args   = None,
+                    ret_info    = None),
+                "up"        : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "prevListItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "down"      : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "nextListItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "select"    : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "panel", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "selectItem",
+                    recv_args   = None,
+                    ret_info    = None),
+                "cancel"    : dict(  msg_status  = "unread", 
+                    send_layer  = "panel", 
+                    recv_layer  = "screen", 
+                    recv_name   = "self",   
+                    on_recv     = "call_function",  
+                    recv_act    = "closeNestedPanel",
+                    recv_args   = [False],
+                    ret_info    = None)}}
 
     return act_msg_maps
 
@@ -1897,14 +2097,7 @@ def init_act_msg_maps():
 def init_funcs(curse_container):
     curseStyles         = curse_container.styles #["styles"]
     colors              = curseStyles["COLORS"]
-    curseScreens        = curse_container.screens #["screens"]
 
-    title_panels       = curseScreens["title_screen"].panels
-    test_panels        = curseScreens["test_screen"].panels
-    account_panels     = curseScreens["account_screen"].panels
-    about_scr_panels   = curseScreens["about_screen"].panels
-    login_panels       = curseScreens["login_screen"].panels
-    user_panels        = curseScreens["usermain_screen"].panels
 
     
     #------------------ FUNCTION DEFINITIONS ----------------------------------
@@ -1978,7 +2171,9 @@ def init_funcs(curse_container):
         screen.setUserStripInfo()
         screen.drawUserStripInfo()
 
-    def dbLogin(self, redirect_skey, infobox_pkey, redirect_str):
+#/\/ LOGIN SCREEN DATABASE LOGIN FUNCS /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+    def dbLoginToViewDB(self, redirect_skey, infobox_pkey, redirect_str):
         infobox = self.container.getTextboxByName(infobox_pkey)
         result = dbLoginConnect(self.global_storage, infobox)
         if result["status"] != "OK":    return None
@@ -2033,21 +2228,72 @@ def init_funcs(curse_container):
             status = {"status": "ERR", "er_info": err}
         return status
 
-    def loginToViewDB(self, q_args, load_pkey, col_ordr=None, open_nest=False):
+#/\/ VIEWDB SCREEN LOAD FUNC \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+
+    def viewDbToViewTbl(self, q_list_pkey):
+        panel = self.parent_screen.panels[q_list_pkey]
+        tbl_name = panel._q_dict[panel.cur_index - 1]['table_name']
+        self.global_storage["view_tbl"] = copy.copy(tbl_name)
+        return { 
+        "msg_status"  : "unread", 
+        "send_layer"  : "item", 
+        "recv_layer"  : "main", 
+        "recv_name"   : "main",   
+        "on_recv"     : "call_function", 
+        "recv_act"    : "changeScreen", 
+        "recv_args"   : ["viewTbl_screen"]}
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\\/\/\/\/\/\/\/\/\/\/\/\/
+
+    def runQueryOnLoad(self, q_args, q_val_keys, load_pkey, col_order=None, 
+                   open_nest=False):
+
+        # get connection and output panel
         con = self.global_storage['db_cxn']
         load_panel = self.panels[load_pkey]
-        data_list = runQueryOnLoad(con, q_args, load_panel, col_ordr)
-        if len(data_list) > 0:
-            loadListResult(data_list, self, load_panel, load_pkey, open_nest)
 
-    def runQueryOnLoad(connection, q_args, load_panel, col_order=None):
+        # get variables for q_str
+        q_args = getQueryArgVals(self.global_storage, q_args, q_val_keys)
+        
+        # make query string
         q_str = makeQuery(q_args)
-        q_result = queryDatabase(connection, q_str)
-        data_list = []
-        if q_result["status"] == "ERR":
-            load_panel.setInnerText(1,1,q_result["data"])
-        else:     data_list = dictResToListRes(q_result["data"], col_order)
-        return data_list
+
+        # send query to DB
+        q_res = queryDatabase(con, q_str)
+
+        # check query result
+        if q_res["status"]=="ERR":   
+            load_panel.setInnerText( 1 ,1, q_res["data"] )
+            q_res_list=[]
+        else:           q_res_list = dictResToListRes(q_res["data"], col_order)
+
+        #qry_data = runQueryOnLoad(con, q_args, load_panel, col_ordr)
+        if len(q_res_list) > 0:
+            loadListResult(q_res_list, self, load_panel, load_pkey, 
+                q_res["data"], open_nest)
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+    #def loadViewTbl(self, q_args, q_val_keys, load_pkey, col_ordr=None, 
+    #               open_nest=False):
+    #    con = self.global_storage['db_cxn']
+    #    load_panel = self.panels[load_pkey]        
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+
+    #def runQueryOnLoad(connection, q_args, load_panel, col_order=None):
+    #    """ 
+    #    makes query, queries database, and returns query results in
+    #    two forms (stored in a tuple); the first index is 
+    #    """
+    #    q_str = makeQuery(q_args)
+    #    q_result = queryDatabase(connection, q_str)
+    #    data_list = []
+    #    if q_result["status"] == "ERR":
+    #        load_panel.setInnerText(1,1,q_result["data"])
+    #    else:     data_list = dictResToListRes(q_result["data"], col_order)
+    #    return (data_list, q_result["data"])
 
     def dictToList(dictionary, key_order):
         d_list = []      
@@ -2056,7 +2302,6 @@ def init_funcs(curse_container):
             d_list.append(copy.deepcopy(str(dictionary[key_order[i]])))
         return d_list
 
-
     def dictResToListRes(dict_result, key_order=None):
         l_list = []
         if key_order == None:  key_order =sorted(dict_result[0].keys())
@@ -2064,6 +2309,43 @@ def init_funcs(curse_container):
 
         for row in dict_result:   l_list.append(dictToList(row, key_order))
         return l_list
+
+    def loadListResult(result_list,out_screen, out_panel, out_panel_key,
+            result_dict, focus_nested_panel=False):
+
+        if not hasattr(out_panel, "_inner_list"):
+            setattr(out_panel,"_inner_list", list(result_list))
+        else:         
+            out_panel._inner_list = []
+            out_panel._inner_list = list(result_list)
+
+        if not hasattr(out_panel, "_q_dict"):
+            setattr(out_panel,"_q_dict", copy.deepcopy(result_dict))
+        else:         
+            out_panel._q_dict = {}
+            out_panel._q_dict = copy.deepcopy(result_dict)
+
+        out_panel.loadList()
+
+        if focus_nested_panel == True:
+            out_panel.parent_screen.openNestedPanel(out_panel_key)
+
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+    def getQueryArgVals(globals, q_args, q_val_keys):
+        """ 
+        replaces all @ from query argument strings in q_args with values
+        from global storage using keys in q_val_keys 
+        """
+        for q_vkey in q_val_keys:
+            q_arg = q_args[q_vkey]      # single argument string with 1+ @
+            q_vals = q_val_keys[q_vkey] # list of values to get for args
+            num_vals = len(q_vals)
+            for v in range(0, num_vals):
+                q_arg = q_arg.replace("@", globals[q_vals[v]], 1)
+            q_args[q_vkey] = q_arg
+        return q_args
 
     def makeQuery(q_args):
         q_str = "SELECT " + q_args["sel_xp"]
@@ -2095,21 +2377,22 @@ def init_funcs(curse_container):
         curs.close()
         return q_result
 
-    def loadListResult(result_list,out_screen, out_panel, out_panel_key,
-            focus_nested_panel=False):
-        if not hasattr(out_panel, "_inner_list"):
-            setattr(out_panel,"_inner_list", list(result_list))
-        else:         out_panel._inner_list = list(result_list)
-        out_panel.loadList()
-        if focus_nested_panel == True:
-            out_panel.parent_screen.openNestedPanel(out_panel_key)
-
-
-
-
 
     #------------------ FUNCTION ASSIGNMENT -----------------------------------
-    
+    curseScreens        = curse_container.screens #["screens"]
+
+    vdb_screen         = curseScreens["viewDB_screen"]
+    vtbl_screen        = curseScreens["viewTbl_screen"]
+
+    title_panels       = curseScreens["title_screen"].panels
+    test_panels        = curseScreens["test_screen"].panels
+    account_panels     = curseScreens["account_screen"].panels
+    about_scr_panels   = curseScreens["about_screen"].panels
+    login_panels       = curseScreens["login_screen"].panels
+    user_panels        = curseScreens["usermain_screen"].panels    
+    vdb_panels         = curseScreens["viewDB_screen"].panels    
+
+
     # 00-..-..-..
     pass
     
@@ -2140,11 +2423,17 @@ def init_funcs(curse_container):
     log_item4b.setOption = MethodType(setOption, log_item4b, CurseItem)
     # 04-03-..-04 IFUNC_003
     log_item5   = login_panels["login_scr_menu_pnl"].items["logsubmit"]
-    log_item5.dbLogin=MethodType(dbLogin,log_item5,CurseItem)
+    log_item5.dbLoginToViewDB=  MethodType(dbLoginToViewDB,log_item5,CurseItem)
     #log_item5.dbLoginConnect=MethodType(dbLoginConnect,log_item5,CurseItem)
     
-    vdb_screen = curseScreens["viewDB_screen"]
-    vdb_screen.loginToViewDB=MethodType(loginToViewDB, vdb_screen, CurseScreen)
+
+    vdb_screen.runQueryOnLoad=MethodType(runQueryOnLoad, vdb_screen, CurseScreen)
+
+    vdb_item1  = vdb_panels["viewDB_scr_menu_pnl"].items["view_tbl"]
+    vdb_item1.viewDbToViewTbl=  MethodType(viewDbToViewTbl,vdb_item1,CurseItem)
+
+
+    vtbl_screen.runQueryOnLoad=MethodType(runQueryOnLoad, vtbl_screen, CurseScreen)
     
     # 05-04-..-00T IFUNC_004
     user_item1          = user_panels["usermain_scr_m_pnl"].items["temp_db1"]

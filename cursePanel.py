@@ -116,11 +116,11 @@ class CursePanel(object):
                     self.y, self.x, self.height+self.y, self.width+self.x-2)
             self.changed = False
 
-    def checkInput(self, act_key):
+    def checkInput(self, act_key, aux_info=None):
         """ check if action triggers a response in panel or panel items """
         msg = None
         if act_key in self.act_msg_map:
-            if act_key == "select":             msg = self.select() 
+            if act_key == "select":         msg = self.select()
             else:    msg = copy.deepcopy(self.act_msg_map[act_key])
        
         return self.readMessage(msg)
@@ -159,8 +159,9 @@ class CursePanel(object):
                           
     def setInnerText(self, y, x, text):
         if not hasattr(self, "_inner_text"):
-            setattr(self, "_inner_text", (y,x,text))
-        else: self._inner_text = (y, x, text)
+            setattr(self, "_inner_text", [])
+            self._inner_text.append((y,x,text))
+        else: self._inner_text.append((y, x, text))
 
     def load(self):
         """ executes custom behavior, then does so for items and text boxes"""
@@ -354,14 +355,18 @@ class CursePanel(object):
         
     def drawTitle(self):
         """ draws panel title to screen """
-        if self.title == "" or self.title == None:                       return
+        if self.title == "" or self.title == None:      return
 
         ttl_atr = self.style.ttl_atr
         ttl_clr = self.style.ttl_clr
-        self.win.attron(ttl_atr | ttl_clr)
-        self.win.addstr(self.title_y, self.title_x,self.title, ttl_atr|ttl_clr)
-        self.win.attroff(ttl_atr | ttl_clr)
+        try:
+            self.win.attron(ttl_atr | ttl_clr)
+            self.win.addstr(self.title_y, self.title_x,self.title, 
+                            ttl_atr|ttl_clr)
+            self.win.attroff(ttl_atr | ttl_clr)
+        except:            self.win.attroff(ttl_atr | ttl_clr)
 
+        # INNER TEXT IS A LIST OF TUPLES!!!
     def drawInnerText(self):
         """ draws hidden field _inner_text if set"""
         #     "_inner_text"   : [ (4, 21, "--------------------"),

@@ -53,6 +53,9 @@ class CurseItem(object):
         if "active" in kwargs       : self.is_active = kwargs["active"]
         else: self.is_active = True
 
+        if "hotkey" in kwargs:
+            self.hotkey = kwargs["hotkey"]
+
         # _focus_key is key to panel that will be focused when the item is
         if "_focus_key" in kwargs   : self._focus_key = kwargs["_focus_key"]
 
@@ -80,8 +83,9 @@ class CurseItem(object):
             attr  = self.style.itxt_atr | self.style.itxt_clr
             bttr = self.style.itxt_bg_clr         
 
-        self.drawBgLine(self.parent_panel.win,self.y,self.x,32,self.width,bttr)
         try:
+            self.drawBgLine(self.parent_panel.win,self.y,self.x,32,
+                            self.width,bttr)
             self.parent_panel.win.addstr(self.y, self.x, self.label, attr)
         except: 
             # there is a bug in the python curses library where if
@@ -89,6 +93,15 @@ class CurseItem(object):
             # the window, the cursor moves off the screen and 
             # raises an error; this is unintended behavior
             pass
+
+        if hasattr(self, "hotkey"):
+            try:
+                self.parent_panel.win.addch(
+                    self.y ,
+                    self.x + self.hotkey["labl_index"],
+                    self.hotkey["h_key"],
+                    self.hotkey["attr"] | curses.A_BOLD)
+            except: pass
 
         self.parent_panel.changed = True
 
@@ -145,7 +158,7 @@ class CurseItem(object):
 
         """
 
-        if self._on_select == None:                                 return None
+        if self._on_select == None:    return None
         message = { "msg_status"  : "unread", 
                     "send_layer"  : self._on_select["send_layer"], 
                     "recv_layer"  : self._on_select["recv_layer"], 
@@ -168,22 +181,22 @@ class CurseItem(object):
 
     def readMessage(self, msg):
         """ checks if it is message recvr, executes msg contents if it is """
-
-        if msg == None:                                                  return
+        if msg == None:  return
         
         if msg["msg_status"] == "unread":
             if msg["recv_layer"] == "item" or msg["recv_layer"] == "self":
                 if msg["on_recv"] == "call_function":
                     if hasattr(self, msg["recv_act"]):
+
                         func = getattr(self, msg["recv_act"])
                         if msg["recv_args"] == None:   msg["ret_info"] = func()
-                        else:   msg["ret_info"] = func(*msg["recv_args"])
+                        else:         msg["ret_info"] = func(*msg["recv_args"])
+
                         msg["msg_status"] = "read"
                         if "replace_msg" in msg:
                             if msg["ret_info"] != None:
                                 msg_new = copy.deepcopy(msg["ret_info"])
                                 msg = msg_new
-
         return msg
 
     def changeInfo(self, text):
@@ -325,9 +338,11 @@ class CurseItem(object):
             x_pos += 1
             
     def drawBgLine(self, win, y, x, ch, len, battr):
-        win.attron(battr)
-        win.hline(y, x, ch, len)
-        win.attroff(battr)
+        try:
+            win.attron(battr)
+            win.hline(y, x, ch, len)
+            win.attroff(battr)
+        except: win.attroff(battr)
         
     def checkChar(self, format_str, input_i, in_len, min_len):
         if input_i == ord("\n"): 

@@ -74,9 +74,12 @@ def init_color_pairs():
     curses.init_pair(14, curses.COLOR_WHITE, curses.COLOR_BLACK)  # white/black
 
     curses.init_pair(15, curses.COLOR_CYAN, curses.COLOR_BLUE)    # cyan /blue
-    curses.init_pair(16, curses.COLOR_BLUE, curses.COLOR_CYAN)    # cyan /blue
+    curses.init_pair(16, curses.COLOR_BLUE, curses.COLOR_CYAN)    # blue /cyan
 
     curses.init_pair(17, curses.COLOR_BLACK, curses.COLOR_WHITE)  # white/black
+    curses.init_pair(18, curses.COLOR_BLUE, curses.COLOR_YELLOW)    # blue/yllw
+    curses.init_pair(19, curses.COLOR_WHITE, curses.COLOR_BLUE)     # red/yllw
+    curses.init_pair(20, curses.COLOR_MAGENTA, curses.COLOR_BLUE) # blue/yllw
 
     colors = {  "DFT": curses.color_pair(0),
                 "BLK": curses.color_pair(1),   "BLU": curses.color_pair(2),
@@ -90,7 +93,10 @@ def init_color_pairs():
                                                "WHT": curses.color_pair(14),
                 "CYNBLU": curses.color_pair(15),
                 "RCYNBLU": curses.color_pair(16),
-                                                "RWHT": curses.color_pair(17)}
+                                                "RWHT": curses.color_pair(17),
+                "BLUYLW": curses.color_pair(18),
+                "REDYLW": curses.color_pair(19),
+                "MGAYLW": curses.color_pair(20)}
 
 def init_style():
     global borderSets
@@ -432,25 +438,25 @@ def init_style():
     })
     panel_styles["infobox2"] = CursePanelStyle({
         "bg_chr"        : sp,
-        "bg_atr"        : 0,
-        "bg_clr"        : colors["RBLU"],
+        "bg_atr"        : curses.A_BOLD,
+        "bg_clr"        : colors["CYNBLU"],
         "br_chrs"       : list(borderSets["no_border"]),
         "br_atr"        : 0,
         "br_clr"        : colors["BLK"],
         "ttl_atr"       : curses.A_BOLD,
-        "ttl_clr"       : colors["RED"],
+        "ttl_clr"       : colors["CYNBLU"],
         "txt_atr"       : curses.A_BOLD,
         "txt_clr"       : colors["CYNBLU"],
         "txt_bg_clr"    : None,
 
         "fbg_chr"       : sp,
-        "fbg_atr"       : 0,
-        "fbg_clr"       : colors["RBLU"],
+        "fbg_atr"       : curses.A_BOLD,
+        "fbg_clr"       : colors["CYNBLU"],
         "fbr_chrs"      : list(borderSets["no_border"]),
-        "fbr_atr"       : 0,
+        "fbr_atr"       :curses.A_BOLD,
         "fbr_clr"       : colors["BLK"],
         "fttl_atr"      : curses.A_BOLD,
-        "fttl_clr"      : colors["CYN"],
+        "fttl_clr"      : colors["CYNBLU"],
         "ftxt_atr"      : None,
         "ftxt_clr"      : None,
         "ftxt_bg_clr"   : None,
@@ -475,7 +481,7 @@ def init_style():
         "br_atr"        : 0,
         "br_clr"        : colors["BLK"],
         "ttl_atr"       : curses.A_BOLD,
-        "ttl_clr"       : colors["RMGA"],
+        "ttl_clr"       : colors["RBLU"],
         "txt_atr"       : curses.A_BOLD,
         "txt_clr"       : colors["RED"],
         "txt_bg_clr"    : None,
@@ -989,4 +995,42 @@ def init_style():
         "itxt_bg_clr"	: colors["RED"]	
     })
 
+    tmp_attr = curses.A_BOLD
+    panel_styles["key_menu"] = CursePanelStyle({
+        "bg_chr"        : sp,
+        "bg_atr"        : tmp_attr,
+        "bg_clr"        : colors["REDYLW"],
+        "br_chrs"       : list(borderSets["no_border"]),
+        "br_atr"        : tmp_attr,
+        "br_clr"        : colors["BLK"],
+        "ttl_atr"       : tmp_attr,
+        "ttl_clr"       : colors["REDYLW"],
+        "txt_atr"       : tmp_attr,
+        "txt_clr"       : colors["REDYLW"],
+        "txt_bg_clr"    : colors["REDYLW"],
+
+        "fbg_chr"       : sp,
+        "fbg_atr"       : tmp_attr,
+        "fbg_clr"       : colors["REDYLW"],
+        "fbr_chrs"      : list(borderSets["no_border"]),
+        "fbr_atr"       : tmp_attr,
+        "fbr_clr"       : colors["BLK"],
+        "fttl_atr"      : tmp_attr,
+        "fttl_clr"      : colors["REDYLW"],
+        "ftxt_atr"      : tmp_attr,
+        "ftxt_clr"      : colors["REDYLW"],
+        "ftxt_bg_clr"   : colors["REDYLW"],
+        #inactive			
+        "ibg_chr"	    : sp,
+        "ibg_atr"	    : 0,
+        "ibg_clr"	    : colors["RED"],
+        "ibr_chrs"	    : list(borderSets["no_border"]),
+        "ibr_atr"	    : 0,
+        "ibr_clr"	    : colors["RED"],
+        "ittl_atr"	    : 0,
+        "ittl_clr"	    : colors["RED"],
+        "itxt_atr"	    : 0,
+        "itxt_clr"	    : colors["RED"],
+        "itxt_bg_clr"	: colors["RED"]	
+    })
     return panel_styles

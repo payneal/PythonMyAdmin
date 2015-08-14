@@ -42,15 +42,20 @@ class CurseScreen(object):
     def checkInput(self, input):
         """ checks if input triggers action in screen or its focused panel """
         if self.is_active != True: return
-        if input not in self.key_action_map: return
+        if input not in self.key_action_map:   
+            #self.global_storage['log_name'] = chr(int(input))+" HOTKEY_"+chr(int(input))
+            #self.setUserStripInfo()
+            #self.drawUserStripInfo()            
+            #return
+            act_key = "HOTKEY_"+chr(int(input))
+        else:                       act_key = self.key_action_map[input]
+        #if "other" not in self.key_action_map: return 
         
-        msg = None
-        act_key = self.key_action_map[input]
-       
+        msg = None   
         if act_key in self.act_msg_map: 
             msg = copy.deepcopy(self.act_msg_map[act_key])
         elif self.focus_panel != None: #
-            msg = self.focus_panel.checkInput(act_key)
+            msg = self.focus_panel.checkInput(act_key, input)
     
         return self.readMessage(msg)
              
@@ -64,12 +69,14 @@ class CurseScreen(object):
                 if msg["on_recv"] == "call_function":
 
                     func = getattr(self, msg["recv_act"])
-                    if msg["recv_args"] == None:  
-                        msg["ret_info"] = func()
-                    else:        
-                        msg["ret_info"] = func(*msg["recv_args"])
+                    if msg["recv_args"] == None:       msg["ret_info"] = func()
+                    else:             msg["ret_info"] = func(*msg["recv_args"])
 
                     msg["msg_status"] = "read"
+                    if "replace_msg" in msg:
+                        if msg["ret_info"] != None:
+                            msg_new = copy.deepcopy(msg["ret_info"])
+                            msg = msg_new
         return msg
 
     #/\ SCREEN FUNCTIONS /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\        
@@ -160,7 +167,8 @@ class CurseScreen(object):
         if panel_name in self.panels: return self.panels[panel_name]
 
     def getItemByName(self, item_name):
-        for panel in self.panels:
+        for panel_key in self.panels:
+            panel = self.panels[panel_key]
             if item_name in panel.items:
                 return panel.items[item_name]
 
@@ -169,7 +177,9 @@ class CurseScreen(object):
     #        if item_name in panel.items:
     #            return panel.items[item_name] 
 
-    def openNestedPanel(self, p_key):   self.focusPanel(self.pushFPanel(p_key))
+    def openNestedPanel(self, p_key):   
+        if p_key != None:
+            self.focusPanel(self.pushFPanel(p_key))
 
     def closeNestedPanel(self, keep_i_focus=False):
         old_top_key = self.popFPanel()
@@ -315,9 +325,8 @@ class CurseScreen(object):
         if hasattr(focus_panel.focus_item, "_focus_key"):
             sec_focus_panel = self.panels[focus_panel.focus_item._focus_key]
             #setting up selection for tertiary focus
-            if sec_focus_panel.focus_item.is_selected == True:
-                pass 
-            else:                                    sec_focus_panel.nextItem()
+            if sec_focus_panel.focus_item.is_selected == True:         pass 
+            else:                                 sec_focus_panel.nextItem()
 
     def selectItem(self):
         if self.focus_key == None or self.focus_key == "":      return
@@ -326,3 +335,12 @@ class CurseScreen(object):
         if hasattr(focus_panel.focus_item, "_focus_key"):            
             self.panels[focus_panel.focus_item._focus_key].selectItem()
         else:                             self.focus_panel.selectItem()
+
+    def directItemSelect(self, item_key):
+        item = self.getItemByName(item_key)
+        #self.global_storage['log_name'] = item_key
+        #self.setUserStripInfo()
+        #self.drawUserStripInfo()
+        msg = item.select()
+        return msg
+
