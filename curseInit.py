@@ -295,11 +295,11 @@ def init_screens(curse_container):
         action_args  = [
             { # argument strings for makeQuery
               "sel_xp"  :
-                  'table_name,table_rows,create_time,update_time,engine',
+                  "`table_name`,`table_rows`,`create_time`,`update_time`,`engine`",
               "tbl_refs":  
-                  'information_schema.tables',
+                  '`information_schema`.`tables`',
               "w_cond"  : 
-                  "table_schema='@'" 
+                  "`table_schema`='@'" 
              },
             { # variables that need to be fetched from global storage at rt
                 "w_cond": ["log_db"]
@@ -326,13 +326,13 @@ def init_screens(curse_container):
         action_args  = [
             {
               "sel_xp"  :
-                  'column_name,ordinal_position,data_type,'\
-                  'column_default,is_nullable,character_maximum_length,'\
-                  'column_type,column_key,privileges',
+                  '`column_name`,`ordinal_position`,`data_type`,'\
+                  '`column_default`,`is_nullable`,`character_maximum_length`,'\
+                  '`column_type`,`column_key`,`privileges`',
               "tbl_refs":  
-                  'information_schema.columns',
+                  '`information_schema`.`columns`',
               "w_cond"  : 
-                  "table_name='@' AND table_schema='@'"
+                  "`table_name`='@' AND `table_schema`='@'"
             },
             { # variables that need to be fetched from global storage at rt
                 "w_cond": ["view_tbl", "log_db"]
