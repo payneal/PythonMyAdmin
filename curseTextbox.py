@@ -39,6 +39,11 @@ class CurseTextbox(object):
                 func = getattr(self, _on_load["action_name"])
                 func(*_on_load["action_args"])
 
+    def refresh(self, new_text=None):
+        if new_text != None: self.resetText(new_text)
+        self.drawText()
+        self.parent.win.refresh()
+
     def drawText(self):
         """ draws textbox text to screen """
         txt_atrclr =          self.style.txt_atr | self.style.txt_clr

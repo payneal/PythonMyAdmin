@@ -19,34 +19,43 @@ class CursePanel(object):
         self.x                                      = kwargs["size"][1]
         self.height                                 = kwargs["size"][2]
         self.width                                  = kwargs["size"][3]
-
+        
         # viewport y/x: viewport origin within pad
         # screen y/x/h/w: panel dimension on screen
         # refresh(viewport_y,viewport_x,screen_y, screen_x, screen_h, screen_w)
         if "is_pad" in kwargs:
+
             self.is_pad=True
-            self.pad_height = kwargs["psize"][0]
-            self.pad_width  = kwargs["psize"][1]
 
-            self.win   = curses.newpad(self.pad_height, self.pad_width)
+            self.p_height = kwargs["psize"][0]
+            self.p_width  = kwargs["psize"][1]
 
-            self.viewport_y = 0;
-            self.viewport_max_y =self.pad_height-self.height
-            self.viewport_x = 0;
-            self.viewport_max_x =self.pad_width-self.width
+            self.win   = curses.newpad(self.p_height, self.p_width)
+
+            self.s_y_max = self.y + self.height
+            self.s_x_max = self.x + self.width      
+
+            self.vp_y = 0;
+            self.vp_x = 0;
+            self.vp_y_max = self.p_height-self.height
+            self.vp_x_max = self.p_width-self.width
+
+            self.col_count = -1         #
+            self.row_count = -1         #
+            self.col_max_widths = None  #
+            self.row_max_length = -1    #
+            self.cols_per_win = -1
+
+            self.cur_index = -1
+            
+            self.p_y_buff = 0
+            self.p_x_buff = 0
 
             if "_inner_list" in kwargs:
                 self._inner_list = kwargs["_inner_list"]
-                self.row_count = len(self._inner_list)
-            else: 
-                #self._inner_list = None
-                self.row_count = -1
+                #self.row_count = len(self._inner_list)
 
-            self.sel_list_indices = []
-            self.list_cursor_index = 0
-            self.cursor_vbuffer = 0
-            self.cursor_hbuffer = 0
-            
+            self.sel_list_indices = []                       
         else:
             self.is_pad=False
             self.win   = curses.newwin(self.height, self.width, self.y, self.x)           
@@ -103,7 +112,7 @@ class CursePanel(object):
             if self.is_pad == False:
                 self.win.noutrefresh()
             else:
-                self.win.noutrefresh(self.viewport_y, self.viewport_x, 
+                self.win.noutrefresh(self.vp_y, self.vp_x, 
                     self.y, self.x, self.height+self.y, self.width+self.x-2)
             self.changed = False
 
@@ -148,6 +157,11 @@ class CursePanel(object):
             self.resetTextbox()
             self.drawTextbox()
                           
+    def setInnerText(self, y, x, text):
+        if not hasattr(self, "_inner_text"):
+            setattr(self, "_inner_text", (y,x,text))
+        else: self._inner_text = (y, x, text)
+
     def load(self):
         """ executes custom behavior, then does so for items and text boxes"""
         if hasattr(self, "_on_load"):
@@ -193,84 +207,107 @@ class CursePanel(object):
                 if self._inner_list != None:
                     if keep_i_focus != True:
                         self.clearList()
-                        self.list_cursor_index = -1
-                        self.viewport_y = 0
-                        self.viewport_x = 0
+                        self.cur_index = -1
+                        self.vp_y = 0
+                        self.vp_x = 0
 
     def refreshPanel(self):
         self.draw()
         if self.is_pad == False: self.win.refresh()
         else:
-            self.win.refresh(self.viewport_y, self.viewport_x, 
+            self.win.refresh(self.vp_y, self.vp_x, 
                 self.y, self.x, self.height+self.y, self.width+self.x-2)
 
 #/\/\/  PAD FUNCTIONS  \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 
+    # used to give a panel a new results list
+    def loadList(self, string_list=None):      
+        if string_list == None:     s_list = self._inner_list
+        else:                             s_list = string_list
+
+        #self.col_hdrs
+        
+        self.col_count = len(s_list[0]) 
+        self.row_count = len(s_list)
+        self.col_max_widths = [0 for x in range(self.col_count)]
+        self.row_max_length = 0
+
+        row_total_length = 0
+
+        # get longest total row length
+        # get widest column width for each column
+        for row in range(0,  self.row_count):
+            for col in range(0, self.col_count):
+                col_width = len(s_list[row][col]) + 2
+                row_total_length += col_width 
+                if col_width > self.col_max_widths[col]:
+                    self.col_max_widths[col] = col_width
+       
+        # make all entries in same column equal length
+        for row in range(0,  self.row_count):
+            for col in range(0, self.col_count):        
+                s_list[row][col] = s_list[row][col].center(
+                    self.col_max_widths[col])
+        
+        # get total length of a list row
+        for col in range(0, self.col_count):
+            self.row_max_length += self.col_max_widths[col]
+
+        self.cur_index = 1
+        self.refreshPanel()
+
+    def prevListItem(self, defocus_prev=True):
+        if self.cur_index > 1:
+            self.cur_index -= 1
+            #if self.p_y_buff > 0:
+            #    self.p_y_buff -= 1
+            #    self.refreshPanel()
+            #elif self.p_y_buff == 0:
+            self.scrollUp()
+
+    def nextListItem(self, defocus_prev=True):
+        if self.cur_index < self.row_count - 1:
+            self.cur_index += 1
+            #if self.p_y_buff < self.height - 2:
+            #    self.p_y_buff += 1
+            #    self.refreshPanel()
+            #elif self.p_y_buff == self.height - 2:
+            self.scrollDown()
+
     def scrollLeft(self):
         if self.is_pad == True:
-            if self.viewport_x > 0:
-                self.viewport_x -= 1
+            if self.vp_x > 0:
+                self.vp_x -= 1
                 self.refreshPanel()
 
     def scrollRight(self):
         if self.is_pad == True:
-            if self.viewport_x < self.viewport_max_x:
-                self.viewport_x += 1
+            if self.vp_x < (self.row_max_length -self.width)+ 1:
+                self.vp_x += 1
                 self.refreshPanel()
 
     def scrollUp(self):
         if self.is_pad == True:
-            if self.viewport_y > 0:
-                self.viewport_y -= 1
-                self.refreshPanel()
+            if self.p_y_buff > self.height:
+                self.vp_y -= 1
+                self.p_y_buff -= 1
+            elif self.p_y_buff > 0: self.p_y_buff -= 1
+            self.refreshPanel()
 
     def scrollDown(self):
         if self.is_pad == True:
-            if self.viewport_y < self.row_count - 1:
-                self.viewport_y += 1
-                self.refreshPanel()
-
-    # used to give a panel a new results list
-    def loadList(self, string_list=None):
-        max_len = 0     
-        if string_list == None:     s_list = self._inner_list
-        else:                             s_list = string_list
-        self.row_count = len(s_list)
-        for l in range(0,  self.row_count):
-            line_len = len(s_list[l])
-            if line_len > max_len:
-                max_len = line_len
-        
-        self.viewport_max_y = self.row_count + 1
-        self.viewport_max_x = max_len + 1 - self.width
-
-        self.viewport_y = 0;
-        self.viewport_x = 0;
-        self.list_cursor_index = 0
-        self.refreshPanel()
+            if self.p_y_buff < self.height: self.p_y_buff += 1
+            elif self.p_y_buff + self.vp_y < self.p_height:  
+                self.p_y_buff += 1
+                self.vp_y += 1
+            self.refreshPanel()
 
     def clearList(self):
         for l in range(0, len(self._inner_list)):
             self.win.hline(l,0,32,self.width - 1)
         self._inner_list = None
 
-    def prevListItem(self, defocus_prev=True):
-        if self.list_cursor_index > 0:
-            self.list_cursor_index -= 1
-            if self.cursor_vbuffer > 0:
-                self.cursor_vbuffer -= 1
-                self.refreshPanel()
-            elif self.cursor_vbuffer == 0:
-                self.scrollUp()
 
-    def nextListItem(self, defocus_prev=True):
-        if self.list_cursor_index < self.row_count - 1:
-            self.list_cursor_index += 1
-            if self.cursor_vbuffer < self.height - 2:
-                self.cursor_vbuffer += 1
-                self.refreshPanel()
-            elif self.cursor_vbuffer == self.height - 2:
-                self.scrollDown()
 
 #/\/\/  PANEL DRAW FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 
@@ -300,7 +337,7 @@ class CursePanel(object):
         self._setBg(bg_chtype)                
         self._setBorder(br_chrs, br_atr, br_clr)
         self.drawTitle()
-        self.drawInnerList()
+        if self.is_pad: self.drawInnerList()
         self.drawInnerText()
 
     def drawPanelContents(self):
@@ -340,55 +377,37 @@ class CursePanel(object):
                                 self._inner_text[t][2], txt_atr | txt_clr)
 
     def drawInnerList(self):
-        """ draws field _inner_list if set """
-        if hasattr(self, "_inner_list"):
-            # draw list in pad
-            #for l in range(0,len(self._inner_list)):
-            for l in range(self.viewport_y, self.viewport_y + self.height-1):
-                self.win.hline(l,0,32,self.width)
-                if self.viewport_y + self.height -1 <= self.row_count:
-                    self.win.addstr(l,0,self._inner_list[l])
-            # highlight selected rows
-            if len(self.sel_list_indices) > 0:
-                for i in range(0, len(self.sel_list_indices)):
-                    self.win.addstr(self.sel_list_indices[i],1,
-                        self._inner_list[self.sel_list_indices[i]] 
-                            | curses.A_REVERSE)
-            # focus row cursor is on
-            if self.list_cursor_index >= 0:
-                self.win.attron(self.style.ftxt_atr | self.style.ftxt_clr)
-                self.win.addstr(self.list_cursor_index, 0,
-                    self._inner_list[self.list_cursor_index])
+        if self.row_count <= 0:     return
+
+        # draw visible entries
+        for row in range(0, self.row_count): # counter for number of lines to draw
+            self.win.hline(row, 0, 32, self.width)      # clear line 
+             
+            if row == 0:
+                self.win.attron(curses.A_BOLD | curses.color_pair(3))  
+            elif row == self.cur_index:
+                self.win.attron(self.style.ftxt_atr | self.style.ftxt_clr)   
+                    
+            x = 0
+            for col in range(0, self.col_count):           
+                self.win.addstr(row, x, self._inner_list[row][col])
+                cell_len = len( self._inner_list[row][col])     
+                x += cell_len     
+                
+            if row == 0:
+                self.win.attroff(curses.A_BOLD | curses.color_pair(3)) 
+            elif row == self.cur_index:
                 self.win.attroff(self.style.ftxt_atr | self.style.ftxt_clr)
 
-            #self.win.hline(self.height+self.viewport_y,
-            #               self.viewport_x,32,self.width-1)
-            self.win.hline(self.height+self.viewport_y-1,
-                           self.viewport_x,32,self.width)
-            self.win.hline(self.height+self.viewport_y,
-                           self.viewport_x,32,self.width)
-            # draw vertical axis "MORE"
-            if self.row_count > self.height:
-                try:
-                    if self.viewport_y + self.height < self.row_count:
-                        self.win.attron(
-                            self.style.ftxt_atr | self.style.ftxt_clr)
-                        self.win.addstr(self.height+self.viewport_y,
-                            self.viewport_x, "VVV MORE VVV")
-                        self.win.attroff(
-                            self.style.ftxt_atr | self.style.ftxt_clr)
-                except: pass
-            # draw horizontal axis "MORE"
-            if self.viewport_max_x > self.width:
-                try:
-                    if self.viewport_x < self.viewport_max_x:
-                        self.win.attron(
-                            self.style.ftxt_atr | self.style.ftxt_clr)
-                        self.win.addstr(self.height+self.viewport_y,
-                            4+self.viewport_x, "MORE >>>")
-                        self.win.attroff(
-                            self.style.ftxt_atr | self.style.ftxt_clr)
-                except: pass
+        if self.vp_x + self.width < self.row_max_length:
+            if self.row_count < self.height: line_height = self.row_count
+            else:                            line_height = self.height
+            self.win.attron(curses.A_BOLD | curses.color_pair(5))   
+            self.win.vline(self.vp_y,self.vp_x+self.width-3,ord("-"),line_height)
+            self.win.vline(self.vp_y,self.vp_x+self.width-2,ord(">"),line_height)
+            self.win.attroff(curses.A_BOLD | curses.color_pair(5))   
+
+
 
     def _setBg(self, bg_chtype=0):
         """ sets panel background color and attributes """

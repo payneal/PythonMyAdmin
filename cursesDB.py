@@ -113,15 +113,21 @@ def quitCurses():
     global loop
     loop = False
 
-def changeScreen(new_key_str):
+def changeScreen(new_key_str, change_delay=0, infobox_key=None,change_msg=""):
     """ changes current view to new screen """
     global curse_container
     global current_screen
     global screen_key
     global previous_key
 
-    if current_screen != None:                      
-        current_screen.hideScreen()
+    if current_screen != None:
+        # REDIRECT DELAY
+        if change_delay == 0:   current_screen.hideScreen()
+        else:
+            infobox = curse_container.getTextboxByName(infobox_key)
+            infobox.refresh(change_msg)
+            curses.napms(3000)
+            current_screen.hideScreen()
 
     if new_key_str == "_previous":
         if previous_key != None:                     

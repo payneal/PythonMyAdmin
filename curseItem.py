@@ -153,6 +153,7 @@ class CurseItem(object):
                     "on_recv"     : self._on_select["on_recv"], 
                     "recv_act"    : self._on_select["recv_act"], 
                     "recv_args"   : self._on_select["recv_args"] }
+        if "replace_msg" in self._on_select: message["replace_msg"] = True
         
         return self.readMessage(message)
 
@@ -176,8 +177,12 @@ class CurseItem(object):
                     if hasattr(self, msg["recv_act"]):
                         func = getattr(self, msg["recv_act"])
                         if msg["recv_args"] == None:   msg["ret_info"] = func()
-                        else:         msg["ret_info"] = func(*msg["recv_args"])
+                        else:   msg["ret_info"] = func(*msg["recv_args"])
                         msg["msg_status"] = "read"
+                        if "replace_msg" in msg:
+                            if msg["ret_info"] != None:
+                                msg_new = copy.deepcopy(msg["ret_info"])
+                                msg = msg_new
 
         return msg
 
@@ -374,3 +379,5 @@ class CurseItem(object):
             err_txtbox.resetText(msg)
             err_txtbox.drawText()
             err_txtbox.parent.win.refresh()
+#
+#   curses.napms(x) : sleeps for x milliseconds

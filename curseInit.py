@@ -12,11 +12,14 @@ from types import MethodType
 import asciiart
 import curseItem
 
-import psycopg2 
+#import psycopg2 
 import json
 import decimal
-import cursesPostgresTemp
-import curseMysqlTemp
+#import cursesPostgresTemp
+#import curseMysqlTemp
+
+import MySQLdb
+import MySQLdb.cursors
 
 #layers = { "main": 0, "screen": 1, "panel": 2, "item":3 }
 
@@ -205,7 +208,7 @@ def init_screens(curse_container):
 
     default_msg_map     = curse_container.act_msg_maps["screen"]  
     usermain_msg_map    = curse_container.act_msg_maps["user_screen"] 
-    login_msg_map       = curse_container.act_msg_maps["login_screen"] 
+    login_msg_map       = curse_container.act_msg_maps["login_screen"]
     global_storage      = curse_container.global_storage 
 
     # 00-..-..-..                     
@@ -281,10 +284,20 @@ def init_screens(curse_container):
     "user_strip"        : "viewDB_scr_ustrip",
     "key_action_map"    : key_action_map,
     "act_msg_map"       : default_msg_map,
-    "default_focus_key" : "viewDB_scr_menu_pnl",
+    "default_focus_key" : "viewDB_scr_out_pnl",
     "can_panel_change"  : False,
     "style"             : curseStyles["dashscrbg"],
-    "ftr_strip"         : None})
+    "ftr_strip"         : None,
+    "_on_load"          : dict(  
+        action       = "call_function", 
+        action_name  = "loginToViewDB", 
+        action_args  = [{
+              "sel_xp":'table_name,table_rows,create_time,update_time,engine',
+              "tbl_refs":  'information_schema.tables',
+              "w_cond": "table_schema='world'"
+            },"viewDB_scr_out_pnl",
+            ['table_name','table_rows','create_time','update_time','engine']
+            ])})
     # 07-..-..-..
     curseScreens["manageDB_screen"] = CurseScreen(**{
     "global_storage"    : global_storage,
@@ -675,7 +688,7 @@ def init_panels(curse_container):
     "info"          : "press SPACE to select item, q to quit, "\
                       "z to cancel, v to return to previous screen",
     "infotar"       : "usermain_scr_u_info",
-    "_default_focus_item_key" : "viewDB_lnk"})
+    "_default_focus_item_key" : "db_tables"})
     # 05-04-..-..
     user_screen.panels["usermain_scr_m_pnl"]               = CursePanel(**{
     "global_storage": global_storage,
@@ -738,21 +751,41 @@ def init_panels(curse_container):
     "parent"        : viewDB_screen,
     "size"          : (0, 0, 1, 80),
     "style"         : curseStyles["user_strip"]})
+
+    viewDB_screen.panels["viewDB_scr_u_info"]              = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewDB_screen,    
+    "size"          : (1, 0, 5, 80),
+    "style"         : curseStyles["infobox1"]})
+
     # 06-02-..-..
     viewDB_screen.panels["viewDB_scr_menu_pnl"]            = CursePanel(**{
     "global_storage": global_storage,
     "parent"        : viewDB_screen,
-    "title"         : ("VIEW DATABASE".center(18), 2, 1),
+    #"title"         : ("VIEW DATABASE".center(18), 2, 1),
     "act_msg_map"   : panel_msg_map,
-    "size"          : (6, 0, 12, 26 ),
-    "style"         : curseStyles["middlepanes"],   
-    "focusable"     : True})
+    "size"          : (6, 0, 3, 80 ),
+    "style"         : curseStyles["middlepanes"]})
+
+    viewDB_screen.panels["viewDB_scr_out_pnl"]            = CursePanel(**{
+    "global_storage": global_storage,
+    "parent"        : viewDB_screen,
+    #"title"         : ("VIEW DATABASE".center(18), 2, 1),
+    "act_msg_map"   : list_msg_map,
+    "size"          : (10, 0, 11, 80 ),
+    "style"         : curseStyles["usermain_listbox"],   
+    "focusable"     : True,
+    "is_pad"        : True,
+    "psize"         : (500, 500)})
+
     # panels are updated/ drawn in the order below- this affects
     # overlapping panels so pay attention to this!
     viewDB_screen.panel_indexes = [
-        "viewDB_scr_bg",
+        "viewDB_scr_bg",    
+        "viewDB_scr_ustrip",
         "viewDB_scr_menu_pnl",
-        "viewDB_scr_ustrip"]
+        "viewDB_scr_u_info",
+        "viewDB_scr_out_pnl"]
     viewDB_screen.panel_count = len(viewDB_screen.panel_indexes)
 
     # 07-00-..-..      y, x, h, w
@@ -834,7 +867,7 @@ def init_items(curse_container):
     about_scr_panels    = curseScreens["about_screen"].panels
     login_scr_panels    = curseScreens["login_screen"].panels
     user_scr_panels     = curseScreens["usermain_screen"].panels
-    
+    viewDB_scr_panels   = curseScreens["viewDB_screen"].panels
 
     # 00-01-..-00
     title_panels["title_scr_panel"].items["login_link"]    = CurseItem(**{ 
@@ -1140,9 +1173,11 @@ def init_items(curse_container):
         recv_layer  = "self", 
         recv_name   = "self",   
         on_recv     = "call_function", 
-        recv_act    = "databaseLoginTest",
-        recv_args   = ["login_scr_infobox"],
-        ret_info    = None)})
+        recv_act    = "dbLogin",
+        recv_args   = ["viewDB_screen", "login_scr_infobox",
+                       "redirecting to database management screen"],
+        ret_info    = None,
+        replace_msg = True)})
     login_scr_panels["login_scr_menu_pnl"].item_indexes = [
         "logname", 
         "logpw",
@@ -1220,7 +1255,7 @@ def init_items(curse_container):
     "label"         : "",
     "focusable"     : False })
     # 05-03-..-01
-    user_scr_panels["user_scr_menu_pnl"].items["viewDB_lnk"]=CurseItem(**{
+    user_scr_panels["user_scr_menu_pnl"].items["db_tables"]=CurseItem(**{
     "container"     : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["user_scr_menu_pnl"],
@@ -1241,7 +1276,7 @@ def init_items(curse_container):
         recv_args   = ["usermain_scr_m_pnl"],
         ret_info    = None)})
     # 05-03-..-02
-    user_scr_panels["user_scr_menu_pnl"].items["mngDBS_lnk"]= CurseItem(**{
+    user_scr_panels["user_scr_menu_pnl"].items["db_meta"]= CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["user_scr_menu_pnl"],
@@ -1258,7 +1293,7 @@ def init_items(curse_container):
         recv_args   = ["manageDB_screen"],
         ret_info    = None)})
     # 05-03-..-03
-    user_scr_panels["user_scr_menu_pnl"].items["cfgAcct_lnk"]=CurseItem(**{
+    user_scr_panels["user_scr_menu_pnl"].items["raw_query"]=CurseItem(**{
         "container" : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["user_scr_menu_pnl"],
@@ -1285,15 +1320,15 @@ def init_items(curse_container):
     "label"         : "log out"})
     user_scr_panels["user_scr_menu_pnl"].item_indexes = [
         "hdr", 
-        "viewDB_lnk", 
-        "mngDBS_lnk",
-        "cfgAcct_lnk",
+        "db_tables", 
+        "db_meta",
+        "raw_query",
         "logout"]
     user_scr_panels["user_scr_menu_pnl"].item_count = len(
         user_scr_panels["user_scr_menu_pnl"].item_indexes)
 
     # 05-04-..-00T
-    user_scr_panels["usermain_scr_m_pnl"].items["temp_db1"] = CurseItem(**{ 
+    user_scr_panels["usermain_scr_m_pnl"].items["temp_db1"] = CurseItem(**{
     "container"     : curse_container,
     "global_storage": global_storage,
     "parent"        : user_scr_panels["usermain_scr_m_pnl"],
@@ -1358,6 +1393,83 @@ def init_items(curse_container):
         "temp_db3"]
     user_scr_panels["usermain_scr_m_pnl"].item_count = len(
         user_scr_panels["usermain_scr_m_pnl"].item_indexes)
+
+
+    viewDB_scr_panels["viewDB_scr_menu_pnl"].items["view_tbl"]= CurseItem(**{
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
+    "parent_screen" : curseScreens["viewDB_screen"],
+    "size"          : (1,5, 1, 10), # y, x, h, w
+    "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
+    "label"         : "view rows",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["manageDB_screen"],
+        ret_info    = None)})
+
+    viewDB_scr_panels["viewDB_scr_menu_pnl"].items["drop_tbl"]= CurseItem(**{
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
+    "parent_screen" : curseScreens["viewDB_screen"],
+    "size"          : (1, 23, 1, 10), # y, x, h, w
+    "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
+    "label"         : "drop table",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["manageDB_screen"],
+        ret_info    = None)})
+
+    viewDB_scr_panels["viewDB_scr_menu_pnl"].items["new_tbl"]= CurseItem(**{
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
+    "parent_screen" : curseScreens["viewDB_screen"],
+    "size"          : (1, 43, 1, 10), # y, x, h, w
+    "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
+    "label"         : "add table",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["manageDB_screen"],
+        ret_info    = None)})
+
+    viewDB_scr_panels["viewDB_scr_menu_pnl"].items["qry_tbl"]= CurseItem(**{
+        "container" : curse_container,
+    "global_storage": global_storage,
+    "parent"        : viewDB_scr_panels["viewDB_scr_menu_pnl"],
+    "parent_screen" : curseScreens["viewDB_screen"],
+    "size"          : (1, 61, 1, 10), # y, x, h, w
+    "style"         : viewDB_scr_panels["viewDB_scr_menu_pnl"].style,
+    "label"         : "query table",
+    "_on_select"    : dict(  msg_status  = "unread", 
+        send_layer  = "item", 
+        recv_layer  = "main", 
+        recv_name   = "main",   
+        on_recv     = "call_function", 
+        recv_act    = "changeScreen",
+        recv_args   = ["manageDB_screen"],
+        ret_info    = None)})
+
+    viewDB_scr_panels["viewDB_scr_menu_pnl"].item_indexes = [
+        "view_tbl",
+        "drop_tbl",
+        "new_tbl",
+        "qry_tbl"]
+    viewDB_scr_panels["viewDB_scr_menu_pnl"].item_count = len(
+        viewDB_scr_panels["viewDB_scr_menu_pnl"].item_indexes)
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
@@ -1866,125 +1978,135 @@ def init_funcs(curse_container):
         screen.setUserStripInfo()
         screen.drawUserStripInfo()
 
-    # IFUNC_003
-    #def submitInfo(self, query_keys_pair, req_keys_pair, storage, s_keys, 
-    #        db_funcs, infobox_parent_key):
-    #    """ takes stored input and submits to database   
-        
-    #    query_keys <list>   : fields needed to compose database query string
-    #    req_keys <list>     : if the element at a list index is None, then the
-    #        relative query key VALUE is required, if it is not None, then that
-    #        element is the default value for that query key
-    #    storage <dict>      : where the input is stored
-    #    storage_keys <str>  : keys to storage dictionary for values that will
-    #        fill values for analogous query keys
-    #    db_funcs<func>      : tuple for (mysql, postgresql) db IntrF functions
-    #    infobox_parent_key  : used to get textbox that shows info/error msg
-    #    """
-    #    q_dict      = {}
-    #    err         = False
-    #    err_key     = None
-    #    i_box = self.container.getTextboxByName(infobox_parent_key)
-
-    #    lang = storage["log_lang"]
-
-    #    # check if each key need for the query is in storage
-    #    # if it's not, check if it's required
-    #    # if it is required, abort submission and report error
-    #    # if it isn't required, use default value and continue
-            
-    #    # lang should exist if you made it this far   
-    #    lang = storage["log_lang"]
-    #    if lang=="mySQL":        i = 0
-    #    elif lang=="postgresql": i = 1
-    #    """  
-    #        makes a dictionary from the passed query keys and global storage
-    #        values that is in turn given to the database interface function
-    #    """
-    #    for k in range(0, len(query_keys_pair[i])):
-    #        # if there's not a key/value pair, is there a default value?
-    #        if s_keys[i][k] not in storage:
-    #            if req_keys_pair[i][k] != None:     
-    #                q_dict[query_keys_pair[i][k]] = req_keys_pair[i][k]
-    #            else: 
-    #                return self.showErrorMsg("NOKEY",[s_keys[i][k]],True,i_box)
-    #        else:   q_dict[query_keys_pair[i][k]] = storage[s_keys[i][k]]
-    #    db_func = db_funcs[i]
-    #    # ~ ~ ~ DB / UI INTERFACE CODE ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-    #    if db_func != None:
-    #        if lang == "mySQL":
-    #            """ CALL MYSQL QUERY """
-    #            q_dict['query'] = "placeholder"
-    #            q_res = db_func(q_dict)#, "SELECT * FROM COUNTRY LIMIT 3")
-    #            if type(q_res) is str:  out_str = q_res
-    #            else:  out_str = q_res['fail'].pgerror
-    #        elif lang == "postgresql":
-    #            """ CALL POSTGRESQL QUERY """
-    #            try:
-    #                results = db_func(q_dict)
-    #                if isinstance(results, OperationalError):
-    #                    out_str = results.pgerror
-    #                else:
-    #                    out_str = ""
-    #                    results_keys = results.keys()
-    #                    for r in range(0, len(results_keys)):
-    #                        out_str+results_keys[r]+":"\
-    #                            +results[results_keys[r]]+" "
-    #            except OperationalError as e:     out_str = e.pgerror
-    #    else:   out_str = "NO LANGUAGE SPECIFIED! HOW DID THIS HAPPEN?!"
-    #    i_box.resetText(out_str)
-    #    i_box.drawText()
-    #    i_box.parent.win.refresh()
-
-    def databaseLoginTest(self, infobox_pkey):
-        gs = self.global_storage
-        if "log_lang" in gs:
-            lang = gs["log_lang"] # get qlang
+    def dbLogin(self, redirect_skey, infobox_pkey, redirect_str):
+        infobox = self.container.getTextboxByName(infobox_pkey)
+        result = dbLoginConnect(self.global_storage, infobox)
+        if result["status"] != "OK":    return None
+        else: 
+            self.global_storage["db_cxn"] = result['cxn']
+            return { 
+            "msg_status"  : "unread", 
+            "send_layer"  : "item", 
+            "recv_layer"  : "main", 
+            "recv_name"   : "main",   
+            "on_recv"     : "call_function", 
+            "recv_act"    : "changeScreen", 
+            "recv_args"   : [redirect_skey, 3000, infobox_pkey, redirect_str]}
+    
+    # gets login arguments from global storage
+    def dbLoginConnect(gl_stor, infobox):
+        if "log_lang" in gl_stor:
+            lang = gl_stor["log_lang"] # get qlang
             if lang == "mySQL" or lang == "postgresql":
                 # get login arguments from global storage
                 l_args = dict(
-                        database = gs["log_db"],
-                        user     = gs["log_name"],
+                        database = gl_stor["log_db"],
+                        user     = gl_stor["log_name"],
                         host     = 'localhost',
-                        password = gs["log_pw"])
-                        
+                        password = gl_stor["log_pw"])
+                     
                 # execute DB interface functions
-                if lang=="mySQL":l_result=curseMysqlTemp.loginMysqlTest(l_args)
-                else: l_result=cursesPostgresTemp.loginPostgresqlTest(l_args)
-
-                if 'success' in l_result: status = { 
-                    "status": "OK", "info": "connected to database!"}
-                elif 'fail' in l_result: 
-                    if lang == "mySQL":
-                        status = {
-                            "status":"ERR", 
-                            "info": str(l_result['fail'])}
-                    else:
-                        status={"status":"ERR","info":l_result['fail'].pgerror}
-            else: status = { "status": "ERR", "info": "bad language value" }
-        else: status = { "status": "ERR", "info": "language field not set" }
+                if lang=="mySQL": c_status = login(l_args)
+                else: c_status={"status":"ERR",  "er_info":"postgresql disabled"}                  
+            else: c_status = { "status": "ERR", "er_info": "bad language value" }
+        else: c_status = { "status": "ERR", "er_info": "language field not set" }
 
         # draw results
-        i_box = self.container.getTextboxByName(infobox_pkey)
-        i_box.resetText(json.dumps(status["info"]))
-        i_box.drawText()
-        i_box.parent.win.refresh()
+        if "er_info" in c_status: 
+            infobox.refresh(c_status["er_info"][1])
+            #infobox.refresh(json.dumps(c_status["er_info"]))
+        return c_status
 
-        # close connection
-        if hasattr(gs, "connection"):
-            gs["connection"].close()
-        
+    # establishes actual connection and returns status, connection tuple
+    def login(login_dict):
+        con = None
+        try:
+            con = MySQLdb.connect(
+                user   = login_dict["user"],
+                passwd = login_dict["password"],
+                host   = login_dict["host"],
+                db     = login_dict["database"],
+                cursorclass=MySQLdb.cursors.DictCursor)
+            status = {"status":"OK", "cxn":con}
+        except MySQLdb.Error as err:
+            if con!= None:      con.rollback()
+            status = {"status": "ERR", "er_info": err}
+        return status
 
-    # IFUNC_004
-    def loadResult(self, result_list, out_panel_key, focus_nested_panel=False):
-        panel =self.container.getPanelByName(out_panel_key)
-        #
-        if hasattr(panel, "_inner_list"):
-            setattr(panel,"_inner_list", list(result_list))
-        else:         panel._inner_list = list(result_list)
-        panel.loadList()
+    def loginToViewDB(self, q_args, load_pkey, col_ordr=None, open_nest=False):
+        con = self.global_storage['db_cxn']
+        load_panel = self.panels[load_pkey]
+        data_list = runQueryOnLoad(con, q_args, load_panel, col_ordr)
+        if len(data_list) > 0:
+            loadListResult(data_list, self, load_panel, load_pkey, open_nest)
+
+    def runQueryOnLoad(connection, q_args, load_panel, col_order=None):
+        q_str = makeQuery(q_args)
+        q_result = queryDatabase(connection, q_str)
+        data_list = []
+        if q_result["status"] == "ERR":
+            load_panel.setInnerText(1,1,q_result["data"])
+        else:     data_list = dictResToListRes(q_result["data"], col_order)
+        return data_list
+
+    def dictToList(dictionary, key_order):
+        d_list = []      
+        key_len = len(key_order)
+        for i in range(0, key_len):
+            d_list.append(copy.deepcopy(str(dictionary[key_order[i]])))
+        return d_list
+
+
+    def dictResToListRes(dict_result, key_order=None):
+        l_list = []
+        if key_order == None:  key_order =sorted(dict_result[0].keys())
+        l_list.append(list(key_order)) 
+
+        for row in dict_result:   l_list.append(dictToList(row, key_order))
+        return l_list
+
+    def makeQuery(q_args):
+        q_str = "SELECT " + q_args["sel_xp"]
+        if "tbl_refs" in q_args:
+            q_str   += " FROM " + q_args["tbl_refs"]
+        if "w_cond" in q_args:
+            q_str   += " WHERE " + q_args["w_cond"]           
+        if "w_grp" in q_args: # col name / expression/ pos
+            q_str   += " GROUP BY " + q_args["w_grp"]
+        if "h_cond" in q_args:
+            q_str   += " HAVING " + q_args["h_cond"]  
+        if "order" in q_args:
+            q_str   += " ORDER BY " + q_args["order"]
+        if "limit" in q_args:
+            q_str   += " LIMIT " + q_args["limit"]
+        return q_str
+         
+    def queryDatabase(connection, query):
+        q_result = {}
+        curs = connection.cursor()
+        try:
+            curs.execute(query)
+            q_result["data"] = curs.fetchall()
+            q_result["status"] = "OK"
+        except MySQLdb.Error as err:
+            connection.rollback()
+            q_result["data"] = err
+            q_result["status"] = "ERR"
+        curs.close()
+        return q_result
+
+    def loadListResult(result_list,out_screen, out_panel, out_panel_key,
+            focus_nested_panel=False):
+        if not hasattr(out_panel, "_inner_list"):
+            setattr(out_panel,"_inner_list", list(result_list))
+        else:         out_panel._inner_list = list(result_list)
+        out_panel.loadList()
         if focus_nested_panel == True:
-            self.parent_screen.openNestedPanel(out_panel_key)
+            out_panel.parent_screen.openNestedPanel(out_panel_key)
+
+
+
+
 
     #------------------ FUNCTION ASSIGNMENT -----------------------------------
     
@@ -2018,18 +2140,20 @@ def init_funcs(curse_container):
     log_item4b.setOption = MethodType(setOption, log_item4b, CurseItem)
     # 04-03-..-04 IFUNC_003
     log_item5   = login_panels["login_scr_menu_pnl"].items["logsubmit"]
-    log_item5.databaseLoginTest=MethodType(databaseLoginTest,log_item5,CurseItem)
+    log_item5.dbLogin=MethodType(dbLogin,log_item5,CurseItem)
+    #log_item5.dbLoginConnect=MethodType(dbLoginConnect,log_item5,CurseItem)
+    
+    vdb_screen = curseScreens["viewDB_screen"]
+    vdb_screen.loginToViewDB=MethodType(loginToViewDB, vdb_screen, CurseScreen)
     
     # 05-04-..-00T IFUNC_004
     user_item1          = user_panels["usermain_scr_m_pnl"].items["temp_db1"]
-    user_item1.loadResult = MethodType(loadResult, user_item1, CurseItem)
+    user_item1.loadListResult = MethodType(loadListResult, user_item1, CurseItem)
 
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def load_globals(curse_container):
-    pass
-    #curse_container.global_storage["log_name"] = ""
-    #curse_container.global_storage["log_pw"]   = ""
-    #curse_container.global_storage["log_db"]   = ""  
-    #curse_container.global_storage["log_lang"] = ""
-    pass
+    curse_container.global_storage["log_name"] = "JerryBoney"
+    curse_container.global_storage["log_pw"]   = "alaspooryorrick"
+    curse_container.global_storage["log_db"]   = "world"  
+    curse_container.global_storage["log_lang"] = "mySQL"

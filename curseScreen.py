@@ -33,6 +33,9 @@ class CurseScreen(object):
               self.default_focus_key = kwargs["default_focus_key"]
         else: self.default_focus_key = ""
 
+        if "_on_load" in kwargs:
+            self._on_load = kwargs["_on_load"]
+
         self.is_active          = False
         self.update_screen      = False
         
@@ -77,8 +80,8 @@ class CurseScreen(object):
 
         if hasattr(self, "_on_load"):
             if self._on_load["action"] == "call_function":
-                func = getattr(self, _on_load["action_name"])
-                func(*_on_load["action_args"])
+                func = getattr(self, self._on_load["action_name"])
+                func(*self._on_load["action_args"])
 
         self.setUserStripInfo()
         self.loadPanels()
@@ -160,6 +163,11 @@ class CurseScreen(object):
         for panel in self.panels:
             if item_name in panel.items:
                 return panel.items[item_name]
+
+    #def getTextboxByName(self, textbox_name):
+    #    for panel in self.panels:
+    #        if item_name in panel.items:
+    #            return panel.items[item_name] 
 
     def openNestedPanel(self, p_key):   self.focusPanel(self.pushFPanel(p_key))
 
