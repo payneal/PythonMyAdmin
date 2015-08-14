@@ -264,7 +264,7 @@ class CurseItem(object):
         while True:
             in_i = in_win.getch()  # GET INPUT CHAR                                     
             status = self.checkChar(val_str, in_i, in_len, min_len) # CHECK CHR  
-                      
+            if status == "IGNORE":continue
             if status == "OK":                            
                 out_str += chr(in_i)                       # UPDATE OUTPUT STR
                 if echo_mode == True:                      # DRAW KEY TO WIN
@@ -350,6 +350,8 @@ class CurseItem(object):
             else:                                        status = "ERR_MIN"
         elif input_i == curses.KEY_DC:                   status = "DELETE"
         elif input_i == curses.KEY_BACKSPACE:            status = "DELETE"
+        elif input_i > 255:                              status = "IGNORE"
+        elif input_i < 0:                                status = "IGNORE"
         else:             status = self.validate_char(format_str, input_i)    
         return status
 
