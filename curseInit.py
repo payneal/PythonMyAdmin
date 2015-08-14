@@ -297,9 +297,9 @@ def init_screens(curse_container):
               "sel_xp"  :
                   "`table_name`,`table_rows`,`create_time`,`update_time`,`engine`",
               "tbl_refs":  
-                  '`information_schema`.`tables`',
+                  "`information_schema`.`tables`",
               "w_cond"  : 
-                  "`table_schema`='@'" 
+                  "`table_schema`='!'" 
              },
             { # variables that need to be fetched from global storage at rt
                 "w_cond": ["log_db"]
@@ -307,7 +307,7 @@ def init_screens(curse_container):
             # panel we'll output the query
             "viewDB_scr_out_pnl",
             # the order in which we want the returned columns
-            ['table_name','table_rows','create_time','update_time','engine'],
+            ["table_name","table_rows","create_time","update_time","engine"],
             ])})
 
     curseScreens["viewTbl_screen"]= CurseScreen(**{
@@ -332,7 +332,7 @@ def init_screens(curse_container):
               "tbl_refs":  
                   '`information_schema`.`columns`',
               "w_cond"  : 
-                  "`table_name`='@' AND `table_schema`='@'"
+                  "`table_name`='!' AND `table_schema`='!'"
             },
             { # variables that need to be fetched from global storage at rt
                 "w_cond": ["view_tbl", "log_db"]
@@ -2335,7 +2335,7 @@ def init_funcs(curse_container):
 
     def getQueryArgVals(globals, q_args, q_val_keys):
         """ 
-        replaces all @ from query argument strings in q_args with values
+        replaces all ! from query argument strings in q_args with values
         from global storage using keys in q_val_keys 
         """
         for q_vkey in q_val_keys:
@@ -2343,7 +2343,7 @@ def init_funcs(curse_container):
             q_vals = q_val_keys[q_vkey] # list of values to get for args
             num_vals = len(q_vals)
             for v in range(0, num_vals):
-                q_arg = q_arg.replace("@", globals[q_vals[v]], 1)
+                q_arg = q_arg.replace("!", globals[q_vals[v]], 1)
             q_args[q_vkey] = q_arg
         return q_args
 
