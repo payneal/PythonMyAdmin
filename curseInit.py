@@ -295,11 +295,11 @@ def init_screens(curse_container):
         action_args  = [
             { # argument strings for makeQuery
               "sel_xp"  :
-                  "`table_name`,`table_rows`,`create_time`,`update_time`,`engine`",
+                  "a.table_name,a.table_rows,a.create_time,a.update_time,a.engine",
               "tbl_refs":  
-                  "`information_schema`.`tables`",
+                  "information_schema.tables",
               "w_cond"  : 
-                  "`table_schema`='!'" 
+                  "a.table_schema = '!'" 
              },
             { # variables that need to be fetched from global storage at rt
                 "w_cond": ["log_db"]
@@ -309,6 +309,22 @@ def init_screens(curse_container):
             # the order in which we want the returned columns
             ["table_name","table_rows","create_time","update_time","engine"],
             ])})
+            #{ # argument strings for makeQuery
+            #  "sel_xp"  :
+            #      "`table_name`,`table_rows`,`create_time`,`update_time`,`engine`",
+            #  "tbl_refs":  
+            #      "`information_schema`.`tables`",
+            #  "w_cond"  : 
+            #      "`table_schema`='!'" 
+            # },
+            #{ # variables that need to be fetched from global storage at rt
+            #    "w_cond": ["log_db"]
+            #},
+            ## panel we'll output the query
+            #"viewDB_scr_out_pnl",
+            ## the order in which we want the returned columns
+            #["table_name","table_rows","create_time","update_time","engine"],
+            #])})
 
     curseScreens["viewTbl_screen"]= CurseScreen(**{
     "global_storage"    : global_storage,
@@ -2350,17 +2366,17 @@ def init_funcs(curse_container):
     def makeQuery(q_args):
         q_str = "SELECT " + q_args["sel_xp"]
         if "tbl_refs" in q_args:
-            q_str   += " FROM " + q_args["tbl_refs"]
+            q_str   += (" FROM " + q_args["tbl_refs"] + " AS a ")
         if "w_cond" in q_args:
-            q_str   += " WHERE " + q_args["w_cond"]           
+            q_str   += (" WHERE " + q_args["w_cond"])           
         if "w_grp" in q_args: # col name / expression/ pos
-            q_str   += " GROUP BY " + q_args["w_grp"]
+            q_str   += (" GROUP BY " + q_args["w_grp"])
         if "h_cond" in q_args:
-            q_str   += " HAVING " + q_args["h_cond"]  
+            q_str   += (" HAVING " + q_args["h_cond"])  
         if "order" in q_args:
-            q_str   += " ORDER BY " + q_args["order"]
+            q_str   += (" ORDER BY " + q_args["order"])
         if "limit" in q_args:
-            q_str   += " LIMIT " + q_args["limit"]
+            q_str   += (" LIMIT " + q_args["limit"])
         return q_str
          
     def queryDatabase(connection, query):
