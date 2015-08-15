@@ -66,6 +66,8 @@ class CursePanel(object):
             self.title                              = kwargs["title"][0]
             self.title_y                            = kwargs["title"][1]    
             self.title_x                            = kwargs["title"][2]
+            if "title_args" in kwargs:
+                self.title_args = kwargs["title_args"]
         else:
             self.title                              = "" 
             self.title_y                            = 0 
@@ -138,6 +140,12 @@ class CursePanel(object):
 
                     msg["msg_status"] = "read"
         return msg
+
+
+    def reset(self):
+        if hasattr(self, "_inner_list"):
+            self._inner_list = None
+            self.clearPanel()
 
     def showInfo(self):
         """ reset infotar and tell it to redraw textbox"""      
@@ -224,7 +232,7 @@ class CursePanel(object):
     # used to give a panel a new results list
     def loadList(self, string_list=None):      
         if string_list == None:     s_list = self._inner_list
-        else:                             s_list = string_list
+        else:                       s_list = string_list
 
         #self.col_hdrs
         
@@ -256,23 +264,15 @@ class CursePanel(object):
 
         self.cur_index = 1
         self.refreshPanel()
-
+         
     def prevListItem(self, defocus_prev=True):
         if self.cur_index > 1:
             self.cur_index -= 1
-            #if self.p_y_buff > 0:
-            #    self.p_y_buff -= 1
-            #    self.refreshPanel()
-            #elif self.p_y_buff == 0:
             self.scrollUp()
 
     def nextListItem(self, defocus_prev=True):
         if self.cur_index < self.row_count - 1:
             self.cur_index += 1
-            #if self.p_y_buff < self.height - 2:
-            #    self.p_y_buff += 1
-            #    self.refreshPanel()
-            #elif self.p_y_buff == self.height - 2:
             self.scrollDown()
 
     def scrollLeft(self):
@@ -308,8 +308,6 @@ class CursePanel(object):
             self.win.hline(l,0,32,self.width - 1)
         self._inner_list = None
 
-
-
 #/\/\/  PANEL DRAW FUNCTIONS  /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 
     def draw(self):
@@ -337,8 +335,8 @@ class CursePanel(object):
 
         self._setBg(bg_chtype)                
         self._setBorder(br_chrs, br_atr, br_clr)
-        self.drawTitle()
         if self.is_pad: self.drawInnerList()
+        else:           self.drawTitle()
         self.drawInnerText()
 
     def drawPanelContents(self):
@@ -362,7 +360,7 @@ class CursePanel(object):
         try:
             self.win.attron(ttl_atr | ttl_clr)
             self.win.addstr(self.title_y, self.title_x,self.title, 
-                            ttl_atr|ttl_clr)
+                ttl_atr|ttl_clr)
             self.win.attroff(ttl_atr | ttl_clr)
         except:            self.win.attroff(ttl_atr | ttl_clr)
 
@@ -377,18 +375,23 @@ class CursePanel(object):
         if hasattr(self, "_inner_text"):
             txt_atr = self.style.txt_atr
             txt_clr = self.style.txt_clr
-            for t in range (0, len(self._inner_text)):
-                self.win.addstr(self._inner_text[t][0], self._inner_text[t][1],
-                                self._inner_text[t][2], txt_atr | txt_clr)
+            try:
+                for t in range (0, len(self._inner_text)):
+                    self.win.addstr(
+                        self._inner_text[t][0], 
+                        self._inner_text[t][1],
+                        self._inner_text[t][2], 
+                        txt_atr | txt_clr)
+            except: pass
 
     def drawInnerList(self):
         if self.row_count <= 0:     return
 
         # draw visible entries
         for row in range(0, self.row_count): # counter for number of lines to draw
-            self.win.hline(row, 0, 32, self.width)      # clear line 
+            self.win.hline(row, 0, 32, self.width)      # clear line
              
-            if row == 0:
+            if row == 0: 
                 self.win.attron(curses.A_BOLD | curses.color_pair(3))  
             elif row == self.cur_index:
                 self.win.attron(self.style.ftxt_atr | self.style.ftxt_clr)   
@@ -404,15 +407,41 @@ class CursePanel(object):
             elif row == self.cur_index:
                 self.win.attroff(self.style.ftxt_atr | self.style.ftxt_clr)
 
+        # draw "more" arrows if content goes off screen
         if self.vp_x + self.width < self.row_max_length:
             if self.row_count < self.height: line_height = self.row_count
             else:                            line_height = self.height
             self.win.attron(curses.A_BOLD | curses.color_pair(5))   
-            self.win.vline(self.vp_y,self.vp_x+self.width-3,ord("-"),line_height)
-            self.win.vline(self.vp_y,self.vp_x+self.width-2,ord(">"),line_height)
+            self.win.vline(self.vp_y + 1, self.vp_x + self.width - 3,
+                ord("-"), line_height - 1)
+            self.win.vline(self.vp_y + 1, self.vp_x + self.width - 2, 
+                ord(">"),line_height - 1)
             self.win.attroff(curses.A_BOLD | curses.color_pair(5))   
 
+        # draw pad title, which has to be handled different due to the
+        # moving viewport
 
+        # y = -1, x = -1, title=="" --> pad title that hasn't be initiated
+        # y = -1, x =  0, title=="" --> pad title that has been initiated
+        # y =  0, x  = 0, title=="" --> not a pad title, shouldn't see this!
+        #if self.title_y == -1:
+        #    if self.title_x == -1:
+        #        # initialize title, store in title args so it won't trigger
+        #        # drawing in normal title function
+        #        temp = self.title_args[0]
+        #        for i in range(0, self.title_args[1]):
+        #            temp = temp.replace("!", 
+        #                globals[self.title_args[1][i]], 1)
+        #        self.title_args[0] = copy.copy(temp)
+
+        #    ttl_atr = self.style.ttl_atr
+        #    ttl_clr = self.style.ttl_clr
+        #    try:
+        #        self.win.attron(ttl_atr | ttl_clr)
+        #        self.win.addstr(self.vp_y, self.vp_x, self.title_args[0],
+        #            ttl_atr|ttl_clr)
+        #        self.win.attroff(ttl_atr | ttl_clr)
+        #    except:            self.win.attroff(ttl_atr | ttl_clr)        
 
     def _setBg(self, bg_chtype=0):
         """ sets panel background color and attributes """

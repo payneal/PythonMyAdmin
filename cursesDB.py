@@ -139,6 +139,8 @@ def changeScreen(new_key_str, change_delay=0, infobox_key=None,change_msg=""):
             new_key_str = previous_key
 
     current_screen = curse_container.screens[new_key_str]
+    if new_key_str == "title_screen": logout()
+
     current_screen.showScreen()     
 
     if previous_key != None:                         
@@ -147,6 +149,20 @@ def changeScreen(new_key_str, change_delay=0, infobox_key=None,change_msg=""):
         previous_key = "none"
 
     screen_key = new_key_str
+
+def logout():
+    global curse_container
+    if "db_cxn" in curse_container.global_storage:
+        curse_container.global_storage["db_cxn"].close()
+        curse_container.global_storage["log_name"] = "LOGGED OUT"
+        curse_container.global_storage["log_pw"]   = None
+        curse_container.global_storage["log_db"]   = None
+        curse_container.global_storage["log_lang"] = "NONE"
+
+def resetPages():
+    global curse_container
+    for screen_key in curse_container.screens:
+        curse_container.screens[screen_key].reset()
 
 def clampval(minv, maxv, v):
     return max(minv, min(maxv, v))

@@ -80,6 +80,7 @@ def init_color_pairs():
     curses.init_pair(18, curses.COLOR_BLUE, curses.COLOR_YELLOW)    # blue/yllw
     curses.init_pair(19, curses.COLOR_WHITE, curses.COLOR_BLUE)     # red/yllw
     curses.init_pair(20, curses.COLOR_MAGENTA, curses.COLOR_BLUE) # blue/yllw
+    curses.init_pair(21, curses.COLOR_RED, curses.COLOR_BLUE) # blue/yllw
 
     colors = {  "DFT": curses.color_pair(0),
                 "BLK": curses.color_pair(1),   "BLU": curses.color_pair(2),
@@ -96,7 +97,7 @@ def init_color_pairs():
                                                 "RWHT": curses.color_pair(17),
                 "BLUYLW": curses.color_pair(18),
                 "REDYLW": curses.color_pair(19),
-                "MGAYLW": curses.color_pair(20)}
+                "MGAYLW": curses.color_pair(20),"REDBLU": curses.color_pair(21)}
 
 def init_style():
     global borderSets
@@ -1023,14 +1024,14 @@ def init_style():
         #inactive			
         "ibg_chr"	    : sp,
         "ibg_atr"	    : 0,
-        "ibg_clr"	    : colors["RED"],
+        "ibg_clr"	    : colors["REDBLU"],
         "ibr_chrs"	    : list(borderSets["no_border"]),
         "ibr_atr"	    : 0,
-        "ibr_clr"	    : colors["RED"],
+        "ibr_clr"	    : colors["REDBLU"],
         "ittl_atr"	    : 0,
-        "ittl_clr"	    : colors["RED"],
+        "ittl_clr"	    : colors["REDBLU"],
         "itxt_atr"	    : 0,
-        "itxt_clr"	    : colors["RED"],
-        "itxt_bg_clr"	: colors["RED"]	
+        "itxt_clr"	    : colors["REDBLU"],
+        "itxt_bg_clr"	: colors["REDBLU"]	
     })
     return panel_styles

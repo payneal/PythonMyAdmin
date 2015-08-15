@@ -95,13 +95,14 @@ class CurseItem(object):
             pass
 
         if hasattr(self, "hotkey"):
-            try:
-                self.parent_panel.win.addch(
-                    self.y ,
-                    self.x + self.hotkey["labl_index"],
-                    self.hotkey["h_key"],
-                    self.hotkey["attr"] | curses.A_BOLD)
-            except: pass
+            if self.is_active == True:
+                try:
+                    self.parent_panel.win.addch(
+                        self.y ,
+                        self.x + self.hotkey["labl_index"],
+                        self.hotkey["h_key"],
+                        self.hotkey["attr"] | curses.A_BOLD)
+                except: pass
 
         self.parent_panel.changed = True
 

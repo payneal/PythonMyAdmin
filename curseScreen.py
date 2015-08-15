@@ -35,6 +35,9 @@ class CurseScreen(object):
 
         if "_on_load" in kwargs:
             self._on_load = kwargs["_on_load"]
+            self._loaded  = False
+            if "_load_once" in kwargs:
+                self._load_once = kwargs["_load_once"]
 
         self.is_active          = False
         self.update_screen      = False
@@ -86,9 +89,16 @@ class CurseScreen(object):
         self.is_active = True
 
         if hasattr(self, "_on_load"):
-            if self._on_load["action"] == "call_function":
-                func = getattr(self, self._on_load["action_name"])
-                func(*self._on_load["action_args"])
+            skip_load = False
+            if hasattr(self, "_load_once"):
+                if self._load_once == True and self._loaded == True:
+                    skip_load = True 
+
+            if not skip_load:
+                self._loaded = True
+                if self._on_load["action"] == "call_function":
+                    func = getattr(self, self._on_load["action_name"])
+                    func(self._on_load["action_args"])
 
         self.setUserStripInfo()
         self.loadPanels()
@@ -103,6 +113,12 @@ class CurseScreen(object):
         for panel_key in self.panels:       
             self.panels[panel_key].clearPanel()
 
+    def reset(self):
+        if hasattr(self, "_on_load"):
+            self._loaded = False
+        for p_key in self.panels:
+            self.panels[p_key].reset()
+
     def setUserStripInfo(self):
         """ shows user info (name, etc...) in infostrip at top of page"""
         name = ""
@@ -113,13 +129,14 @@ class CurseScreen(object):
         if "log_name" in self.global_storage:
             name = copy.copy(self.global_storage["log_name"])
         if "log_pw" in self.global_storage:
-            pw = copy.copy(self.global_storage["log_pw"])
+            #pw = copy.copy(self.global_storage["log_pw"])
+            pass
         if "log_lang" in self.global_storage:
             lang = copy.copy(self.global_storage["log_lang"])                   
             
         self.user_strip.title = ""+\
-            " USERNAME: " + name[0:20].ljust(20) +\
-            "PASSWORD: " + pw[0:20].ljust(20) + "QLANG: "+lang[0:10]
+            " USERNAME: " + name[0:20].ljust(24) +\
+            "CURSESDB".ljust(24) + "QLANG: "+lang[0:10]
 
     def drawUserStripInfo(self):                 self.user_strip.refreshPanel()
          
@@ -278,6 +295,7 @@ class CurseScreen(object):
             
             new_focus_key = self.panel_indexes[self.focus_index]
             if self.panels[new_focus_key].focusable == True: break
+
 
         if prev_focus_index >= 0:             
             self.defocusPanel(prev_focus_key)
