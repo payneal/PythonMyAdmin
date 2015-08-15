@@ -116,7 +116,8 @@ def quitCurses():
     loop = False
 
     if "db_cxn" in curse_container.global_storage:
-        curse_container.global_storage["db_cxn"].close()
+        if curse_container.global_storage["db_cxn"].open:
+            curse_container.global_storage["db_cxn"].close()
 
 def changeScreen(new_key_str, change_delay=0, infobox_key=None,change_msg=""):
     """ changes current view to new screen """
@@ -153,7 +154,8 @@ def changeScreen(new_key_str, change_delay=0, infobox_key=None,change_msg=""):
 def logout():
     global curse_container
     if "db_cxn" in curse_container.global_storage:
-        curse_container.global_storage["db_cxn"].close()
+        if curse_container.global_storage["db_cxn"].open: 
+            curse_container.global_storage["db_cxn"].close()
         curse_container.global_storage["log_name"] = "LOGGED OUT"
         curse_container.global_storage["log_pw"]   = None
         curse_container.global_storage["log_db"]   = None

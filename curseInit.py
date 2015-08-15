@@ -2445,7 +2445,8 @@ def init_funcs(curse_container):
 #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 def load_globals(curse_container):
-    curse_container.global_storage["log_name"] = "JerryBoney"
-    curse_container.global_storage["log_pw"]   = "alaspooryorrick"
-    curse_container.global_storage["log_db"]   = "world"  
-    curse_container.global_storage["log_lang"] = "mySQL"
+    pass
+    #curse_container.global_storage["log_name"] = "JerryBoney"
+    #curse_container.global_storage["log_pw"]   = "alaspooryorrick"
+    #curse_container.global_storage["log_db"]   = "world"  
+    #curse_container.global_storage["log_lang"] = "mySQL"
