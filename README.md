@@ -77,3 +77,9 @@ Final report:
 Your final report is a written document detailing your project, including changes to your design, problems you
 overcame, a group evaluation, and any other interesting project related details you want to include. Specific
 format guidelines and requirements will be posted during week 8. 
+-------------------------------------------------
+
+Not all req's were meet but here is the finished result:
+[![CS419 - Curses-based UI for Database Access(python)  ](http://img.youtube.com/vi/unBNGDBV_no/0.jpg)](http://www.youtube.com/watch?v=unBNGDBV_no)
+
+
