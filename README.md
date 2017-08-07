@@ -80,6 +80,6 @@ format guidelines and requirements will be posted during week 8.
 -------------------------------------------------
 
 Not all req's were meet but here is the finished result:
-[![CS419 - Curses-based UI for Database Access(python)  ](http://img.youtube.com/vi/unBNGDBV_no/0.jpg)](http://www.youtube.com/watch?v=unBNGDBV_no)
+[![CS419 Senior Project- CLI Database Access ](http://img.youtube.com/vi/y6F1rs1nkew/0.jpg)](http://www.youtube.com/watch?v=y6F1rs1nkew)
 
 
